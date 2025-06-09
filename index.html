@@ -760,58 +760,7 @@
         <div class="trading-section">
             <div class="crypto-list">
                 <h3>Криптовалюты</h3>
-                <div class="crypto-item" onclick="selectCrypto('BTC')">
-                    <div class="crypto-info">
-                        <div class="crypto-icon" style="background: linear-gradient(45deg, #f7931a, #ffb74d);">₿</div>
-                        <div>
-                            <div>Bitcoin</div>
-                            <div style="font-size: 12px; opacity: 0.7;">BTC</div>
-                        </div>
-                    </div>
-                    <div class="crypto-price">
-                        <div class="price">$<span id="btc-price">0</span></div>
-                        <div class="change" id="btc-change">0%</div>
-                    </div>
-                </div>
-                <div class="crypto-item" onclick="selectCrypto('ETH')">
-                    <div class="crypto-info">
-                        <div class="crypto-icon" style="background: linear-gradient(45deg, #627eea, #8e44ad);">Ξ</div>
-                        <div>
-                            <div>Ethereum</div>
-                            <div style="font-size: 12px; opacity: 0.7;">ETH</div>
-                        </div>
-                    </div>
-                    <div class="crypto-price">
-                        <div class="price">$<span id="eth-price">0</span></div>
-                        <div class="change" id="eth-change">0%</div>
-                    </div>
-                </div>
-                <div class="crypto-item" onclick="selectCrypto('USDT')">
-                    <div class="crypto-info">
-                        <div class="crypto-icon" style="background: linear-gradient(45deg, #26a17b, #5ac8a8);">U</div>
-                        <div>
-                            <div>Tether</div>
-                            <div style="font-size: 12px; opacity: 0.7;">USDT</div>
-                        </div>
-                    </div>
-                    <div class="crypto-price">
-                        <div class="price">$<span id="usdt-price">0</span></div>
-                        <div class="change" id="usdt-change">0%</div>
-                    </div>
-                </div>
-                <div class="crypto-item" onclick="selectCrypto('BNB')">
-                    <div class="crypto-info">
-                        <div class="crypto-icon" style="background: linear-gradient(45deg, #f3ba2f, #f7de8a);">B</div>
-                        <div>
-                            <div>Binance Coin</div>
-                            <div style="font-size: 12px; opacity: 0.7;">BNB</div>
-                        </div>
-                    </div>
-                    <div class="crypto-price">
-                        <div class="price">$<span id="bnb-price">0</span></div>
-                        <div class="change" id="bnb-change">0%</div>
-                    </div>
-                </div>
+                <div id="crypto-items"></div>
             </div>
             <div class="trading-panel">
                 <div class="buy-sell-form">
@@ -867,6 +816,75 @@
                             <option value="ETH">Ethereum (ETH)</option>
                             <option value="USDT">Tether (USDT)</option>
                             <option value="BNB">Binance Coin (BNB)</option>
+                            <option value="LTC">Litecoin (LTC)</option>
+                            <option value="TON">The Open Network (TON)</option>
+                            <option value="XRP">Ripple (XRP)</option>
+                            <option value="SOL">Solana (SOL)</option>
+                            <option value="USDC">USD Coin (USDC)</option>
+                            <option value="DOGE">Dogecoin (DOGE)</option>
+                            <option value="TRX">Tron (TRX)</option>
+                            <option value="ADA">Cardano (ADA)</option>
+                            <option value="WBTC">Wrapped Bitcoin (WBTC)</option>
+                            <option value="AVAX">Avalanche (AVAX)</option>
+                            <option value="SHIB">Shiba Inu (SHIB)</option>
+                            <option value="LINK">Chainlink (LINK)</option>
+                            <option value="DOT">Polkadot (DOT)</option>
+                            <option value="MATIC">Polygon (MATIC)</option>
+                            <option value="BCH">Bitcoin Cash (BCH)</option>
+                            <option value="UNI">Uniswap (UNI)</option>
+                            <option value="XLM">Stellar (XLM)</option>
+                            <option value="VET">VeChain (VET)</option>
+                            <option value="ATOM">Cosmos (ATOM)</option>
+                            <option value="FIL">Filecoin (FIL)</option>
+                            <option value="ALGO">Algorand (ALGO)</option>
+                            <option value="NEAR">NEAR Protocol (NEAR)</option>
+                            <option value="ICP">Internet Computer (ICP)</option>
+                            <option value="APT">Aptos (APT)</option>
+                            <option value="ARB">Arbitrum (ARB)</option>
+                            <option value="OP">Optimism (OP)</option>
+                            <option value="INJ">Injective (INJ)</option>
+                            <option value="SUI">Sui (SUI)</option>
+                            <option value="XTZ">Tezos (XTZ)</option>
+                            <option value="EOS">EOS</option>
+                            <option value="HBAR">Hedera (HBAR)</option>
+                            <option value="XMR">Monero (XMR)</option>
+                            <option value="KSM">Kusama (KSM)</option>
+                            <option value="AAVE">Aave (AAVE)</option>
+                            <option value="MKR">Maker (MKR)</option>
+                            <option value="GRT">The Graph (GRT)</option>
+                            <option value="RUNE">THORChain (RUNE)</option>
+                            <option value="FTM">Fantom (FTM)</option>
+                            <option value="SAND">The Sandbox (SAND)</option>
+                            <option value="MANA">Decentraland (MANA)</option>
+                            <option value="AXS">Axie Infinity (AXS)</option>
+                            <option value="CHZ">Chiliz (CHZ)</option>
+                            <option value="CRV">Curve DAO Token (CRV)</option>
+                            <option value="COMP">Compound (COMP)</option>
+                            <option value="SNX">Synthetix (SNX)</option>
+                            <option value="1INCH">1inch (1INCH)</option>
+                            <option value="LDO">Lido DAO (LDO)</option>
+                            <option value="RNDR">Render (RNDR)</option>
+                            <option value="STX">Stacks (STX)</option>
+                            <option value="IMX">Immutable (IMX)</option>
+                            <option value="FLOW">Flow (FLOW)</option>
+                            <option value="GALA">Gala (GALA)</option>
+                            <option value="APE">ApeCoin (APE)</option>
+                            <option value="EGLD">MultiversX (EGLD)</option>
+                            <option value="KAVA">Kava (KAVA)</option>
+                            <option value="ZEC">Zcash (ZEC)</option>
+                            <option value="DASH">Dash (DASH)</option>
+                            <option value="NEO">NEO</option>
+                            <option value="IOTA">IOTA</option>
+                            <option value="QTUM">Qtum (QTUM)</option>
+                            <option value="WAVES">Waves (WAVES)</option>
+                            <option value="ZIL">Zilliqa (ZIL)</option>
+                            <option value="ENJ">Enjin Coin (ENJ)</option>
+                            <option value="BAT">Basic Attention Token (BAT)</option>
+                            <option value="LRC">Loopring (LRC)</option>
+                            <option value="ANKR">Ankr (ANKR)</option>
+                            <option value="RVN">Ravencoin (RVN)</option>
+                            <option value="HOT">Holo (HOT)</option>
+                            <option value="OMG">OMG Network (OMG)</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -876,6 +894,22 @@
                             <option value="ETH">Ethereum (ERC-20)</option>
                             <option value="BSC">BNB Chain (BEP-20)</option>
                             <option value="TRON">Tron (TRC-20)</option>
+                            <option value="SOL">Solana</option>
+                            <option value="ADA">Cardano</option>
+                            <option value="AVAX">Avalanche C-Chain</option>
+                            <option value="MATIC">Polygon</option>
+                            <option value="DOT">Polkadot</option>
+                            <option value="ALGO">Algorand</option>
+                            <option value="NEAR">NEAR</option>
+                            <option value="APT">Aptos</option>
+                            <option value="ARB">Arbitrum</option>
+                            <option value="OP">Optimism</option>
+                            <option value="SUI">Sui</option>
+                            <option value="XTZ">Tezos</option>
+                            <option value="EOS">EOS</option>
+                            <option value="HBAR">Hedera</option>
+                            <option value="XMR">Monero</option>
+                            <option value="KSM">Kusama</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -915,11 +949,11 @@
             </table>
         </div>
     </div>
-    <button class="support-button" title="Поддержка">💬</button>
+    <button class="support-button" title="Поддержка" onclick="toggleSupportChat()">💬</button>
     <div class="support-chat" id="support-chat">
         <div class="chat-header">
             <h3>Поддержка TrustBit</h3>
-            <button class="chat-close">✖</button>
+            <button class="chat-close" onclick="toggleSupportChat()">✩</button>
         </div>
         <div class="chat-body" id="chat-body">
             <div class="chat-message support">Добро пожаловать! Как могу помочь?</div>
@@ -937,9 +971,18 @@
         let balance = 1000;
         let portfolio = {};
         let transactions = [];
-        let cryptoPrices = { BTC: 0, ETH: 0, USDT: 0, BNB: 0 };
-        let cryptoPriceHistory = { BTC: [], ETH: [], USDT: [], BNB: [] };
-        let priceChanges = { BTC: 0, ETH: 0, USDT: 0, BNB: 0 };
+        let cryptoPrices = {
+            BTC: 0, ETH: 0, USDT: 0, BNB: 0, LTC: 0, TON: 0, XRP: 0, SOL: 0, USDC: 0, DOGE: 0,
+            TRX: 0, ADA: 0, WBTC: 0, AVAX: 0, SHIB: 0, LINK: 0, DOT: 0, MATIC: 0, BCH: 0, UNI: 0,
+            XLM: 0, VET: 0, ATOM: 0, FIL: 0, ALGO: 0, NEAR: 0, ICP: 0, APT: 0, ARB: 0, OP: 0,
+            INJ: 0, SUI: 0, XTZ: 0, EOS: 0, HBAR: 0, XMR: 0, KSM: 0, AAVE: 0, MKR: 0, GRT: 0,
+            RUNE: 0, FTM: 0, SAND: 0, MANA: 0, AXS: 0, CHZ: 0, CRV: 0, COMP: 0, SNX: 0, '1INCH': 0,
+            LDO: 0, RNDR: 0, STX: 0, IMX: 0, FLOW: 0, GALA: 0, APE: 0, EGLD: 0, KAVA: 0, ZEC: 0,
+            DASH: 0, NEO: 0, IOTA: 0, QTUM: 0, WAVES: 0, ZIL: 0, ENJ: 0, BAT: 0, LRC: 0, ANKR: 0,
+            RVN: 0, HOT: 0, OMG: 0
+        };
+        let cryptoPriceHistory = Object.fromEntries(Object.keys(cryptoPrices).map(c => [c, []]));
+        let priceChanges = Object.fromEntries(Object.keys(cryptoPrices).map(c => [c, 0]));
         let previousPrices = { ...cryptoPrices };
         let selectedCrypto = 'BTC';
         let tradeMode = 'buy';
@@ -947,10 +990,38 @@
         let candlestickSeries = null;
         let currentTimeframe = '1d';
         const cryptoIdMap = {
-            BTC: 'bitcoin',
-            ETH: 'ethereum',
-            USDT: 'tether',
-            BNB: 'binancecoin'
+            BTC: 'bitcoin', ETH: 'ethereum', USDT: 'tether', BNB: 'binancecoin', LTC: 'litecoin',
+            TON: 'the-open-network', XRP: 'ripple', SOL: 'solana', USDC: 'usd-coin', DOGE: 'dogecoin',
+            TRX: 'tron', ADA: 'cardano', WBTC: 'wrapped-bitcoin', AVAX: 'avalanche-2', SHIB: 'shiba-inu',
+            LINK: 'chainlink', DOT: 'polkadot', MATIC: 'matic-network', BCH: 'bitcoin-cash',
+            UNI: 'uniswap', XLM: 'stellar', VET: 'vechain', ATOM: 'cosmos', FIL: 'filecoin',
+            ALGO: 'algorand', NEAR: 'near', ICP: 'internet-computer', APT: 'aptos',
+            ARB: 'arbitrum', OP: 'optimism', INJ: 'injective-protocol', SUI: 'sui',
+            XTZ: 'tezos', EOS: 'eos', HBAR: 'hedera-hashgraph', XMR: 'monero',
+            KSM: 'kusama', AAVE: 'aave', MKR: 'maker', GRT: 'the-graph', RUNE: 'thorchain',
+            FTM: 'fantom', SAND: 'the-sandbox', MANA: 'decentraland', AXS: 'axie-identity',
+            CHZ: 'chiliz', CRV: 'curve-dao-token', COMP: 'compound-governance-token',
+            SNX: 'havven', '1INCH': '1inch', LDO: 'lido-dao', RNDR: 'render-token',
+            STX: 'blockstack', IMX: 'immutable-x', FLOW: 'flow', GALA: 'gala',
+            APE: 'apecoin', EGLD: 'elrond-erd-2', KAVA: 'kava', ZEC: 'zcash',
+            DASH: 'dash', NEO: 'neo', IOTA: 'iota', QTUM: 'qtum', WAVES: 'waves',
+            ZIL: 'zilliqa', ENJ: 'enjin-coin', BAT: 'basic-attention-token',
+            LRC: 'loopring', ANKR: 'ankr', RVN: 'ravencoin', HOT: 'holotoken',
+            OMG: 'omisego'
+        };
+        const cryptoSymbols = {
+            BTC: '₿', ETH: 'Ξ', USDT: '₮', BNB: 'B', LTC: 'Ł', TON: '$', XRP: 'Ʀ', SOL: '◎',
+            USDC: '₡', DOGE: 'Ð', TRX: '₮', ADA: '₳', WBTC: '₿', AVAX: 'Ⓐ', SHIB: '柴',
+            LINK: '🔗', DOT: '⚫', MATIC: '⬣', BCH: '₿', UNI: '🦄', XLM: '✦', VET: 'V',
+            ATOM: '⚛', FIL: '📁', ALGO: 'Ⓐ', NEAR: 'Ⓝ', ICP: '🧠', APT: 'ⓐ', ARB: 'Ⓐ',
+            OP: 'Ⓞ', INJ: '💉', SUI: 'Ⓢ', XTZ: 'ꜩ', EOS: 'ⓔ', HBAR: 'ℏ', XMR: 'ɱ',
+            KSM: 'Ⓚ', AAVE: 'Ⓐ', MKR: 'Ⓜ', GRT: '📈', RUNE: 'ᚱ', FTM: '👻',
+            SAND: '🏖', MANA: 'Ⓜ', AXS: '🪓', CHZ: '⚽', CRV: 'Ⓒ', COMP: 'Ⓒ',
+            SNX: 'Ⓢ', '1INCH': '1"', LDO: 'Ⓛ', RNDR: '🎨', STX: 'Ⓢ', IMX: 'Ⓘ',
+            FLOW: '🌊', GALA: '🎮', APE: '🦍', EGLD: 'Ⓔ', KAVA: '☕', ZEC: 'Ⓩ',
+            DASH: 'ⓓ', NEO: 'Ⓝ', IOTA: 'ⓘ', QTUM: 'Ⓠ', WAVES: '🌊', ZIL: 'Ⓩ',
+            ENJ: 'Ⓔ', BAT: '🦇', LRC: 'Ⓛ', ANKR: '⚓', RVN: 'Ⓡ', HOT: '🔥',
+            OMG: '🕉'
         };
 
         function showSection(sectionId) {
@@ -961,361 +1032,540 @@
             if (sectionId === 'trading') updateChart();
         }
 
-        document.querySelector('.profile-btn').addEventListener('click', () => {
-            document.querySelector('.dropdown-menu').classList.toggle('active');
-        });
+        function renderCryptoList() {
+    const cryptoItems = document.getElementById('crypto-items');
+    if (!cryptoItems) {
+        console.error('Crypto items container not found');
+        return;
+    }
+    cryptoItems.innerHTML = '';
+    const colorMap = {
+        BTC: { start: 'f7931a', end: 'ffb74d' }, ETH: { start: '627eea', end: '8e44ad' },
+        USDT: { start: '26a17b', end: '5ac8a8' }, BNB: { start: 'f3ba2f', end: 'f7de8a' },
+        LTC: { start: 'b5b5b5', end: 'd9d9d9' }, TON: { start: '0088cc', end: '00b7eb' },
+        XRP: { start: '222222', end: '555555' }, SOL: { start: '00ffa3', end: 'dc1fff' },
+        USDC: { start: '2775ca', end: '5a9bd4' }, DOGE: { start: 'c3a634', end: 'e6c44f' },
+        TRX: { start: 'eb0029', end: 'ff4d4d' }, ADA: { start: '3c84b9', end: '60a5fa' },
+        WBTC: { start: 'f7931a', end: 'ffb74d' }, AVAX: { start: 'e84142', end: 'ff6b6b' }, // Исправлен 'ff6b' на 'ff6b6b'
+        SHIB: { start: 'ff4500', end: 'ff8c00' }, LINK: { start: '2a5ada', end: '5a9bd4' },
+        DOT: { start: 'e6007a', end: 'ff4d8c' }, MATIC: { start: '8247e5', end: 'a78bfa' },
+        BCH: { start: '8dc351', end: 'b3e67a' }, UNI: { start: 'ff007a', end: 'ff4d8c' },
+        XLM: { start: '000000', end: '333333' }, VET: { start: '15bffd', end: '4ddbff' },
+        ATOM: { start: '2e3148', end: '4a5d78' }, FIL: { start: '0090ff', end: '4dc3ff' },
+        ALGO: { start: '000000', end: '333333' }, NEAR: { start: '00e3ae', end: '4dffcd' },
+        ICP: { start: 'd81f26', end: 'ff4d4d' }, APT: { start: '17e6b9', end: '4dffd4' },
+        ARB: { start: '2a3b5a', end: '5a7aa8' }, OP: { start: 'ff0420', end: 'ff4d4d' },
+        INJ: { start: '1e4dd8', end: '4d8bff' }, SUI: { start: '1a8cff', end: '4db3ff' },
+        XTZ: { start: '2c7df7', end: '5aa8ff' }, EOS: { start: '000000', end: '333333' },
+        HBAR: { start: '000000', end: '333333' }, XMR: { start: 'ff6600', end: 'ff9933' },
+        KSM: { start: '000000', end: '333333' }, AAVE: { start: 'b6509e', end: 'e68bc5' },
+        MKR: { start: '1aab9b', end: '4dd4b3' }, GRT: { start: '6747ed', end: '8b6bff' },
+        RUNE: { start: '00d18b', end: '4dffa8' }, FTM: { start: '1969ff', end: '4d8bff' },
+        SAND: { start: '00aeef', end: '4ddbff' }, MANA: { start: 'ff2a44', end: 'ff6b7a' }, // Исправлена синтаксическая ошибка (удалены лишние кавычки)
+        AXS: { start: '0085d2', end: '4db3ff' }, CHZ: { start: 'e30013', end: 'ff4d4d' },
+        CRV: { start: '4066e0', end: '6b8bff' }, COMP: { start: '00d395', end: '4dffa8' },
+        SNX: { start: '00d1ff', end: '4dffff' }, '1INCH': { start: '1f3b5b', end: '4d7aa8' },
+        LDO: { start: '00a3ff', end: '4ddbff' }, RNDR: { start: 'ff3c3c', end: 'ff7a7a' },
+        STX: { start: '5548de', end: '7a6bff' }, IMX: { start: '00c4b4', end: '4dffcd' },
+        FLOW: { start: '00ef8b', end: '4dffa8' }, GALA: { start: '000000', end: '333333' },
+        APE: { start: '0033cc', end: '4d7aff' }, EGLD: { start: '0d0221', end: '333366' },
+        KAVA: { start: 'ff4338', end: 'ff7a7a' }, ZEC: { start: 'f4b728', end: 'ffd966' },
+        DASH: { start: '008ce7', end: '4db3ff' }, NEO: { start: '58bf00', end: '8bff4d' },
+        IOTA: { start: '000000', end: '333333' }, QTUM: { start: '2e9dfd', end: '6bb8ff' },
+        WAVES: { start: '0153ff', end: '4d8bff' }, ZIL: { start: '49a49b', end: '7ad4b3' },
+        ENJ: { start: '624de4', end: '8b6bff' }, BAT: { start: 'ff5000', end: 'ff8c4d' },
+        LRC: { start: '2ab6f6', end: '6bd4ff' }, ANKR: { start: '1e4dd8', end: '4d8bff' },
+        RVN: { start: '3848a0', end: '6b7aa8' }, HOT: { start: 'ff3c3c', end: 'ff7a7a' },
+        OMG: { start: '1a1a1a', end: '4d4d4d' },
+        default: { start: '7e6bff', end: '5a4bff' }
+    };
+    Object.keys(cryptoPrices).forEach(crypto => {
+        const colors = colorMap[crypto] || colorMap.default;
+        const item = document.createElement('div');
+        item.className = 'crypto-item';
+        item.onclick = () => selectCrypto(crypto);
+        const name = cryptoIdMap[crypto] ? cryptoIdMap[crypto].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : crypto;
+        item.innerHTML = `
+            <div class="crypto-info">
+                <div class="crypto-icon" style="background: linear-gradient(45deg, #${colors.start}, #${colors.end});">${cryptoSymbols[crypto] || crypto.charAt(0)}</div>
+                <div>
+                    <div>${name}</div>
+                    <div style="font-size: 12px; opacity: 0.7;">${crypto}</div>
+                </div>
+            </div>
+            <div class="crypto-price">
+                <div class="price">$<span id="${crypto.toLowerCase()}-price">0</span></div>
+                <div class="change" id="${crypto.toLowerCase()}-change">0%</div>
+            </div>
+        `;
+        cryptoItems.appendChild(item);
+    });
+}
 
-        function setTradeMode(mode) {
-            tradeMode = mode;
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelector(`.tab[onclick="setTradeMode('${mode}')"]`).classList.add('active');
-            document.getElementById('trade-btn').textContent = mode === 'buy' ? 'Купить' : 'Продать';
-        }
+document.querySelector('.profile-btn').addEventListener('click', () => {
+    const dropdown = document.querySelector('.dropdown-menu');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+    } else {
+        console.error('Dropdown menu not found');
+    }
+});
 
-        function selectCrypto(crypto) {
-            selectedCrypto = crypto;
-            document.getElementById('selected-crypto').textContent = crypto;
-            document.getElementById('chart-crypto').textContent = crypto;
-            updateChart();
-            updateOrderBook();
-        }
+function setTradeMode(mode) {
+    tradeMode = mode;
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    const activeTab = document.querySelector(`.tab[onclick="setTradeMode('${mode}')"]`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    } else {
+        console.error(`Tab for mode '${mode}' not found`);
+    }
+    const tradeBtn = document.getElementById('trade-btn');
+    if (tradeBtn) {
+        tradeBtn.textContent = mode === 'buy' ? 'Купить' : 'Продать';
+    } else {
+        console.error('Trade button not found');
+    }
+}
 
-        function setTimeframe(timeframe) {
-            currentTimeframe = timeframe;
-            document.querySelectorAll('.timeframe-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.timeframe-btn[onclick="setTimeframe('${timeframe}')"]`).classList.add('active');
-            updateChart();
-        }
+function selectCrypto(crypto) {
+    selectedCrypto = crypto; // Исправлена синтаксическая ошибка (удалено 'crypto' перед переменной)
+    const selectedCryptoEl = document.getElementById('selected-crypto');
+    const chartCryptoEl = document.getElementById('chart-crypto');
+    if (selectedCryptoEl && chartCryptoEl) {
+        selectedCryptoEl.textContent = crypto;
+        chartCryptoEl.textContent = crypto;
+        updateChart();
+        updateOrderBook();
+    } else {
+        console.error('Selected crypto or chart crypto element not found');
+    }
+}
 
+function setTimeframe(timeframe) {
+    currentTimeframe = timeframe;
+    const timeframeButtons = document.querySelectorAll('.timeframe-btn');
+    timeframeButtons.forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`.timeframe-btn[onclick="setTimeframe('${timeframe}')"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+        updateChart();
+    } else {
+        console.error(`Timeframe button for '${timeframe}' not found`);
+    }
+}
         function updateWalletAddress() {
             const network = document.getElementById('deposit-network').value;
             const crypto = document.getElementById('deposit-crypto').value;
-            const addresses = {
-                BTC: { BTC: 'bc1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' },
-                ETH: { ETH: '0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', USDT: '0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' },
-                BSC: { BNB: 'bnbXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', USDT: '0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' },
-                TRON: { USDT: 'TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' }
+            const addressPrefix = {
+                BTC: 'bc1', ETH: '0x', BSC: '0x', TRON: 'T', SOL: 'sol', ADA: 'addr',
+                AVAX: 'avax', MATIC: '0x', DOT: '1', ALGO: 'algo', NEAR: 'near',
+                APT: 'apt', ARB: '0x', OP: '0x', SUI: 'sui', XTZ: 'tz',
+                EOS: 'eos', HBAR: 'hbar', XMR: '4x', KSM: 'ksm'
             };
-            document.getElementById('wallet-address').textContent = addresses[network]?.[crypto] || 'Адрес недоступен';
+            const randomId = Math.random().toString(16).slice(2, 34);
+            const address = `${addressPrefix[network] || '0x'}${randomId}`;
+            document.getElementById('wallet-address').textContent = address;
         }
 
         async function fetchCryptoPrices() {
-            try {
-                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin&vs_currencies=usd&include_24hr_change=true');
+        try {
+            const coins = Object.values(cryptoIdMap);
+            const batchSize = 30;
+            for (let i = 0; i < coins.length; i += batchSize) {
+                const batch = coins.slice(i, i + batchSize).join(',');
+                const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${batch}&vs_currencies=usd&include_24hr_change=true`);
                 if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
                 const data = await response.json();
                 Object.keys(cryptoIdMap).forEach(symbol => {
                     const id = cryptoIdMap[symbol];
-                    previousPrices[symbol] = cryptoPrices[symbol];
-                    cryptoPrices[symbol] = parseFloat(data[id].usd);
-                    priceChanges[symbol] = parseFloat(data[id].usd_24h_change).toFixed(2);
-                    cryptoPriceHistory[symbol].push({ time: Math.floor(Date.now() / 1000), value: cryptoPrices[symbol] });
-                    if (cryptoPriceHistory[symbol].length > 50) cryptoPriceHistory[symbol].shift();
-                });
-                updateCryptoList();
-                updatePortfolio();
-                if (document.getElementById('trading').classList.contains('active')) updateLiveCandle();
-            } catch (error) {
-                console.error('Error fetching prices:', error.message);
-                Object.keys(cryptoPrices).forEach(symbol => {
-                    if (cryptoPrices[symbol] === 0) {
-                        cryptoPrices[symbol] = Math.random() * 10000 + 1000;
-                        priceChanges[symbol] = ((Math.random() - 0.5) * 10).toFixed(2);
+                    if (data[id]) {
+                        previousPrices[symbol] = cryptoPrices[symbol];
+                        cryptoPrices[symbol] = parseFloat(data[id].usd);
+                        priceChanges[symbol] = parseFloat(data[id].usd_24h_change).toFixed(2);
                         cryptoPriceHistory[symbol].push({ time: Math.floor(Date.now() / 1000), value: cryptoPrices[symbol] });
                         if (cryptoPriceHistory[symbol].length > 50) cryptoPriceHistory[symbol].shift();
                     }
                 });
-                updateCryptoList();
-                updatePortfolio();
             }
-        }
-
-        async function fetchNews() {
-            try {
-                const apiKey = 'cee5353296df40ec9a461b683083e5c2';
-                const response = await fetch(`https://newsapi.org/v2/everything?q=cryptocurrency&language=ru&sortBy=publishedAt&apiKey=${apiKey}`);
-                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                const data = await response.json();
-                if (data.status === 'error') throw new Error(`NewsAPI error: ${data.message}`);
-                const newsList = document.getElementById('news-list');
-                newsList.innerHTML = '';
-                data.articles.slice(0, 5).forEach(article => {
-                    const item = document.createElement('div');
-                    item.className = 'news-item';
-                    item.innerHTML = `
-                        <div class="news-content">
-                            <h3>${article.title}</h3>
-                            <p>${article.description || 'Подробности отсутствуют'}</p>
-                            <div class="source">${article.source.name}</div>
-                        </div>
-                    `;
-                    newsList.appendChild(item);
-                });
-            } catch (error) {
-                console.error('Error fetching news:', error.message);
-                const newsList = document.getElementById('news-list');
-                newsList.innerHTML = '';
-                const mockNews = [
-                    { title: "Bitcoin достигает нового максимума", description: "Крупнейшая криптовалюта продолжает ралли.", source: "CoinDesk" },
-                    { title: "Ethereum готовится к обновлению", description: "Новое обновление снизит комиссии.", source: "The Block" },
-                    { title: "Tether укрепляет позиции", description: "USDT остается лидером.", source: "CryptoSlate" },
-                    { title: "Binance Coin растет", description: "BNB показывает рост.", source: "CoinTelegraph" }
-                ];
-                mockNews.forEach(news => {
-                    const item = document.createElement('div');
-                    item.className = 'news-item';
-                    item.innerHTML = `
-                        <div class="news-content">
-                            <h3>${news.title}</h3>
-                            <p>${news.description}</p>
-                            <div class="source">${news.source}</div>
-                        </div>
-                    `;
-                    newsList.appendChild(item);
-                });
-            }
-        }
-
-        function updateCryptoList() {
-            Object.keys(cryptoPrices).forEach(crypto => {
-                const priceElement = document.getElementById(`${crypto.toLowerCase()}-price`);
-                const changeElement = document.getElementById(`${crypto.toLowerCase()}-change`);
-                if (priceElement && changeElement) {
-                    priceElement.textContent = cryptoPrices[crypto].toFixed(2);
-                    changeElement.textContent = `${priceChanges[crypto]}%`;
-                    changeElement.className = `change ${priceChanges[crypto] >= 0 ? 'positive' : 'negative'}`;
+            updateCryptoList();
+            updatePortfolio();
+            if (document.getElementById('trading').classList.contains('active')) updateLiveCandle();
+        } catch (error) {
+            console.error('Error fetching prices:', error.message);
+            Object.keys(cryptoPrices).forEach(symbol => {
+                if (cryptoPrices[symbol] === 0) {
+                    cryptoPrices[symbol] = Math.random() * 10000 + 1000;
+                    priceChanges[symbol] = ((Math.random() - 0.5) * 10).toFixed(2);
+                    cryptoPriceHistory[symbol].push({ time: Math.floor(Date.now() / 1000), value: cryptoPrices[symbol] });
+                    if (cryptoPriceHistory[symbol].length > 50) cryptoPriceHistory[symbol].shift();
                 }
             });
+            updateCryptoList();
+            updatePortfolio();
         }
+    }
 
-        function updateOrderBook() {
-            const bidsTbody = document.getElementById('order-book-bids');
-            const asksTbody = document.getElementById('order-book-asks');
-            bidsTbody.innerHTML = '';
-            asksTbody.innerHTML = '';
-            const price = cryptoPrices[selectedCrypto] || 1000;
-            for (let i = 5; i >= 1; i--) {
-                const bidPrice = (price * (1 - i * 0.001)).toFixed(2);
-                const askPrice = (price * (1 + i * 0.001)).toFixed(2);
-                const bidAmount = (Math.random() * 10).toFixed(4);
-                const askAmount = (Math.random() * 10).toFixed(4);
-                bidsTbody.innerHTML += `<tr class="buy"><td>${bidPrice}</td><td>${bidAmount}</td></tr>`;
-                asksTbody.innerHTML += `<tr class="sell"><td>${askPrice}</td><td>${askAmount}</td></tr>`;
+    async function fetchNews() {
+        try {
+            const apiKey = 'cee5353296df40ec9a461b683083e5c2';
+            const response = await fetch(`https://newsapi.org/v2/everything?q=cryptocurrency&language=ru&sortBy=publishedAt&apiKey=${apiKey}`);
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            const data = await response.json();
+            if (data.status === 'error') throw new Error(`NewsAPI error: ${data.message}`);
+            const newsList = document.getElementById('news-list');
+            newsList.innerHTML = '';
+            data.articles.slice(0, 5).forEach(article => {
+                const item = document.createElement('div');
+                item.className = 'news-item';
+                item.innerHTML = `
+                    <div class="news-content">
+                        <h3>${article.title}</h3>
+                        <p>${article.description || 'Подробности отсутствуют'}</p>
+                        <div class="source">${article.source.name}</div>
+                    </div>
+                `;
+                newsList.appendChild(item);
+            });
+        } catch (error) {
+            console.error('Error fetching news:', error.message);
+            const newsList = document.getElementById('news-list');
+            newsList.innerHTML = '';
+            const mockNews = [
+                { title: "Bitcoin достигает нового максимума", description: "Крупнейшая криптовалюта продолжает ралли.", source: "CoinDesk" },
+                { title: "Ethereum готовится к обновлению", description: "Новое обновление снизит комиссии.", source: "The Block" },
+                { title: "Tether укрепляет позиции", description: "USDT остается лидером.", source: "CryptoSlate" },
+                { title: "Binance Coin растет", description: "BNB показывает рост.", source: "CoinTelegraph" }
+            ];
+            mockNews.forEach(news => {
+                const item = document.createElement('div');
+                item.className = 'news-item';
+                item.innerHTML = `
+                    <div class="news-content">
+                        <h3>${news.title}</h3>
+                        <p>${news.description}</p>
+                        <div class="source">${news.source}</div>
+                    </div>
+                `;
+                newsList.appendChild(item);
+            });
+        }
+    }
+
+    function updateCryptoList() {
+        Object.keys(cryptoPrices).forEach(crypto => {
+            const priceElement = document.getElementById(`${crypto.toLowerCase()}-price`);
+            const changeElement = document.getElementById(`${crypto.toLowerCase()}-change`);
+            if (priceElement && changeElement) {
+                priceElement.textContent = cryptoPrices[crypto].toFixed(2);
+                changeElement.textContent = `${priceChanges[crypto]}%`;
+                changeElement.className = `change ${priceChanges[crypto] >= 0 ? 'positive' : 'negative'}`;
             }
-        }
+        });
+    }
 
-        function depositFunds() {
-            const amount = parseFloat(document.getElementById('deposit-amount-page').value);
-            const crypto = document.getElementById('deposit-crypto').value;
-            if (amount > 0 && cryptoPrices[crypto] > 0) {
-                balance += amount;
-                portfolio[crypto] = (portfolio[crypto] || 0) + (amount / cryptoPrices[crypto]);
-                document.getElementById('wallet-balance-page').textContent = balance.toFixed(2);
+    function updateOrderBook() {
+        const bidsTbody = document.getElementById('order-book-bids');
+        const asksTbody = document.getElementById('order-book-asks');
+        bidsTbody.innerHTML = '';
+        asksTbody.innerHTML = '';
+        const price = cryptoPrices[selectedCrypto] || 1000;
+        for (let i = 5; i >= 1; i--) {
+            const bidPrice = (price * (1 - i * 0.001)).toFixed(2);
+            const askPrice = (price * (1 + i * 0.001)).toFixed(2);
+            const bidAmount = (Math.random() * 10).toFixed(4);
+            const askAmount = (Math.random() * 10).toFixed(4);
+            bidsTbody.innerHTML += `<tr class="buy"><td>${bidPrice}</td><td>${bidAmount}</td></tr>`;
+            asksTbody.innerHTML += `<tr class="sell"><td>${askPrice}</td><td>${askAmount}</td></tr>`;
+        }
+    }
+
+    function depositFunds() {
+        const amount = parseFloat(document.getElementById('deposit-amount-page').value);
+        const crypto = document.getElementById('deposit-crypto').value;
+        if (amount > 0 && cryptoPrices[crypto] > 0) {
+            balance += amount;
+            portfolio[crypto] = (portfolio[crypto] || 0) + (amount / cryptoPrices[crypto]);
+            document.getElementById('wallet-balance-page').textContent = balance.toFixed(2);
+            transactions.push({
+                date: new Date().toLocaleString(),
+                type: 'Пополнение',
+                crypto,
+                amount: (amount / cryptoPrices[crypto]).toFixed(6),
+                price: `$${cryptoPrices[crypto].toFixed(2)}`,
+                total: `$${amount.toFixed(2)}`,
+                status: 'Успешно',
+                pl: `+$${amount.toFixed(2)}`
+            });
+            updateTransactions();
+            updatePortfolio();
+            document.getElementById('deposit-amount-page').value = '';
+        } else {
+            alert('Введите корректную сумму или дождитесь загрузки цен');
+        }
+    }
+
+    function executeTrade() {
+        const amount = parseFloat(document.getElementById('trade-amount').value);
+        const cryptoAmount = parseFloat(document.getElementById('crypto-amount').value);
+        if (amount <= 0 || isNaN(amount) || cryptoAmount <= 0 || isNaN(cryptoAmount) || !cryptoPrices[selectedCrypto]) {
+            alert('Введите корректную сумму или дождитесь загрузки цен');
+            return;
+        }
+        if (tradeMode === 'buy') {
+            if (amount <= balance) {
+                balance -= amount;
+                portfolio[selectedCrypto] = (portfolio[selectedCrypto] || 0) + cryptoAmount;
                 transactions.push({
                     date: new Date().toLocaleString(),
-                    type: 'Пополнение',
-                    crypto,
-                    amount: (amount / cryptoPrices[crypto]).toFixed(6),
-                    price: `$${cryptoPrices[crypto].toFixed(2)}`,
+                    type: 'Покупка',
+                    crypto: selectedCrypto,
+                    amount: cryptoAmount.toFixed(6),
+                    price: `$${cryptoPrices[selectedCrypto].toFixed(2)}`,
                     total: `$${amount.toFixed(2)}`,
                     status: 'Успешно',
-                    pl: `+$${amount.toFixed(2)}`
+                    pl: '-'
                 });
-                updateTransactions();
-                updatePortfolio();
-                document.getElementById('deposit-amount-page').value = '';
             } else {
-                alert('Введите корректную сумму или дождитесь загрузки цен');
+                alert('Недостаточно средств');
+                transactions.push({
+                    date: new Date().toLocaleString(),
+                    type: 'Покупка',
+                    crypto: selectedCrypto,
+                    amount: cryptoAmount.toFixed(6),
+                    price: `$${cryptoPrices[selectedCrypto].toFixed(2)}`,
+                    total: `$${amount.toFixed(2)}`,
+                    status: 'Неудача',
+                    pl: '-'
+                });
+            }
+        } else {
+            if (portfolio[selectedCrypto] && portfolio[selectedCrypto] >= cryptoAmount) {
+                balance += amount;
+                portfolio[selectedCrypto] -= cryptoAmount;
+                if (portfolio[selectedCrypto] === 0) delete portfolio[selectedCrypto];
+                transactions.push({
+                    date: new Date().toLocaleString(),
+                    type: 'Продажа',
+                    crypto: selectedCrypto,
+                    amount: cryptoAmount.toFixed(6),
+                    price: `$${cryptoPrices[selectedCrypto].toFixed(2)}`,
+                    total: `$${amount.toFixed(2)}`,
+                    status: 'Успешно',
+                    pl: '-'
+                });
+            } else {
+                alert('Недостаточно криптовалюты');
+                transactions.push({
+                    date: new Date().toLocaleString(),
+                    type: 'Продажа',
+                    crypto: selectedCrypto,
+                    amount: cryptoAmount.toFixed(6),
+                    price: `$${cryptoPrices[selectedCrypto].toFixed(2)}`,
+                    total: `$${amount.toFixed(2)}`,
+                    status: 'Неудача',
+                    pl: '-'
+                });
             }
         }
+        document.getElementById('wallet-balance-page').textContent = balance.toFixed(2);
+        updatePortfolio();
+        updateTransactions();
+        document.getElementById('trade-amount').value = '';
+        document.getElementById('crypto-amount').value = '';
+    }
 
-        function executeTrade() {
-            const amount = parseFloat(document.getElementById('trade-amount').value);
-            const cryptoAmount = parseFloat(document.getElementById('crypto-amount').value);
-            if (amount <= 0 || isNaN(amount) || cryptoAmount <= 0 || isNaN(cryptoAmount) || !cryptoPrices[selectedCrypto]) {
-                alert('Введите корректную сумму или дождитесь загрузки цен');
-                return;
+    function updatePortfolio() {
+        const portfolioGrid = document.getElementById('portfolio-grid');
+        portfolioGrid.innerHTML = '';
+        const colorMap = {
+            BTC: { start: 'f7931a', end: 'ffb74d' }, ETH: { start: '627eea', end: '8e44ad' },
+            USDT: { start: '26a17b', end: '5ac8a8' }, BNB: { start: 'f3ba2f', end: 'f7de8a' },
+            LTC: { start: 'b5b5b5', end: 'd9d9d9' }, TON: { start: '0088cc', end: '00b7eb' },
+            XRP: { start: '222222', end: '555555' }, SOL: { start: '00ffa3', end: 'dc1fff' },
+            USDC: { start: '2775ca', end: '5a9bd4' }, DOGE: { start: 'c3a634', end: 'e6c44f' },
+            TRX: { start: 'eb0029', end: 'ff4d4d' }, ADA: { start: '3c84b9', end: '60a5fa' },
+            WBTC: { start: 'f7931a', end: 'ffb74d' }, AVAX: { start: 'e84142', end: 'ff6b6b' },
+            SHIB: { start: 'ff4500', end: 'ff8c00' }, LINK: { start: '2a5ada', end: '5a9bd4' },
+            DOT: { start: 'e6007a', end: 'ff4d8c' }, MATIC: { start: '8247e5', end: 'a78bfa' },
+            BCH: { start: '8dc351', end: 'b3e67a' }, UNI: { start: 'ff007a', end: 'ff4d8c' },
+            XLM: { start: '000000', end: '333333' }, VET: { start: '15bffd', end: '4ddbff' },
+            ATOM: { start: '2e3148', end: '4a5d78' }, FIL: { start: '0090ff', end: '4dc3ff' },
+            ALGO: { start: '000000', end: '333333' }, NEAR: { start: '00e3ae', end: '4dffcd' },
+            ICP: { start: 'd81f26', end: 'ff4d4d' }, APT: { start: '17e6b9', end: '4dffd4' },
+            ARB: { start: '2a3b5a', end: '5a7aa8' }, OP: { start: 'ff0420', end: 'ff4d4d' },
+            INJ: { start: '1e4dd8', end: '4d8bff' }, SUI: { start: '1a8cff', end: '4db3ff' },
+            XTZ: { start: '2c7df7', end: '5aa8ff' }, EOS: { start: '000000', end: '333333' },
+            HBAR: { start: '000000', end: '333333' }, XMR: { start: 'ff6600', end: 'ff9933' },
+            KSM: { start: '000000', end: '333333' }, AAVE: { start: 'b6509e', end: 'e68bc5' },
+            MKR: { start: '1aab9b', end: '4dd4b3' }, GRT: { start: '6747ed', end: '8b6bff' },
+            RUNE: { start: '00d18b', end: '4dffa8' }, FTM: { start: '1969ff', end: '4d8bff' },
+            SAND: { start: '00aeef', end: '4ddbff' }, MANA: { start: 'ff2a44', end: 'ff6b7a' },
+            AXS: { start: '0085d2', end: '4db3ff' }, CHZ: { start: 'e30013', end: 'ff4d4d' },
+            CRV: { start: '4066e0', end: '6b8bff' }, COMP: { start: '00d395', end: '4dffa8' },
+            SNX: { start: '00d1ff', end: '4dffff' }, '1INCH': { start: '1f3b5b', end: '4d7aa8' },
+            LDO: { start: '00a3ff', end: '4ddbff' }, RNDR: { start: 'ff3c3c', end: 'ff7a7a' },
+            STX: { start: '5548de', end: '7a6bff' }, IMX: { start: '00c4b4', end: '4dffcd' },
+            FLOW: { start: '00ef8b', end: '4dffa8' }, GALA: { start: '000000', end: '333333' },
+            APE: { start: '0033cc', end: '4d7aff' }, EGLD: { start: '0d0221', end: '333366' },
+            KAVA: { start: 'ff4338', end: 'ff7a7a' }, ZEC: { start: 'f4b728', end: 'ffd966' },
+            DASH: { start: '008ce7', end: '4db3ff' }, NEO: { start: '58bf00', end: '8bff4d' },
+            IOTA: { start: '000000', end: '333333' }, QTUM: { start: '2e9dfd', end: '6bb8ff' },
+            WAVES: { start: '0153ff', end: '4d8bff' }, ZIL: { start: '49a49b', end: '7ad4b3' },
+            ENJ: { start: '624de4', end: '8b6bff' }, BAT: { start: 'ff5000', end: 'ff8c4d' },
+            LRC: { start: '2ab6f6', end: '6bd4ff' }, ANKR: { start: '1e4dd8', end: '4d8bff' },
+            RVN: { start: '3848a0', end: '6b7aa8' }, HOT: { start: 'ff3c3c', end: 'ff7a7a' },
+            OMG: { start: '1a1a1a', end: '4d4d4d' }
+        };
+        Object.keys(cryptoPrices).forEach(crypto => {
+            if (portfolio[crypto] && cryptoPrices[crypto]) {
+                const value = (portfolio[crypto] * cryptoPrices[crypto]).toFixed(2);
+                const item = document.createElement('div');
+                item.className = 'portfolio-item';
+                item.innerHTML = `
+                    <div class="crypto-icon" style="background: linear-gradient(45deg, #${colorMap[crypto].start}, #${colorMap[crypto].end})">${crypto.charAt(0)}</div>
+                    <div class="portfolio-amount">${portfolio[crypto].toFixed(6)} ${crypto}</div>
+                    <div class="portfolio-value">$${value}</div>
+                `;
+                portfolioGrid.appendChild(item);
             }
-            if (tradeMode === 'buy') {
-                if (amount <= balance) {
-                    balance -= amount;
-                    portfolio[selectedCrypto] = (portfolio[selectedCrypto] || 0) + cryptoAmount;
-                    transactions.push({
-                        date: new Date().toLocaleString(),
-                        type: 'Покупка',
-                        crypto: selectedCrypto,
-                        amount: cryptoAmount.toFixed(6),
-                        price: `$${cryptoPrices[selectedCrypto].toFixed(2)}`,
-                        total: `$${amount.toFixed(2)}`,
-                        status: 'Успешно',
-                        pl: '-'
-                    });
-                } else {
-                    alert('Недостаточно средств');
-                    transactions.push({
-                        date: new Date().toLocaleString(),
-                        type: 'Покупка',
-                        crypto: selectedCrypto,
-                        amount: cryptoAmount.toFixed(6),
-                        price: `$${cryptoPrices[selectedCrypto].toFixed(2)}`,
-                        total: `$${amount.toFixed(2)}`,
-                        status: 'Неудача',
-                        pl: '-'
-                    });
-                }
-            } else {
-                if (portfolio[selectedCrypto] && portfolio[selectedCrypto] >= cryptoAmount) {
-                    balance += amount;
-                    portfolio[selectedCrypto] -= cryptoAmount;
-                    if (portfolio[selectedCrypto] === 0) delete portfolio[selectedCrypto];
-                    transactions.push({
-                        date: new Date().toLocaleString(),
-                        type: 'Продажа',
-                        crypto: selectedCrypto,
-                        amount: cryptoAmount.toFixed(6),
-                        price: `$${cryptoPrices[selectedCrypto].toFixed(2)}`,
-                        total: `$${amount.toFixed(2)}`,
-                        status: 'Успешно',
-                        pl: '-'
-                    });
-                } else {
-                    alert('Недостаточно криптовалюты');
-                    transactions.push({
-                        date: new Date().toLocaleString(),
-                        type: 'Продажа',
-                        crypto: selectedCrypto,
-                        amount: cryptoAmount.toFixed(6),
-                        price: `$${cryptoPrices[selectedCrypto].toFixed(2)}`,
-                        total: `$${amount.toFixed(2)}`,
-                        status: 'Неудача',
-                        pl: '-'
-                    });
-                }
-            }
-            document.getElementById('wallet-balance-page').textContent = balance.toFixed(2);
-            updatePortfolio();
-            updateTransactions();
-            document.getElementById('trade-amount').value = '';
+        });
+    }
+
+    function updateTransactions() {
+        const tbody = document.getElementById('transactions-tbody');
+        tbody.innerHTML = '';
+        transactions.forEach(tx => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${tx.date}</td>
+                <td>${tx.type}</td>
+                <td>${tx.crypto}</td>
+                <td>${tx.amount}</td>
+                <td>${tx.price}</td>
+                <td>${tx.total}</td>
+                <td><span class="status ${tx.status === 'Успешно' ? 'success' : 'failed'}">${tx.status}</span></td>
+                <td>${tx.pl}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    document.getElementById('trade-amount').addEventListener('input', () => {
+        const amount = parseFloat(document.getElementById('trade-amount').value);
+        if (!isNaN(amount) && amount > 0 && cryptoPrices[selectedCrypto] > 0) {
+            const cryptoAmount = amount / cryptoPrices[selectedCrypto];
+            document.getElementById('crypto-amount').value = cryptoAmount.toFixed(6);
+        } else {
             document.getElementById('crypto-amount').value = '';
         }
+    });
 
-         function updatePortfolio() {
-            const portfolioGrid = document.getElementById('portfolio-grid');
-            portfolioGrid.innerHTML = '';
-            const colorMap = {
-                BTC: { start: 'f7931a', end: 'ffb74d' },
-                ETH: { start: '627eea', end: '8e44ad' },
-                USDT: { start: '26a17b', end: '5ac8a8' },
-                BNB: { start: 'f3ba2f', end: 'f7de8a' }
-            };
-            Object.keys(cryptoPrices).forEach(crypto => {
-                if (portfolio[crypto] && cryptoPrices[crypto]) {
-                    const value = (portfolio[crypto] * cryptoPrices[crypto]).toFixed(2);
-                    const item = document.createElement('div');
-                    item.className = 'portfolio-item';
-                    item.innerHTML = `
-                        <div class="crypto-icon" style="background: linear-gradient(45deg, #${colorMap[crypto].start}, #${colorMap[crypto].end})">${crypto.charAt(0)}</div>
-                        <div class="portfolio-amount">${portfolio[crypto].toFixed(6)} ${crypto}</div>
-                        <div class="portfolio-value">$${value}</div>
-                    `;
-                    portfolioGrid.appendChild(item);
-                }
-            });
-        }
+    function toggleSupportChat() {
+        const chat = document.getElementById('support-chat');
+        chat.classList.toggle('active');
+    }
 
-        function updateTransactions() {
-            const tbody = document.getElementById('transactions-tbody');
-            tbody.innerHTML = '';
-            transactions.forEach(tx => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${tx.date}</td>
-                    <td>${tx.type}</td>
-                    <td>${tx.crypto}</td>
-                    <td>${tx.amount}</td>
-                    <td>${tx.price}</td>
-                    <td>${tx.total}</td>
-                    <td><span class="status ${tx.status === 'Успешно' ? 'success' : 'failed'}">${tx.status}</span></td>
-                    <td>${tx.pl}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        document.getElementById('trade-amount').addEventListener('input', () => {
-            const amount = parseFloat(document.getElementById('trade-amount').value);
-            if (!isNaN(amount) && amount > 0 && cryptoPrices[selectedCrypto] > 0) {
-                const cryptoAmount = amount / cryptoPrices[selectedCrypto];
-                document.getElementById('crypto-amount').value = cryptoAmount.toFixed(6);
-            } else {
-                document.getElementById('crypto-amount').value = '';
-            }
-        });
-
-        function toggleSupportChat() {
-            const chat = document.getElementById('support-chat');
-            chat.classList.toggle('active');
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const messageText = input.value.trim();
-            if (messageText) {
-                const chatBody = document.getElementById('chat-body');
-                const userMessage = document.createElement('div');
-                userMessage.className = 'chat-message user';
-                userMessage.textContent = messageText;
-                chatBody.appendChild(userMessage);
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const messageText = input.value.trim();
+        if (messageText) {
+            const chatBody = document.getElementById('chat-body');
+            const userMessage = document.createElement('div');
+            userMessage.className = 'chat-message user';
+            userMessage.textContent = messageText;
+            chatBody.appendChild(userMessage);
+            chatBody.scrollTop = chatBody.scrollHeight;
+            input.value = '';
+            setTimeout(() => {
+                const supportMessage = document.createElement('div');
+                supportMessage.className = 'chat-message support';
+                supportMessage.textContent = getSupportResponse(messageText);
+                chatBody.appendChild(supportMessage);
                 chatBody.scrollTop = chatBody.scrollHeight;
-                input.value = '';
-                setTimeout(() => {
-                    const supportMessage = document.createElement('div');
-                    supportMessage.className = 'chat-message support';
-                    supportMessage.textContent = getSupportResponse(messageText);
-                    chatBody.appendChild(supportMessage);
-                    chatBody.scrollTop = chatBody.scrollHeight;
-                }, 1000);
-            }
+            }, 1000);
+        }
+    }
+
+    function getSupportResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        if (lowerMessage.includes('пополнить') || lowerMessage.includes('deposit')) {
+            return 'Чтобы пополнить кошелек, перейдите в раздел "Кошелек", выберите криптовалюту и сеть, затем следуйте инструкциям.';
+        } else if (lowerMessage.includes('торгов') || lowerMessage.includes('купить') || lowerMessage.includes('продать')) {
+            return 'Для торговли перейдите в раздел "Торговля", выберите криптовалюту, укажите сумму и нажмите "Купить" или "Продать".';
+        } else if (lowerMessage.includes('пароль') || lowerMessage.includes('вход')) {
+            return 'Если вы забыли пароль, нажмите "Вход" и выберите "Восстановить пароль".';
+        } else {
+            return 'Пожалуйста, уточните ваш вопрос.';
+        }
+    }
+
+    document.querySelector('.support-button').addEventListener('click', toggleSupportChat);
+    document.querySelector('.chat-close').addEventListener('click', toggleSupportChat);
+    document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    async function updateChart() {
+        const chartContainer = document.getElementById('trading-chart');
+        if (!chartContainer) {
+            console.error('Chart container not found');
+            return;
         }
 
-        function getSupportResponse(message) {
-            const lowerMessage = message.toLowerCase();
-            if (lowerMessage.includes('пополнить') || lowerMessage.includes('deposit')) {
-                return 'Чтобы пополнить кошелек, перейдите в раздел "Кошелек", выберите криптовалюту и сеть, затем следуйте инструкциям.';
-            } else if (lowerMessage.includes('торгов') || lowerMessage.includes('купить') || lowerMessage.includes('продать')) {
-                return 'Для торговли перейдите в раздел "Торговля", выберите криптовалюту, укажите сумму и нажмите "Купить" или "Продать".';
-            } else if (lowerMessage.includes('пароль') || lowerMessage.includes('вход')) {
-                return 'Если вы забыли пароль, нажмите "Вход" и выберите "Восстановить пароль".';
+        try {
+            const timeframeDays = { '1h': 1, '4h': 7, '1d': 30 };
+            const days = timeframeDays[currentTimeframe] || 30;
+            const cryptoId = cryptoIdMap[selectedCrypto];
+            const historicalData = await fetchHistoricalData(cryptoId, days);
+
+            if (chart) {
+                chart.remove();
+                chart = null;
+                candlestickSeries = null;
+            }
+
+            chart = LightweightCharts.createChart(chartContainer, {
+                width: chartContainer.clientWidth,
+                height: chartContainer.clientHeight,
+                layout: {
+                    background: { type: 'solid', color: '#1a1a2e' },
+                    textColor: '#e6e6e6'
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                    horzLines: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                timeScale: { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+            });
+
+            candlestickSeries = chart.addCandlestickSeries({
+                upColor: '#43e97b',
+                downColor: '#f5576c',
+                borderUpColor: '#43e97b',
+                borderDownColor: '#f5576c',
+                wickUpColor: '#43e97b',
+                wickDownColor: '#f5576c'
+            });
+
+            if (historicalData.length > 0) {
+                candlestickSeries.setData(historicalData);
             } else {
-                return 'Пожалуйста, уточните ваш вопрос.';
-            }
-        }
-
-        document.querySelector('.support-button').addEventListener('click', toggleSupportChat);
-        document.querySelector('.chat-close').addEventListener('click', toggleSupportChat);
-        document.getElementById('chat-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        async function updateChart() {
-            const chartContainer = document.getElementById('trading-chart');
-            if (!chartContainer) {
-                console.error('Chart container not found');
-                return;
+                console.warn('No historical data, using mock');
+                candlestickSeries.setData(generateMockOHLC(days));
             }
 
-            try {
-                const timeframeDays = { '1h': 1, '4h': 7, '1d': 30 };
-                const days = timeframeDays[currentTimeframe] || 30;
-                const cryptoId = cryptoIdMap[selectedCrypto];
-                const historicalData = await fetchHistoricalData(cryptoId, days);
+            chart.timeScale().fitContent();
 
-                if (chart) {
-                    chart.remove();
-                    chart = null;
-                    candlestickSeries = null;
-                }
-
+            window.addEventListener('resize', () => {
+                if (chart) chart.resize(chartContainer.clientWidth, chartContainer.clientHeight);
+            });
+        } catch (error) {
+            console.error('Chart initialization error:', error.message);
+            if (!chart) {
                 chart = LightweightCharts.createChart(chartContainer, {
                     width: chartContainer.clientWidth,
                     height: chartContainer.clientHeight,
@@ -1328,10 +1578,8 @@
                         horzLines: { color: 'rgba(255, 255, 255, 0.1)' }
                     },
                     rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                    timeScale: { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                    crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+                    timeScale: { borderColor: 'rgba(255, 255, 255, 0.2)' }
                 });
-
                 candlestickSeries = chart.addCandlestickSeries({
                     upColor: '#43e97b',
                     downColor: '#f5576c',
@@ -1340,144 +1588,104 @@
                     wickUpColor: '#43e97b',
                     wickDownColor: '#f5576c'
                 });
-
-                if (historicalData.length > 0) {
-                    candlestickSeries.setData(historicalData);
-                } else {
-                    console.warn('No historical data, using mock');
-                    candlestickSeries.setData(generateMockOHLC(days));
-                }
-
+                candlestickSeries.setData(generateMockOHLC(30));
                 chart.timeScale().fitContent();
-
-                window.addEventListener('resize', () => {
-                    if (chart) chart.resize(chartContainer.clientWidth, chartContainer.clientHeight);
-                });
-            } catch (error) {
-                console.error('Chart initialization error:', error.message);
-                if (!chart) {
-                    chart = LightweightCharts.createChart(chartContainer, {
-                        width: chartContainer.clientWidth,
-                        height: chartContainer.clientHeight,
-                        layout: {
-                            background: { type: 'solid', color: '#1a1a2e' },
-                            textColor: '#e6e6e6'
-                        },
-                        grid: {
-                            vertLines: { color: 'rgba(255, 255, 255, 0.1)' },
-                            horzLines: { color: 'rgba(255, 255, 255, 0.1)' }
-                        },
-                        rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                        timeScale: { borderColor: 'rgba(255, 255, 255, 0.2)' }
-                    });
-                    candlestickSeries = chart.addCandlestickSeries({
-                        upColor: '#43e97b',
-                        downColor: '#f5576c',
-                        borderUpColor: '#43e97b',
-                        borderDownColor: '#f5576c',
-                        wickUpColor: '#43e97b',
-                        wickDownColor: '#f5576c'
-                    });
-                    candlestickSeries.setData(generateMockOHLC(30));
-                    chart.timeScale().fitContent();
-                }
             }
         }
+    }
 
-        function updateLiveCandle() {
-            if (!candlestickSeries || !document.getElementById('trading').classList.contains('active')) return;
+    function updateLiveCandle() {
+        if (!candlestickSeries || !document.getElementById('trading').classList.contains('active')) return;
 
-            const price = cryptoPrices[selectedCrypto];
-            if (!price) {
-                console.warn('No price for', selectedCrypto);
-                return;
-            }
+        const price = cryptoPrices[selectedCrypto];
+        if (!price) {
+            console.warn('No price for', selectedCrypto);
+            return;
+        }
 
-            const now = Math.floor(Date.now() / 1000);
-            const interval = currentTimeframe === '1h' ? 3600 : currentTimeframe === '4h' ? 4 * 3600 : 24 * 3600;
-            const candleTime = Math.floor(now / interval) * interval;
+        const now = Math.floor(Date.now() / 1000);
+        const interval = currentTimeframe === '1h' ? 3600 : currentTimeframe === '4h' ? 4 * 3600 : 24 * 3600;
+        const candleTime = Math.floor(now / interval) * interval;
 
-            const lastCandle = candlestickSeries.data().slice(-1)[0] || {
+        const lastCandle = candlestickSeries.data().slice(-1)[0] || {
+            time: candleTime,
+            open: price,
+            high: price,
+            low: price,
+            close: price
+        };
+
+        if (lastCandle.time !== candleTime) {
+            candlestickSeries.update({
                 time: candleTime,
                 open: price,
                 high: price,
                 low: price,
                 close: price
-            };
-
-            if (lastCandle.time !== candleTime) {
-                candlestickSeries.update({
-                    time: candleTime,
-                    open: price,
-                    high: price,
-                    low: price,
-                    close: price
-                });
-            } else {
-                candlestickSeries.update({
-                    time: candleTime,
-                    open: lastCandle.open,
-                    high: Math.max(lastCandle.high, price),
-                    low: Math.min(lastCandle.low, price),
-                    close: price
-                });
-            }
+            });
+        } else {
+            candlestickSeries.update({
+                time: candleTime,
+                open: lastCandle.open,
+                high: Math.max(lastCandle.high, price),
+                low: Math.min(lastCandle.low, price),
+                close: price
+            });
         }
+    }
 
-        // Функция для получения исторических данных
-        async function fetchHistoricalData(cryptoId, days) {
-            try {
-                const response = await fetch(`https://api.coingecko.com/api/v3/coins/${cryptoId}/ohlc?vs_currency=usd&days=${days}`);
-                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                const data = await response.json();
-                return data.map(([time, open, high, low, close]) => ({
-                    time: time / 1000,
-                    open,
-                    high,
-                    low,
-                    close
-                }));
-            } catch (error) {
-                console.error(`Failed to fetch historical data for ${cryptoId}:`, error.message);
-                return [];
-            }
+    async function fetchHistoricalData(cryptoId, days) {
+        try {
+            const response = await fetch(`https://api.coingecko.com/api/v3/coins/${cryptoId}/ohlc?vs_currency=usd&days=${days}`);
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            const data = await response.json();
+            return data.map(([time, open, high, low, close]) => ({
+                time: time / 1000,
+                open,
+                high,
+                low,
+                close
+            }));
+        } catch (error) {
+            console.error(`Failed to fetch historical data for ${cryptoId}:`, error.message);
+            return [];
         }
+    }
 
-        // Генерация моковых данных OHLC
-        function generateMockOHLC(days) {
-            const data = [];
-            const now = Math.floor(Date.now() / 1000);
-            const interval = currentTimeframe === '1h' ? 3600 : currentTimeframe === '4h' ? 4 * 3600 : 24 * 3600;
-            const periods = Math.floor((days * 24 * 3600) / interval);
-            let price = cryptoPrices[selectedCrypto] || 10000;
-            for (let i = periods; i >= 0; i--) {
-                const time = now - i * interval;
-                const open = price;
-                const high = price * (1 + Math.random() * 0.02);
-                const low = price * (1 - Math.random() * 0.02);
-                const close = price + (Math.random() - 0.5) * 100;
-                price = close;
-                data.push({ time, open, high, low, close });
-            }
-            return data;
+    function generateMockOHLC(days) {
+        const data = [];
+        const now = Math.floor(Date.now() / 1000);
+        const interval = currentTimeframe === '1h' ? 3600 : currentTimeframe === '4h' ? 4 * 3600 : 24 * 3600;
+        const periods = Math.floor((days * 24 * 3600) / interval);
+        let price = cryptoPrices[selectedCrypto] || 10000;
+        for (let i = periods; i >= 0; i--) {
+            const time = now - i * interval;
+            const open = price;
+            const high = price * (1 + Math.random() * 0.02);
+            const low = price * (1 - Math.random() * 0.02);
+            const close = price + (Math.random() - 0.5) * 100;
+            price = close;
+            data.push({ time, open, high, low, close });
         }
+        return data;
+    }
 
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof LightweightCharts === 'undefined') {
-                console.error('Lightweight Charts library not loaded');
-                return;
-            }
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof LightweightCharts === 'undefined') {
+            console.error('Lightweight Charts library not loaded');
+            return;
+        }
+        renderCryptoList();
+        fetchCryptoPrices();
+        fetchNews();
+        updateWalletAddress();
+        updateChart();
+        setInterval(() => {
             fetchCryptoPrices();
-            fetchNews();
-            updateWalletAddress();
-            updateChart();
-            setInterval(() => {
-                fetchCryptoPrices();
-                updateLiveCandle();
-            }, 5000);
-            setInterval(fetchNews, 600000);
-        });
-    </script>
+            updateLiveCandle();
+        }, 5000);
+        setInterval(fetchNews, 600000);
+    });
+</script>
 </body>
 </html>
