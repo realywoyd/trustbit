@@ -442,6 +442,8 @@
             z-index: 100;
             top: 100%;
             left: 0;
+            max-height: 300px;
+            overflow-y: auto;
         }
         .market-dropdown-content a {
             display: block;
@@ -857,42 +859,6 @@
                             <option value="HBAR">Hedera (HBAR)</option>
                             <option value="XMR">Monero (XMR)</option>
                             <option value="KSM">Kusama (KSM)</option>
-                            <option value="AAVE">Aave (AAVE)</option>
-                            <option value="MKR">Maker (MKR)</option>
-                            <option value="GRT">The Graph (GRT)</option>
-                            <option value="RUNE">THORChain (RUNE)</option>
-                            <option value="FTM">Fantom (FTM)</option>
-                            <option value="SAND">The Sandbox (SAND)</option>
-                            <option value="MANA">Decentraland (MANA)</option>
-                            <option value="AXS">Axie Infinity (AXS)</option>
-                            <option value="CHZ">Chiliz (CHZ)</option>
-                            <option value="CRV">Curve DAO Token (CRV)</option>
-                            <option value="COMP">Compound (COMP)</option>
-                            <option value="SNX">Synthetix (SNX)</option>
-                            <option value="1INCH">1inch (1INCH)</option>
-                            <option value="LDO">Lido DAO (LDO)</option>
-                            <option value="RNDR">Render (RNDR)</option>
-                            <option value="STX">Stacks (STX)</option>
-                            <option value="IMX">Immutable (IMX)</option>
-                            <option value="FLOW">Flow (FLOW)</option>
-                            <option value="GALA">Gala (GALA)</option>
-                            <option value="APE">ApeCoin (APE)</option>
-                            <option value="EGLD">MultiversX (EGLD)</option>
-                            <option value="KAVA">Kava (KAVA)</option>
-                            <option value="ZEC">Zcash (ZEC)</option>
-                            <option value="DASH">Dash (DASH)</option>
-                            <option value="NEO">NEO</option>
-                            <option value="IOTA">IOTA</option>
-                            <option value="QTUM">Qtum (QTUM)</option>
-                            <option value="WAVES">Waves (WAVES)</option>
-                            <option value="ZIL">Zilliqa (ZIL)</option>
-                            <option value="ENJ">Enjin Coin (ENJ)</option>
-                            <option value="BAT">Basic Attention Token (BAT)</option>
-                            <option value="LRC">Loopring (LRC)</option>
-                            <option value="ANKR">Ankr (ANKR)</option>
-                            <option value="RVN">Ravencoin (RVN)</option>
-                            <option value="HOT">Holo (HOT)</option>
-                            <option value="OMG">OMG Network (OMG)</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -977,6 +943,7 @@
         let priceChange = 0;
         let priceChangePercent = 0;
         let tradeHistory = [];
+        let tradeMode = 'buy';
         const cryptoPairs = [
             'BTCUSDT', 'ETHUSDT', '1INCHUSDT', 'ADAUSDT', 'AXSUSDT', 'ACTUSDT', 'AFOUSDT', 'AFROUSDT',
             'ALGOUSDT', 'ANKRUSDT', 'APEUSDT', 'APTUSDT', 'ARBUSDT', 'ATOMUSDT', 'AVAXUSDT', 'AXSUSDT',
@@ -1067,6 +1034,7 @@
             volumeSeries.resize(volumeChart.clientWidth, 100);
             candlestickSeries.setData(chartData);
             volumeSeries.setData(volumeData.map(d => ({ time: d.time, value: d.value, color: '#6B7280' })));
+            chart.timeScale().fitContent();
         }
 
         async function fetchRealTimeData(pair) {
@@ -1148,8 +1116,8 @@
 
             chartData = data;
             volumeData = volumeDataLocal;
-            candlestickSeries.setData(chartData);
-            volumeSeries.setData(volumeData);
+            if (candlestickSeries) candlestickSeries.setData(chartData);
+            if (volumeSeries) volumeSeries.setData(volumeData);
         }
 
         function renderCryptoList() {
@@ -1236,7 +1204,7 @@
             selectedPair = pair;
             document.getElementById('selected-market').textContent = pair;
             document.getElementById('chart-crypto-pair').textContent = pair;
-            document.getElementById('trade-btn').textContent = `Buy ${pair.replace('USDT', '')}`;
+            document.getElementById('trade-btn').textContent = `${tradeMode === 'buy' ? 'Buy' : 'Sell'} ${pair.replace('USDT', '')}`;
             document.getElementById('market-dropdown').classList.remove('active');
             const items = document.getElementsByClassName('crypto-item');
             Array.from(items).forEach(item => item.classList.remove('active'));
@@ -1270,18 +1238,24 @@
 
         function executeTrade() {
             const amount = parseFloat(document.getElementById('trade-amount').value);
-            if (amount > 0 && currentPrice > 0) {
+            if (amount > 0 && currentPrice > 0 && balance >= amount * currentPrice) {
                 const [base] = selectedPair.split('USDT');
-                const type = tradeMode === 'buy' ? 'buy' : 'sell';
+                const type = tradeMode;
                 tradeHistory.push({
                     price: currentPrice,
                     amount: amount.toFixed(6),
                     time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
                     type: type
                 });
+                balance -= amount * currentPrice;
+                portfolio[base] = (portfolio[base] || 0) + (type === 'buy' ? amount : -amount);
+                document.getElementById('wallet-balance-page').textContent = balance.toFixed(2);
                 updateTradeHistory();
+                updatePortfolio();
                 document.getElementById('trade-amount').value = '';
                 document.getElementById('trade-total').value = '0.00';
+            } else {
+                alert('Insufficient balance or invalid amount!');
             }
         }
 
@@ -1294,14 +1268,15 @@
                 item.innerHTML = `
                     <span>${trade.time}</span>
                     <span>$${formatPrice(trade.price)}</span>
-                    <span>${trade.amount}</span>
+                    <span>${trade.amount} ${selectedPair.replace('USDT', '')}</span>
                 `;
                 historyList.appendChild(item);
             });
         }
 
         function toggleMarketDropdown() {
-            document.getElementById('market-dropdown').classList.toggle('active');
+            const dropdown = document.getElementById('market-dropdown');
+            dropdown.classList.toggle('active');
         }
 
         function formatPrice(price) {
@@ -1328,16 +1303,16 @@
         function depositFunds() {
             const amount = parseFloat(document.getElementById('deposit-amount-page').value);
             const crypto = document.getElementById('deposit-crypto').value;
-            if (amount > 0 && cryptoPrices[crypto]) {
+            if (amount > 0) {
                 balance += amount;
-                portfolio[crypto] = (portfolio[crypto] || 0) + (amount / (cryptoPrices[crypto] || 1000));
+                portfolio[crypto] = (portfolio[crypto] || 0) + (amount / (currentPrice || 1000));
                 document.getElementById('wallet-balance-page').textContent = balance.toFixed(2);
                 transactions.push({
                     date: new Date().toLocaleString(),
                     type: 'Deposit',
                     crypto,
-                    amount: (amount / (cryptoPrices[crypto] || 1000)).toFixed(6),
-                    price: `$${(cryptoPrices[crypto] || 1000).toFixed(2)}`,
+                    amount: (amount / (currentPrice || 1000)).toFixed(6),
+                    price: `$${(currentPrice || 1000).toFixed(2)}`,
                     total: `$${amount.toFixed(2)}`,
                     status: 'Success',
                     pl: `+$${amount.toFixed(2)}`
@@ -1346,7 +1321,7 @@
                 updatePortfolio();
                 document.getElementById('deposit-amount-page').value = '';
             } else {
-                alert('Please enter a valid amount or wait for prices to load');
+                alert('Please enter a valid amount!');
             }
         }
 
@@ -1393,11 +1368,11 @@
                 OMG: { start: '1a1a1a', end: '4d4d4d' }
             };
             Object.keys(portfolio).forEach(crypto => {
-                if (portfolio[crypto] > 0 && cryptoPrices[crypto]) {
+                if (portfolio[crypto] > 0) {
                     const colors = colorMap[crypto] || { start: '7e6bff', end: '5a4bff' };
                     const item = document.createElement('div');
                     item.className = 'portfolio-item';
-                    const value = portfolio[crypto] * (cryptoPrices[crypto] || 1000);
+                    const value = portfolio[crypto] * (currentPrice || 1000);
                     item.innerHTML = `
                         <div class="crypto-icon" style="background: linear-gradient(45deg, #${colors.start}, #${colors.end});">${cryptoSymbols[crypto] || crypto.charAt(0)}</div>
                         <div>${crypto}</div>
@@ -1416,7 +1391,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${tx.date}</td>
-                                       <td>${tx.type}</td>
+                    <td>${tx.type}</td>
                     <td>${tx.crypto}</td>
                     <td>${tx.amount}</td>
                     <td>${tx.price}</td>
@@ -1457,10 +1432,8 @@
 
         document.getElementById('deposit-amount-page').addEventListener('input', () => {
             const amount = parseFloat(document.getElementById('deposit-amount-page').value) || 0;
-            const crypto = document.getElementById('deposit-crypto').value;
-            const price = cryptoPrices[crypto] || 1000;
-            document.getElementById('wallet-balance-page').textContent = (balance + (amount / price)).toFixed(2);
-        });
+            document.getElementById('wallet-balance-page').textContent = (balance + amount).toFixed(2);
+               });
 
         window.addEventListener('resize', () => {
             if (chart) {
