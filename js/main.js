@@ -1,7 +1,10 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
 
 // Инициализация Supabase клиента
-const supabase = createClient('https://vihxlcvqjobqeyhkeine.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4');
+const supabase = createClient(
+    'https://vihxlcvqjobqeyhkeine.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4'
+);
 
 // Глобальные переменные
 let balance = 1000;
@@ -63,153 +66,26 @@ function formatPrice(price) {
     }).format(price);
 }
 
-// Регистрация пользователя
-async function registerUser(email, password) {
-    try {
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        console.log('Пользователь зарегистрирован:', data.user);
-        alert('Регистрация успешна! Проверьте почту для подтверждения.');
-        return data.user;
-    } catch (error) {
-        console.error('Ошибка регистрации:', error.message);
-        alert(`Ошибка регистрации: ${error.message}`);
-        return null;
-    }
-}
-
-// Вход пользователя
-async function loginUser(email, password) {
-    try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        console.log('Пользователь вошел:', data.user);
-        currentUser = data.user;
-        await fetchUserData();
-        updateAuthUI();
-        return data.user;
-    } catch (error) {
-        console.error('Ошибка входа:', error.message);
-        alert(`Ошибка входа: ${error.message}`);
-        return null;
-    }
-}
-
-// Выход пользователя
-async function logoutUser() {
-    try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        console.log('Пользователь вышел');
-        currentUser = null;
-        balance = 1000;
-        portfolio = {};
-        transactions = [];
-        updateAuthUI();
-        updateUI();
-    } catch (error) {
-        console.error('Ошибка выхода:', error.message);
-        alert(`Ошибка выхода: ${error.message}`);
-    }
-}
-
-// Получение данных пользователя
-async function fetchUserData() {
-    if (!currentUser) return;
-    try {
-        const { data: portfolioData, error: portfolioError } = await supabase
-            .from('portfolio')
-            .select('*')
-            .eq('user_id', currentUser.id);
-        if (portfolioError) throw portfolioError;
-        portfolio = {};
-        portfolioData.forEach(item => {
-            portfolio[item.crypto] = item.amount;
-        });
-
-        const { data: transactionsData, error: transactionsError } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .order('date', { ascending: false });
-        if (transactionsError) throw transactionsError;
-        transactions = transactionsData;
-
-        console.log('Данные пользователя:', { portfolio, transactions });
-        updateUI();
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error.message);
-    }
-}
-
-// Сохранение портфеля
-async function savePortfolio(crypto, amount) {
-    if (!currentUser) return;
-    try {
-        const { error } = await supabase
-            .from('portfolio')
-            .upsert([{ user_id: currentUser.id, crypto, amount }], { onConflict: ['user_id', 'crypto'] });
-        if (error) throw error;
-        console.log(`Портфель обновлен: ${crypto} = ${amount}`);
-    } catch (error) {
-        console.error('Ошибка сохранения портфеля:', error.message);
-    }
-}
-
-// Сохранение транзакции
-async function saveTransaction(tx) {
-    if (!currentUser) return;
-    try {
-        const { error } = await supabase
-            .from('transactions')
-            .insert([{
-                user_id: currentUser.id,
-                date: new Date(tx.date).toISOString(),
-                type: tx.type,
-                crypto: tx.crypto,
-                amount: tx.amount,
-                price: tx.price,
-                total: tx.total,
-                status: tx.status
-            }]);
-        if (error) throw error;
-        console.log('Транзакция сохранена:', tx);
-    } catch (error) {
-        console.error('Ошибка сохранения транзакции:', error.message);
-    }
-}
-
-// Обновление UI авторизации
-function updateAuthUI() {
-    const userControls = document.querySelector('.user-controls');
-    if (!userControls) return;
-
-    if (currentUser) {
-        userControls.innerHTML = `
-            <div class="profile-dropdown">
-                <button class="profile-btn">Профиль</button>
-                <div class="dropdown-menu">
-                    <a href="#" onclick="navigateTo('settings')">Настройки</a>
-                    <a href="#" onclick="navigateTo('wallet')">Кошелек</a>
-                    <a href="#" onclick="logoutUser()">Выйти</a>
-                </div>
-            </div>
-        `;
-        const profileBtn = document.querySelector('.profile-btn');
-        const dropdownMenu = document.querySelector('.dropdown-menu');
-        if (profileBtn && dropdownMenu) {
-            profileBtn.addEventListener('click', () => dropdownMenu.classList.toggle('active'));
-        }
-    } else {
-        userControls.innerHTML = `
-            <button class="login-btn" onclick="showLoginModal()">Войти</button>
-            <button class="register-btn" onclick="showRegisterModal()">Регистрация</button>
-        `;
-    }
+// Навигация
+function navigateTo(page, event) {
+    if (event) event.preventDefault();
+    console.log('Navigating to:', page);
+    const pages = {
+        home: 'index.html',
+        trade: 'html/trading.html',
+        wallet: 'html/wallet.html',
+        portfolio: 'html/portfolio.html',
+        history: 'html/history.html',
+        settings: 'html/settings.html'
+    };
+    const targetPage = pages[page] || 'index.html';
+    console.log('Target page:', targetPage);
+    window.location.href = targetPage;
 }
 
 // Показ модального окна входа
 function showLoginModal() {
+    console.log('Opening login modal');
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.innerHTML = `
@@ -232,6 +108,7 @@ function showLoginModal() {
 
 // Показ модального окна регистрации
 function showRegisterModal() {
+    console.log('Opening register modal');
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.innerHTML = `
@@ -252,55 +129,211 @@ function showRegisterModal() {
     document.body.appendChild(modal);
 }
 
-// Обработка входа
-async function handleLogin() {
-    const email = document.getElementById('login-email')?.value;
-    const password = document.getElementById('login-password')?.value;
-    if (!email || !password) {
-        alert('Заполните все поля');
-        return;
-    }
-    const user = await loginUser(email, password);
-    if (user) {
-        document.querySelector('.modal')?.remove();
+// Переключение чата поддержки
+function toggleSupport() {
+    console.log('Toggling support chat');
+    const supportChat = document.getElementById('support-chat');
+    if (supportChat) {
+        supportChat.classList.toggle('active');
+    } else {
+        console.error('Support chat element not found');
     }
 }
 
-// Обработка регистрации
-async function handleRegister() {
-    const email = document.getElementById('register-email')?.value;
-    const password = document.getElementById('register-password')?.value;
-    if (!email || !password) {
-        alert('Заполните все поля');
+// Отправка сообщения в поддержку
+function sendMessage() {
+    console.log('Sending support message');
+    const input = document.getElementById('chat-input');
+    const chatBody = document.getElementById('chat-body');
+    if (!input || !chatBody || !input.value.trim()) {
+        console.error('Chat input or body not found, or input is empty');
         return;
     }
-    const user = await registerUser(email, password);
-    if (user) {
-        document.querySelector('.modal')?.remove();
+    const userMessage = document.createElement('div');
+    userMessage.className = 'chat-message user';
+    userMessage.textContent = input.value;
+    chatBody.appendChild(userMessage);
+    const supportMessage = document.createElement('div');
+    supportMessage.className = 'chat-message support';
+    supportMessage.textContent = 'Спасибо за сообщение! Наша команда скоро ответит.';
+    chatBody.appendChild(supportMessage);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    input.value = '';
+}
+
+// Регистрация пользователя
+async function registerUser(email, password) {
+    try {
+        console.log('Registering user:', email);
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        console.log('User registered:', data.user);
+        alert('Регистрация успешна! Проверьте почту для подтверждения.');
+        return data.user;
+    } catch (error) {
+        console.error('Registration error:', error.message);
+        alert(`Ошибка регистрации: ${error.message}`);
+        return null;
     }
 }
 
-// Навигация с учетом папки html
-function navigateTo(page, event) {
-    if (event) event.preventDefault();
-    console.log('Navigating to:', page);
-    const pages = {
-        home: 'index.html',
-        trade: 'html/trading.html',
-        wallet: 'html/wallet.html',
-        portfolio: 'html/portfolio.html',
-        history: 'html/history.html',
-        settings: 'html/settings.html'
-    };
-    const targetPage = pages[page] || 'index.html';
-    console.log('Target page:', targetPage);
-    window.location.href = targetPage;
+// Вход пользователя
+async function loginUser(email, password) {
+    try {
+        console.log('Logging in user:', email);
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        console.log('User logged in:', data.user);
+        currentUser = data.user;
+        await fetchUserData();
+        updateAuthUI();
+        return data.user;
+    } catch (error) {
+        console.error('Login error:', error.message);
+        alert(`Ошибка входа: ${error.message}`);
+        return null;
+    }
+}
+
+// Выход пользователя
+async function logoutUser() {
+    try {
+        console.log('Logging out user');
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        console.log('User logged out');
+        currentUser = null;
+        balance = 1000;
+        portfolio = {};
+        transactions = [];
+        updateAuthUI();
+        updateUI();
+    } catch (error) {
+        console.error('Logout error:', error.message);
+        alert(`Ошибка выхода: ${error.message}`);
+    }
+}
+
+// Получение данных пользователя
+async function fetchUserData() {
+    if (!currentUser) {
+        console.log('No current user, skipping fetchUserData');
+        return;
+    }
+    try {
+        console.log('Fetching user data for:', currentUser.id);
+        const { data: portfolioData, error: portfolioError } = await supabase
+            .from('portfolio')
+            .select('*')
+            .eq('user_id', currentUser.id);
+        if (portfolioError) throw portfolioError;
+        portfolio = {};
+        portfolioData.forEach(item => {
+            portfolio[item.crypto] = item.amount;
+        });
+
+        const { data: transactionsData, error: transactionsError } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('date', { ascending: false });
+        if (transactionsError) throw transactionsError;
+        transactions = transactionsData;
+
+        console.log('User data fetched:', { portfolio, transactions });
+        updateUI();
+    } catch (error) {
+        console.error('Error fetching user data:', error.message);
+    }
+}
+
+// Сохранение портфеля
+async function savePortfolio(crypto, amount) {
+    if (!currentUser) {
+        console.log('No current user, skipping savePortfolio');
+        return;
+    }
+    try {
+        console.log('Saving portfolio:', { crypto, amount });
+        const { error } = await supabase
+            .from('portfolio')
+            .upsert([{ user_id: currentUser.id, crypto, amount }], { onConflict: ['user_id', 'crypto'] });
+        if (error) throw error;
+        console.log(`Portfolio saved: ${crypto} = ${amount}`);
+    } catch (error) {
+        console.error('Error saving portfolio:', error.message);
+    }
+}
+
+// Сохранение транзакции
+async function saveTransaction(tx) {
+    if (!currentUser) {
+        console.log('No current user, skipping saveTransaction');
+        return;
+    }
+    try {
+        console.log('Saving transaction:', tx);
+        const { error } = await supabase
+            .from('transactions')
+            .insert([{
+                user_id: currentUser.id,
+                date: new Date(tx.date).toISOString(),
+                type: tx.type,
+                crypto: tx.crypto,
+                amount: tx.amount,
+                price: tx.price,
+                total: tx.total,
+                status: tx.status
+            }]);
+        if (error) throw error;
+        console.log('Transaction saved:', tx);
+    } catch (error) {
+        console.error('Error saving transaction:', error.message);
+    }
+}
+
+// Обновление UI авторизации
+function updateAuthUI() {
+    const userControls = document.querySelector('.user-controls');
+    if (!userControls) {
+        console.error('User controls element not found');
+        return;
+    }
+    console.log('Updating auth UI, currentUser:', !!currentUser);
+    if (currentUser) {
+        userControls.innerHTML = `
+            <div class="profile-dropdown">
+                <button class="profile-btn">Профиль</button>
+                <div class="dropdown-menu">
+                    <a href="#" onclick="navigateTo('settings')">Настройки</a>
+                    <a href="#" onclick="navigateTo('wallet')">Кошелек</a>
+                    <a href="#" onclick="logoutUser()">Выйти</a>
+                </div>
+            </div>
+        `;
+        const profileBtn = document.querySelector('.profile-btn');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        if (profileBtn && dropdownMenu) {
+            profileBtn.addEventListener('click', () => {
+                console.log('Toggling profile dropdown');
+                dropdownMenu.classList.toggle('active');
+            });
+        }
+    } else {
+        userControls.innerHTML = `
+            <button class="login-btn" onclick="showLoginModal()">Войти</button>
+            <button class="register-btn" onclick="showRegisterModal()">Регистрация</button>
+        `;
+    }
 }
 
 // Рендеринг списка криптовалют
 function renderCryptoList() {
     const cryptoItems = document.getElementById('crypto-items');
-    if (!cryptoItems) return;
+    if (!cryptoItems) {
+        console.log('Crypto items element not found, skipping renderCryptoList');
+        return;
+    }
     cryptoItems.innerHTML = '';
     const searchInput = document.getElementById('pair-search');
     const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
@@ -334,6 +367,7 @@ function renderCryptoList() {
 
 // Переключение избранных пар
 function toggleFavorite(pair, event) {
+    console.log('Toggling favorite:', pair);
     event.stopPropagation();
     if (favoritePairs.has(pair)) {
         favoritePairs.delete(pair);
@@ -346,6 +380,7 @@ function toggleFavorite(pair, event) {
 // Получение цен
 async function fetchCryptoPrices() {
     try {
+        console.log('Fetching crypto prices');
         const symbols = Object.values(cryptoIdMap).join(',');
         const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${symbols}&vs_currencies=usd&include_24hr_change=true`);
         const data = await response.json();
@@ -361,12 +396,13 @@ async function fetchCryptoPrices() {
         });
         updateUI();
     } catch (error) {
-        console.error('Ошибка получения цен:', error);
+        console.error('Error fetching crypto prices:', error);
     }
 }
 
 // Обновление UI
 function updateUI() {
+    console.log('Updating UI');
     renderCryptoList();
     updateTradingPanel();
     updateChart();
@@ -380,7 +416,10 @@ function updateUI() {
 // Рендеринг портфеля
 function renderPortfolio() {
     const portfolioGrid = document.querySelector('.portfolio-grid');
-    if (!portfolioGrid) return;
+    if (!portfolioGrid) {
+        console.log('Portfolio grid not found, skipping renderPortfolio');
+        return;
+    }
     portfolioGrid.innerHTML = '';
     Object.entries(portfolio).forEach(([crypto, amount]) => {
         if (amount <= 0) return;
@@ -398,7 +437,10 @@ function renderPortfolio() {
 // Рендеринг транзакций
 function renderTransactions() {
     const tbody = document.querySelector('.transactions-table tbody');
-    if (!tbody) return;
+    if (!tbody) {
+        console.log('Transactions table body not found, skipping renderTransactions');
+        return;
+    }
     tbody.innerHTML = '';
     transactions.forEach(tx => {
         const row = document.createElement('tr');
@@ -418,6 +460,7 @@ function renderTransactions() {
 
 // Выбор криптовалюты
 function selectCrypto(crypto) {
+    console.log('Selecting crypto:', crypto);
     selectedCrypto = crypto;
     selectedMarket = `${crypto}/USDT`;
     renderCryptoList();
@@ -430,7 +473,10 @@ function selectCrypto(crypto) {
 
 // Обновление графика
 function updateChart() {
-    if (!candlestickSeries || !volumeSeries) return;
+    if (!candlestickSeries || !volumeSeries) {
+        console.log('Chart series not initialized, skipping updateChart');
+        return;
+    }
     fetchChartData(currentTimeframe).then(data => {
         candlestickSeries.setData(data);
         volumeSeries.setData(data.map(d => ({
@@ -439,11 +485,12 @@ function updateChart() {
             color: d.close >= d.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 43, 0.3)'
         })));
         chart.timeScale().fitContent();
-    }).catch(error => console.error('Ошибка обновления графика:', error));
+    }).catch(error => console.error('Error updating chart:', error));
 }
 
 // Установка режима торговли
 function setTradeMode(mode) {
+    console.log('Setting trade mode:', mode);
     tradeMode = mode;
     const tradeBtn = document.getElementById('trade-btn');
     document.querySelectorAll('.tab').forEach(tab => {
@@ -458,6 +505,7 @@ function setTradeMode(mode) {
 
 // Обновление торговой панели
 function updateTradingPanel() {
+    console.log('Updating trading panel');
     const pairIcon = document.getElementById('pair-icon');
     const selectedPair = document.getElementById('selected-pair');
     const currentPrice = document.getElementById('current-price');
@@ -492,7 +540,10 @@ function updateTradingPanel() {
 // Инициализация графика
 function initChart() {
     const chartContainer = document.getElementById('trading-chart');
-    if (!chartContainer) return;
+    if (!chartContainer) {
+        console.log('Chart container not found, skipping initChart');
+        return;
+    }
     chart = LightweightCharts.createChart(chartContainer, {
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#e6e6e6' },
         grid: { vertLines: { color: 'rgba(255, 255, 255, 0.1)' }, horzLines: { color: 'rgba(255, 255, 255, 0.1)' } },
@@ -507,7 +558,7 @@ function initChart() {
         wickUpColor: '#43e97b',
         wickDownColor: '#f5576c'
     });
-    const volumeContainer = document.getElementById('volume-bottom');
+    const volumeContainer = document.getElementById('volume-chart');
     if (volumeContainer) {
         const volumeChart = LightweightCharts.createChart(volumeContainer, {
             layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#e6e6e6' },
@@ -526,6 +577,7 @@ function initChart() {
 // Получение данных графика
 async function fetchChartData(timeframe) {
     try {
+        console.log('Fetching chart data for:', selectedCrypto, timeframe);
         const days = timeframe === '1d' ? 1 : 30;
         const response = await fetch(`https://api.coingecko.com/api/v3/coins/${cryptoIdMap[selectedCrypto]}/ohlc?vs_currency=usd&days=${days}`);
         const data = await response.json();
@@ -538,7 +590,7 @@ async function fetchChartData(timeframe) {
             volume: Math.random() * 1000000
         }));
     } catch (error) {
-        console.error('Ошибка получения данных графика:', error);
+        console.error('Error fetching chart data:', error);
         const now = Date.now() / 1000;
         return Array.from({ length: 50 }, (_, i) => ({
             time: now - i * 3600,
@@ -553,6 +605,7 @@ async function fetchChartData(timeframe) {
 
 // Установка таймфрейма
 function setTimeframe(timeframe) {
+    console.log('Setting timeframe:', timeframe);
     currentTimeframe = timeframe;
     document.querySelectorAll('.timeframe-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-timeframe') === timeframe);
@@ -564,7 +617,10 @@ function setTimeframe(timeframe) {
 function updateOrderBook() {
     const bidsTbody = document.getElementById('order-book-bids');
     const asksTbody = document.getElementById('order-book-asks');
-    if (!bidsTbody || !asksTbody) return;
+    if (!bidsTbody || !asksTbody) {
+        console.log('Order book elements not found, skipping updateOrderBook');
+        return;
+    }
     bidsTbody.innerHTML = '';
     asksTbody.innerHTML = '';
     const price = cryptoPrices[selectedCrypto] || 0;
@@ -584,7 +640,10 @@ function updateOrderBook() {
 // Обновление истории торгов
 function updateTradeHistory() {
     const tradeHistory = document.getElementById('trade-history-items');
-    if (!tradeHistory) return;
+    if (!tradeHistory) {
+        console.log('Trade history element not found, skipping updateTradeHistory');
+        return;
+    }
     tradeHistory.innerHTML = '';
     const recentTrades = transactions.slice(-5).reverse();
     recentTrades.forEach(trade => {
@@ -601,6 +660,7 @@ function updateTradeHistory() {
 
 // Обновление статистики
 function updateStats() {
+    console.log('Updating stats');
     const statsHigh = document.getElementById('stats-high');
     const statsLow = document.getElementById('stats-low');
     const statsVolume = document.getElementById('stats-volume');
@@ -614,18 +674,24 @@ function updateStats() {
 
 // Выполнение торговли
 function executeTrade() {
+    console.log('Executing trade');
     const amountInput = document.getElementById('trade-amount');
     const priceInput = document.getElementById('trade-price');
-    if (!amountInput || !priceInput) return;
+    if (!amountInput || !priceInput) {
+        console.error('Trade inputs not found');
+        return;
+    }
     const amount = parseFloat(amountInput.value);
     const price = parseFloat(priceInput.value);
     if (isNaN(amount) || amount <= 0 || isNaN(price) || price <= 0) {
+        console.error('Invalid trade inputs:', { amount, price });
         alert('Введите корректные значения');
         return;
     }
     const total = amount * price;
     if (tradeMode === 'buy') {
         if (total > balance) {
+            console.error('Insufficient balance:', { balance, total });
             alert('Недостаточно средств');
             return;
         }
@@ -634,6 +700,7 @@ function executeTrade() {
         savePortfolio(selectedCrypto, portfolio[selectedCrypto]);
     } else {
         if (!portfolio[selectedCrypto] || portfolio[selectedCrypto] < amount) {
+            console.error('Insufficient crypto amount:', { crypto: selectedCrypto, available: portfolio[selectedCrypto], requested: amount });
             alert('Недостаточно криптовалюты для продажи');
             return;
         }
@@ -660,57 +727,85 @@ function executeTrade() {
     amountInput.value = '';
 }
 
-// Переключение чата поддержки
-function toggleSupport() {
-    const supportChat = document.getElementById('support-chat');
-    if (supportChat) supportChat.classList.toggle('active');
+// Обработка входа
+async function handleLogin() {
+    const email = document.getElementById('login-email')?.value;
+    const password = document.getElementById('login-password')?.value;
+    if (!email || !password) {
+        console.error('Login inputs missing:', { email, password });
+        alert('Заполните все поля');
+        return;
+    }
+    const user = await loginUser(email, password);
+    if (user) {
+        console.log('Closing login modal');
+        document.querySelector('.modal')?.remove();
+    }
 }
 
-// Отправка сообщения в поддержку
-function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const chatBody = document.getElementById('chat-body');
-    if (!input || !chatBody || !input.value.trim()) return;
-    const userMessage = document.createElement('div');
-    userMessage.className = 'chat-message user';
-    userMessage.textContent = input.value;
-    chatBody.appendChild(userMessage);
-    const supportMessage = document.createElement('div');
-    supportMessage.className = 'chat-message support';
-    supportMessage.textContent = 'Спасибо за сообщение! Наша команда скоро ответит.';
-    chatBody.appendChild(supportMessage);
-    chatBody.scrollTop = chatBody.scrollHeight;
-    input.value = '';
+// Обработка регистрации
+async function handleRegister() {
+    const email = document.getElementById('register-email')?.value;
+    const password = document.getElementById('register-password')?.value;
+    if (!email || !password) {
+        console.error('Register inputs missing:', { email, password });
+        alert('Заполните все поля');
+        return;
+    }
+    const user = await registerUser(email, password);
+    if (user) {
+        console.log('Closing register modal');
+        document.querySelector('.modal')?.remove();
+    }
 }
 
 // Инициализация
 function init() {
+    console.log('Initializing app');
     supabase.auth.getSession().then(({ data: { session } }) => {
+        console.log('Session check:', session ? 'Session found' : 'No session');
         if (session) {
             currentUser = session.user;
-            console.log('Сессия найдена:', currentUser);
+            console.log('Current user:', currentUser.id);
             fetchUserData();
         }
         updateAuthUI();
         fetchCryptoPrices();
         initChart();
         updateUI();
+    }).catch(error => {
+        console.error('Error checking session:', error);
     });
     setInterval(fetchCryptoPrices, 60000);
     const searchInput = document.getElementById('pair-search');
     if (searchInput) {
-        searchInput.addEventListener('input', renderCryptoList);
+        searchInput.addEventListener('input', () => {
+            console.log('Search input changed:', searchInput.value);
+            renderCryptoList();
+        });
     }
     document.querySelectorAll('.timeframe-btn').forEach(btn => {
-        btn.addEventListener('click', () => setTimeframe(btn.getAttribute('data-timeframe')));
+        btn.addEventListener('click', () => {
+            console.log('Timeframe button clicked:', btn.getAttribute('data-timeframe'));
+            setTimeframe(btn.getAttribute('data-timeframe'));
+        });
     });
     document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => setTradeMode(tab.getAttribute('data-mode')));
+        tab.addEventListener('click', () => {
+            console.log('Tab clicked:', tab.getAttribute('data-mode'));
+            setTradeMode(tab.getAttribute('data-mode'));
+        });
     });
     const tradeBtn = document.getElementById('trade-btn');
     if (tradeBtn) {
-        tradeBtn.addEventListener('click', executeTrade);
+        tradeBtn.addEventListener('click', () => {
+            console.log('Trade button clicked');
+            executeTrade();
+        });
     }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM content loaded');
+    init();
+});
