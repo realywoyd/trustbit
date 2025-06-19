@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust Bit - Торговля</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Подключение Lightweight Charts для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.min.js"></script>
+    <!-- Подключение Supabase для авторизации и данных -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <!-- Подключение главного скрипта -->
+    <script type="module" src="js/main.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            Trust Bit
+        </div>
+        <nav class="nav">
+            <a href="index.html" onclick="navigateTo('home')">Главная</a>
+            <a href="trading.html" class="active" onclick="navigateTo('trade')">Торговля</a>
+            <a href="wallet.html" onclick="navigateTo('wallet')">Кошелек</a>
+            <a href="portfolio.html" onclick="navigateTo('portfolio')">Портфель</a>
+            <a href="history.html" onclick="navigateTo('history')">История</a>
+        </nav>
+        <div class="user-controls">
+            <button class="login-btn" onclick="showLoginModal()">Войти</button>
+            <button class="register-btn" onclick="showRegisterModal()">Регистрация</button>
+        </div>
+    </header>
+
+    <main class="main-content active">
+        <section class="trading-section">
+            <!-- Список криптовалют -->
+            <div class="crypto-list">
+                <div class="search-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" class="search-input" id="pair-search" placeholder="Поиск пары...">
+                </div>
+                <div id="crypto-items"></div>
+            </div>
+
+            <!-- Торговая панель -->
+            <div class="trading-panel">
+                <div class="trade-header">
+                    <div class="trade-header-left">
+                        <span class="crypto-icon" id="pair-icon">₿</span>
+                        <span class="pair-symbol" id="selected-pair">BTC/USDT</span>
+                        <span class="current-price" id="current-price">$0.00</span>
+                        <span class="price-change" id="price-change">
+                            <svg id="trend-icon" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                            </svg>
+                            <span id="change-value">$0.00 (0%)</span>
+                        </span>
+                    </div>
+                    <div class="trade-header-right">
+                        <button class="p2p-btn">P2P Торговля</button>
+                        <svg class="settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Контейнер графика -->
+                <div class="chart-container">
+                    <div class="timeframe-selector">
+                        <button class="timeframe-btn" data-timeframe="1m">1м</button>
+                        <button class="timeframe-btn" data-timeframe="5m">5м</button>
+                        <button class="timeframe-btn active" data-timeframe="15m">15м</button>
+                        <button class="timeframe-btn" data-timeframe="1h">1ч</button>
+                        <button class="timeframe-btn" data-timeframe="4h">4ч</button>
+                        <button class="timeframe-btn" data-timeframe="1d">1д</button>
+                    </div>
+                    <div id="trading-chart" style="height: 300px;"></div>
+                    <div id="volume-chart" style="height: 100px;"></div>
+                </div>
+
+                <!-- Форма покупки/продажи -->
+                <div class="buy-sell-form">
+                    <div class="tabs">
+                        <div class="tab active" data-mode="buy">Купить</div>
+                        <div class="tab" data-mode="sell">Продать</div>
+                    </div>
+                    <div class="input-group">
+                        <label>Цена (USDT)</label>
+                        <input type="number" id="trade-price" placeholder="0.00">
+                    </div>
+                    <div class="input-group">
+                        <label>Количество (<span id="selected-crypto-pair">BTC</span>)</label>
+                        <input type="number" id="trade-amount" placeholder="0.00">
+                    </div>
+                    <div class="input-group">
+                        <label>Итого (USDT)</label>
+                        <input type="number" id="crypto-amount" placeholder="0.00" readonly>
+                    </div>
+                    <button class="btn btn-primary" id="trade-btn">Купить</button>
+                    <div class="trade-stats-card">
+                        <div class="stats-item">
+                            <span class="stats-label">24ч Макс:</span>
+                            <span id="stats-high">$0.00</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">24ч Мин:</span>
+                            <span id="stats-low">$0.00</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">24ч Объем:</span>
+                            <span id="stats-volume">0 USDT</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">Капитализация:</span>
+                            <span id="stats-market-cap">0 USDT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Книга ордеров и история -->
+            <div>
+                <div class="order-book">
+                    <h3>Книга ордеров</h3>
+                    <table class="order-book-table">
+                        <thead>
+                            <tr>
+                                <th>Цена (USDT)</th>
+                                <th>Количество</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-book-asks"></tbody>
+                        <tbody id="order-book-bids"></tbody>
+                    </table>
+                </div>
+                <div class="trade-history">
+                    <h3>История торгов</h3>
+                    <div id="trade-history-items"></div>
+                </div>
+                <div class="positions-card">
+                    <h3>Мои позиции</h3>
+                    <div class="no-positions">Нет активных позиций</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Кнопка и чат поддержки -->
+    <button class="support-button" onclick="toggleSupport()">💬</button>
+    <div class="support-chat" id="support-chat">
+        <div class="chat-header">
+            <h3>Поддержка Trust Bit</h3>
+            <button class="chat-close" onclick="toggleSupport()">✕</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="chat-message support">Добро пожаловать! Чем могу помочь?</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chat-input" placeholder="Введите сообщение...">
+            <button onclick="sendMessage()">Отправить</button>
+        </div>
+    </div>
+
+    <footer class="custom-footer">
+        <div class="footer-section">
+            <h3>Trust Bit</h3>
+            <a href="#">О нас</a>
+            <a href="#">Команда</a>
+            <a href="#">Поддержка</a>
+        </div>
+        <div class="footer-section">
+            <h3>Функции</h3>
+            <a href="#">Технические данные</a>
+            <a href="#">Безопасность</a>
+            <a href="#">Производительность</a>
+        </div>
+        <div class="footer-section">
+            <h3>Инструменты рынка</h3>
+            <a href="#">Аналитика</a>
+            <a href="#">Индикаторы</a>
+            <a href="#">Торговые сигналы</a>
+        </div>
+        <div class="footer-section">
+            <h3>Юридическая информация</h3>
+            <a href="#">Политика конфиденциальности</a>
+            <a href="#">Условия использования</a>
+            <a href="#">Лицензии</a>
+        </div>
+        <div class="footer-section">
+            <h3>Торговые пары</h3>
+            <a href="#">BTC/USD</a>
+            <a href="#">ETH/USDT</a>
+            <a href="#">ADA/USDT</a>
+        </div>
+    </footer>
+</body>
+</html>
