@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trust Bit - Торговля</title>
-    <!-- Подключение стилей из папки css -->
     <link rel="stylesheet" href="../css/style.css">
-    <!-- Подключение Lightweight Charts для графиков -->
     <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.min.js"></script>
-    <!-- Подключение Supabase для авторизации и данных -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <!-- Подключение главного скрипта из папки js -->
     <script type="module" src="../js/main.js"></script>
 </head>
 <body>
@@ -19,7 +15,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
             </svg>
-            Trust Bit
+            Trust Bitcoin
         </div>
         <nav class="nav">
             <a onclick="navigateTo('home')">Главная</a>
@@ -36,7 +32,6 @@
 
     <main class="main-content active">
         <section class="trading-section">
-            <!-- Список криптовалют -->
             <div class="crypto-list">
                 <div class="search-container">
                     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -47,7 +42,6 @@
                 <div id="crypto-items"></div>
             </div>
 
-            <!-- Торговая панель -->
             <div class="trading-panel">
                 <div class="trade-header">
                     <div class="trade-header-left">
@@ -70,7 +64,6 @@
                     </div>
                 </div>
 
-                <!-- Контейнер графика -->
                 <div class="chart-container">
                     <div class="timeframe-selector">
                         <button class="timeframe-btn" data-timeframe="1m">1м</button>
@@ -84,7 +77,6 @@
                     <div id="volume-chart" style="height: 100px;"></div>
                 </div>
 
-                <!-- Форма покупки/продажи -->
                 <div class="buy-sell-form">
                     <div class="tabs">
                         <div class="tab active" data-mode="buy">Купить</div>
@@ -124,7 +116,6 @@
                 </div>
             </div>
 
-            <!-- Книга ордеров и история -->
             <div>
                 <div class="order-book">
                     <h3>Книга ордеров</h3>
@@ -143,19 +134,14 @@
                     <h3>История торгов</h3>
                     <div id="trade-history-items"></div>
                 </div>
-                <div class="positions-card">
-                    <h3>Мои позиции</h3>
-                    <div class="no-positions">Нет активных позиций</div>
-                </div>
             </div>
         </section>
     </main>
 
-    <!-- Кнопка и чат поддержки -->
     <button class="support-button" onclick="toggleSupport()">💬</button>
     <div class="support-chat" id="support-chat">
         <div class="chat-header">
-            <h3>Поддержка Trust Bit</h3>
+            <h3>Поддержка Trust Bitcoin</h3>
             <button class="chat-close" onclick="toggleSupport()">✕</button>
         </div>
         <div class="chat-body" id="chat-body">
@@ -169,7 +155,7 @@
 
     <footer class="custom-footer">
         <div class="footer-section">
-            <h3>Trust Bit</h3>
+            <h3>Trust Bitcoin</h3>
             <a href="#">О нас</a>
             <a href="#">Команда</a>
             <a href="#">Поддержка</a>
