@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trust Bit - Торговля</title>
+    <title>Trust Bitcoin - Trade</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -18,15 +18,15 @@
             Trust Bitcoin
         </div>
         <nav class="nav">
-            <a onclick="navigateTo('home')">Главная</a>
-            <a onclick="navigateTo('trade')" class="active">Торговля</a>
-            <a onclick="navigateTo('wallet')">Кошелек</a>
-            <a onclick="navigateTo('portfolio')">Портфель</a>
-            <a onclick="navigateTo('history')">История</a>
+            <a onclick="navigateTo('home')">Home</a>
+            <a onclick="navigateTo('trade')" class="active">Trade</a>
+            <a onclick="navigateTo('wallet')">Wallet</a>
+            <a onclick="navigateTo('portfolio')">Portfolio</a>
+            <a onclick="navigateTo('history')">History</a>
         </nav>
         <div class="user-controls">
-            <button class="login-btn" onclick="showLoginModal()">Войти</button>
-            <button class="register-btn" onclick="showRegisterModal()">Регистрация</button>
+            <button class="login-btn" onclick="showLoginModal()">Login</button>
+            <button class="register-btn" onclick="showRegisterModal()">Register</button>
         </div>
     </header>
 
@@ -37,7 +37,7 @@
                     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <input type="text" class="search-input" id="pair-search" placeholder="Поиск пары...">
+                    <input type="text" class="search-input" id="pair-search" placeholder="Search pair...">
                 </div>
                 <div id="crypto-items"></div>
             </div>
@@ -56,7 +56,7 @@
                         </span>
                     </div>
                     <div class="trade-header-right">
-                        <button class="p2p-btn">P2P Торговля</button>
+                        <button class="p2p-btn">P2P Trading</button>
                         <svg class="settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -66,50 +66,49 @@
 
                 <div class="chart-container">
                     <div class="timeframe-selector">
-                        <button class="timeframe-btn" data-timeframe="1m">1м</button>
-                        <button class="timeframe-btn" data-timeframe="5m">5м</button>
-                        <button class="timeframe-btn active" data-timeframe="15m">15м</button>
-                        <button class="timeframe-btn" data-timeframe="1h">1ч</button>
-                        <button class="timeframe-btn" data-timeframe="4h">4ч</button>
-                        <button class="timeframe-btn" data-timeframe="1d">1д</button>
+                        <button class="timeframe-btn" data-timeframe="1m">1m</button>
+                        <button class="timeframe-btn" data-timeframe="5m">5m</button>
+                        <button class="timeframe-btn active" data-timeframe="15m">15m</button>
+                        <button class="timeframe-btn" data-timeframe="1h">1h</button>
+                        <button class="timeframe-btn" data-timeframe="4h">4h</button>
+                        <button class="timeframe-btn" data-timeframe="1d">1d</button>
                     </div>
-                    <div id="trading-chart" style="height: 300px;"></div>
-                    <div id="volume-chart" style="height: 100px;"></div>
+                    <div id="trading-chart"></div>
                 </div>
 
                 <div class="buy-sell-form">
                     <div class="tabs">
-                        <div class="tab active" data-mode="buy">Купить</div>
-                        <div class="tab" data-mode="sell">Продать</div>
+                        <div class="tab active" data-mode="buy">Buy</div>
+                        <div class="tab" data-mode="sell">Sell</div>
                     </div>
                     <div class="input-group">
-                        <label>Цена (USDT)</label>
+                        <label>Price (USDT)</label>
                         <input type="number" id="trade-price" placeholder="0.00">
                     </div>
                     <div class="input-group">
-                        <label>Количество (<span id="selected-crypto-pair">BTC</span>)</label>
+                        <label>Amount (<span id="selected-crypto-pair">BTC</span>)</label>
                         <input type="number" id="trade-amount" placeholder="0.00">
                     </div>
                     <div class="input-group">
-                        <label>Итого (USDT)</label>
+                        <label>Total (USDT)</label>
                         <input type="number" id="crypto-amount" placeholder="0.00" readonly>
                     </div>
-                    <button class="btn btn-primary" id="trade-btn">Купить</button>
+                    <button class="btn btn-primary" id="trade-btn">Buy</button>
                     <div class="trade-stats-card">
                         <div class="stats-item">
-                            <span class="stats-label">24ч Макс:</span>
+                            <span class="stats-label">24h High:</span>
                             <span id="stats-high">$0.00</span>
                         </div>
                         <div class="stats-item">
-                            <span class="stats-label">24ч Мин:</span>
+                            <span class="stats-label">24h Low:</span>
                             <span id="stats-low">$0.00</span>
                         </div>
                         <div class="stats-item">
-                            <span class="stats-label">24ч Объем:</span>
+                            <span class="stats-label">24h Volume:</span>
                             <span id="stats-volume">0 USDT</span>
                         </div>
                         <div class="stats-item">
-                            <span class="stats-label">Капитализация:</span>
+                            <span class="stats-label">Market Cap:</span>
                             <span id="stats-market-cap">0 USDT</span>
                         </div>
                     </div>
@@ -118,12 +117,12 @@
 
             <div>
                 <div class="order-book">
-                    <h3>Книга ордеров</h3>
+                    <h3>Order Book</h3>
                     <table class="order-book-table">
                         <thead>
                             <tr>
-                                <th>Цена (USDT)</th>
-                                <th>Количество</th>
+                                <th>Price (USDT)</th>
+                                <th>Amount</th>
                             </tr>
                         </thead>
                         <tbody id="order-book-asks"></tbody>
@@ -131,7 +130,7 @@
                     </table>
                 </div>
                 <div class="trade-history">
-                    <h3>История торгов</h3>
+                    <h3>Trade History</h3>
                     <div id="trade-history-items"></div>
                 </div>
             </div>
@@ -141,48 +140,29 @@
     <button class="support-button" onclick="toggleSupport()">💬</button>
     <div class="support-chat" id="support-chat">
         <div class="chat-header">
-            <h3>Поддержка Trust Bitcoin</h3>
+            <h3>Trust Bitcoin Support</h3>
             <button class="chat-close" onclick="toggleSupport()">✕</button>
         </div>
         <div class="chat-body" id="chat-body">
-            <div class="chat-message support">Добро пожаловать! Чем могу помочь?</div>
+            <div class="chat-message support">Welcome! How can we help you?</div>
         </div>
         <div class="chat-input">
-            <input type="text" id="chat-input" placeholder="Введите сообщение...">
-            <button onclick="sendMessage()">Отправить</button>
+            <input type="text" id="chat-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <footer class="custom-footer">
         <div class="footer-section">
             <h3>Trust Bitcoin</h3>
-            <a href="#">О нас</a>
-            <a href="#">Команда</a>
-            <a href="#">Поддержка</a>
+            <a href="#">About</a>
+            <a href="#">Team</a>
+            <a href="#">Support</a>
         </div>
         <div class="footer-section">
-            <h3>Функции</h3>
-            <a href="#">Технические данные</a>
-            <a href="#">Безопасность</a>
-            <a href="#">Производительность</a>
-        </div>
-        <div class="footer-section">
-            <h3>Инструменты рынка</h3>
-            <a href="#">Аналитика</a>
-            <a href="#">Индикаторы</a>
-            <a href="#">Торговые сигналы</a>
-        </div>
-        <div class="footer-section">
-            <h3>Юридическая информация</h3>
-            <a href="#">Политика конфиденциальности</a>
-            <a href="#">Условия использования</a>
-            <a href="#">Лицензии</a>
-        </div>
-        <div class="footer-section">
-            <h3>Торговые пары</h3>
-            <a href="#">BTC/USD</a>
-            <a href="#">ETH/USDT</a>
-            <a href="#">ADA/USDT</a>
+            <h3>Legal</h3>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Use</a>
         </div>
     </footer>
 </body>
