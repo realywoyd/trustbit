@@ -1,14 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trust Bit - Портфель</title>
-    <!-- Подключение стилей из папки css -->
+    <title>Trust Bitcoin - Portfolio</title>
     <link rel="stylesheet" href="../css/style.css">
-    <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <!-- Подключение главного скрипта из папки js -->
     <script type="module" src="../js/main.js"></script>
 </head>
 <body>
@@ -17,76 +14,54 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
             </svg>
-            Trust Bit
+            Trust Bitcoin
         </div>
         <nav class="nav">
-            <a onclick="navigateTo('home')">Главная</a>
-            <a onclick="navigateTo('trade')">Торговля</a>
-            <a onclick="navigateTo('wallet')">Кошелек</a>
-            <a onclick="navigateTo('portfolio')" class="active">Портфель</a>
-            <a onclick="navigateTo('history')">История</a>
+            <a onclick="navigateTo('home')">Home</a>
+            <a onclick="navigateTo('trade')">Trade</a>
+            <a onclick="navigateTo('wallet')">Wallet</a>
+            <a onclick="navigateTo('portfolio')" class="active">Portfolio</a>
+            <a onclick="navigateTo('history')">History</a>
         </nav>
         <div class="user-controls">
-            <button class="login-btn" onclick="showLoginModal()">Войти</button>
-            <button class="register-btn" onclick="showRegisterModal()">Регистрация</button>
+            <button class="login-btn" onclick="showLoginModal()">Login</button>
+            <button class="register-btn" onclick="showRegisterModal()">Register</button>
         </div>
     </header>
 
     <main class="main-content active">
-        <section class="dashboard">
-            <div class="card">
-                <h2>Ваш портфель</h2>
-                <div class="portfolio-grid"></div>
-            </div>
+        <section class="portfolio-section">
+            <h2>Your Portfolio</h2>
+            <div class="portfolio-grid"></div>
         </section>
     </main>
 
-    <!-- Кнопка и чат поддержки -->
     <button class="support-button" onclick="toggleSupport()">💬</button>
     <div class="support-chat" id="support-chat">
         <div class="chat-header">
-            <h3>Поддержка Trust Bit</h3>
+            <h3>Trust Bitcoin Support</h3>
             <button class="chat-close" onclick="toggleSupport()">✕</button>
         </div>
         <div class="chat-body" id="chat-body">
-            <div class="chat-message support">Добро пожаловать! Чем могу помочь?</div>
+            <div class="chat-message support">Welcome! How can we help you?</div>
         </div>
         <div class="chat-input">
-            <input type="text" id="chat-input" placeholder="Введите сообщение...">
-            <button onclick="sendMessage()">Отправить</button>
+            <input type="text" id="chat-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <footer class="custom-footer">
         <div class="footer-section">
-            <h3>Trust Bit</h3>
-            <a href="#">О нас</a>
-            <a href="#">Команда</a>
-            <a href="#">Поддержка</a>
+            <h3>Trust Bitcoin</h3>
+            <a href="#">About</a>
+            <a href="#">Team</a>
+            <a href="#">Support</a>
         </div>
         <div class="footer-section">
-            <h3>Функции</h3>
-            <a href="#">Технические данные</a>
-            <a href="#">Безопасность</a>
-            <a href="#">Производительность</a>
-        </div>
-        <div class="footer-section">
-            <h3>Инструменты рынка</h3>
-            <a href="#">Аналитика</a>
-            <a href="#">Индикаторы</a>
-            <a href="#">Торговые сигналы</a>
-        </div>
-        <div class="footer-section">
-            <h3>Юридическая информация</h3>
-            <a href="#">Политика конфиденциальности</a>
-            <a href="#">Условия использования</a>
-            <a href="#">Лицензии</a>
-        </div>
-        <div class="footer-section">
-            <h3>Торговые пары</h3>
-            <a href="#">BTC/USD</a>
-            <a href="#">ETH/USDT</a>
-            <a href="#">ADA/USDT</a>
+            <h3>Legal</h3>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Use</a>
         </div>
     </footer>
 </body>
