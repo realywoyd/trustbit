@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trust Bit - Кошелек</title>
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Подключение стилей из папки css -->
+    <link rel="stylesheet" href="../css/style.css">
     <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <!-- Подключение главного скрипта -->
-    <script type="module" src="js/main.js"></script>
+    <!-- Подключение главного скрипта из папки js -->
+    <script type="module" src="../js/main.js"></script>
 </head>
 <body>
     <header class="header">
@@ -19,11 +20,11 @@
             Trust Bit
         </div>
         <nav class="nav">
-            <a href="index.html" onclick="navigateTo('home')">Главная</a>
-            <a href="trading.html" onclick="navigateTo('trade')">Торговля</a>
-            <a href="wallet.html" class="active" onclick="navigateTo('wallet')">Кошелек</a>
-            <a href="portfolio.html" onclick="navigateTo('portfolio')">Портфель</a>
-            <a href="history.html" onclick="navigateTo('history')">История</a>
+            <a onclick="navigateTo('home')">Главная</a>
+            <a onclick="navigateTo('trade')">Торговля</a>
+            <a onclick="navigateTo('wallet')" class="active">Кошелек</a>
+            <a onclick="navigateTo('portfolio')">Портфель</a>
+            <a onclick="navigateTo('history')">История</a>
         </nav>
         <div class="user-controls">
             <button class="login-btn" onclick="showLoginModal()">Войти</button>
