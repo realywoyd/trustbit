@@ -1,17 +1,16 @@
-// Импорт Supabase клиента
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // Инициализация Supabase клиента
-const supabase = createClient('https://vihxlcvqjobqeyhkeine.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4');
+const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
 
 // Глобальные переменные
-let balance = 1000; // Начальный баланс
-let portfolio = {}; // Портфель пользователя
-let transactions = []; // История транзакций
+let balance = 1000;
+let portfolio = {};
+let transactions = [];
 let cryptoPrices = {
     BTC: 0, ETH: 0, USDT: 0, BNB: 0, LTC: 0, TON: 0, XRP: 0, SOL: 0, USDC: 0, DOGE: 0,
     TRX: 0, ADA: 0, WBTC: 0, AVAX: 0, SHIB: 0, LINK: 0, DOT: 0, MATIC: 0, BCH: 0, UNI: 0
-}; // Цены криптовалют
+};
 let cryptoPriceHistory = Object.fromEntries(Object.keys(cryptoPrices).map(c => [c, []]));
 let priceChanges = Object.fromEntries(Object.keys(cryptoPrices).map(c => [c, 0]));
 let previousPrices = { ...cryptoPrices };
@@ -56,6 +55,7 @@ const cryptoColors = {
 
 // Форматирование цены
 function formatPrice(price) {
+    if (typeof price !== 'number' || isNaN(price)) return '0.00';
     const fractionDigits = price < 1 ? 6 : price < 100 ? 4 : 2;
     return new Intl.NumberFormat('ru-RU', {
         minimumFractionDigits: fractionDigits,
@@ -66,10 +66,7 @@ function formatPrice(price) {
 // Регистрация пользователя
 async function registerUser(email, password) {
     try {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password
-        });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         console.log('Пользователь зарегистрирован:', data.user);
         alert('Регистрация успешна! Проверьте почту для подтверждения.');
@@ -84,10 +81,7 @@ async function registerUser(email, password) {
 // Вход пользователя
 async function loginUser(email, password) {
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         console.log('Пользователь вошел:', data.user);
         currentUser = data.user;
@@ -154,9 +148,7 @@ async function savePortfolio(crypto, amount) {
     try {
         const { error } = await supabase
             .from('portfolio')
-            .upsert([
-                { user_id: currentUser.id, crypto, amount }
-            ], { onConflict: ['user_id', 'crypto'] });
+            .upsert([{ user_id: currentUser.id, crypto, amount }], { onConflict: ['user_id', 'crypto'] });
         if (error) throw error;
         console.log(`Портфель обновлен: ${crypto} = ${amount}`);
     } catch (error) {
@@ -170,18 +162,16 @@ async function saveTransaction(tx) {
     try {
         const { error } = await supabase
             .from('transactions')
-            .insert([
-                {
-                    user_id: currentUser.id,
-                    date: new Date(tx.date).toISOString(),
-                    type: tx.type,
-                    crypto: tx.crypto,
-                    amount: tx.amount,
-                    price: tx.price,
-                    total: tx.total,
-                    status: tx.status
-                }
-            ]);
+            .insert([{
+                user_id: currentUser.id,
+                date: new Date(tx.date).toISOString(),
+                type: tx.type,
+                crypto: tx.crypto,
+                amount: tx.amount,
+                price: tx.price,
+                total: tx.total,
+                status: tx.status
+            }]);
         if (error) throw error;
         console.log('Транзакция сохранена:', tx);
     } catch (error) {
@@ -207,9 +197,9 @@ function updateAuthUI() {
         `;
         const profileBtn = document.querySelector('.profile-btn');
         const dropdownMenu = document.querySelector('.dropdown-menu');
-        profileBtn.addEventListener('click', () => {
-            dropdownMenu.classList.toggle('active');
-        });
+        if (profileBtn && dropdownMenu) {
+            profileBtn.addEventListener('click', () => dropdownMenu.classList.toggle('active'));
+        }
     } else {
         userControls.innerHTML = `
             <button class="login-btn" onclick="showLoginModal()">Войти</button>
@@ -290,17 +280,21 @@ async function handleRegister() {
     }
 }
 
-// Навигация
-function navigateTo(page) {
+// Навигация с учетом папки html
+function navigateTo(page, event) {
+    if (event) event.preventDefault();
+    console.log('Navigating to:', page);
     const pages = {
         home: 'index.html',
-        trade: 'trading.html',
-        wallet: 'wallet.html',
-        portfolio: 'portfolio.html',
-        history: 'history.html',
-        settings: 'settings.html'
+        trade: 'html/trading.html',
+        wallet: 'html/wallet.html',
+        portfolio: 'html/portfolio.html',
+        history: 'html/history.html',
+        settings: 'html/settings.html'
     };
-    window.location.href = pages[page] || 'index.html';
+    const targetPage = pages[page] || 'index.html';
+    console.log('Target page:', targetPage);
+    window.location.href = targetPage;
 }
 
 // Рендеринг списка криптовалют
@@ -442,7 +436,7 @@ function updateChart() {
         volumeSeries.setData(data.map(d => ({
             time: d.time,
             value: d.volume,
-            color: d.close >= d.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 108, 0.3)'
+            color: d.close >= d.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 43, 0.3)'
         })));
         chart.timeScale().fitContent();
     }).catch(error => console.error('Ошибка обновления графика:', error));
@@ -453,8 +447,7 @@ function setTradeMode(mode) {
     tradeMode = mode;
     const tradeBtn = document.getElementById('trade-btn');
     document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.getAttribute('data-mode') === mode) tab.classList.add('active');
+        tab.classList.toggle('active', tab.getAttribute('data-mode') === mode);
     });
     if (tradeBtn) {
         tradeBtn.textContent = mode === 'buy' ? 'Купить' : 'Продать';
@@ -479,16 +472,20 @@ function updateTradingPanel() {
     if (pairIcon) pairIcon.innerHTML = cryptoSymbols[selectedCrypto];
     if (selectedPair) selectedPair.textContent = selectedMarket;
     if (currentPrice) currentPrice.textContent = `$${formatPrice(cryptoPrices[selectedCrypto])}`;
-    if (changeValue) changeValue.textContent = `${priceChanges[selectedCrypto] >= 0 ? '+' : ''}${formatPrice(priceChanges[selectedCrypto])} (${((priceChanges[selectedCrypto] / (previousPrices[selectedCrypto] || 1)) * 100).toFixed(2)}%)`;
+    if (changeValue && priceChanges[selectedCrypto] !== undefined) {
+        changeValue.textContent = `${priceChanges[selectedCrypto] >= 0 ? '+' : ''}${formatPrice(priceChanges[selectedCrypto])} (${((priceChanges[selectedCrypto] / (previousPrices[selectedCrypto] || 1)) * 100).toFixed(2)}%)`;
+    }
     if (priceChange) priceChange.className = `price-change ${priceChanges[selectedCrypto] >= 0 ? 'positive' : 'negative'}`;
-    if (trendIcon) trendIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${priceChanges[selectedCrypto] >= 0 ? 'M5 10l7-7m0 0l7 7m-7-7v18' : 'M5 14l7 7m0 0l7-7m-7 7V3'}"/>`;
+    if (trendIcon) {
+        trendIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${priceChanges[selectedCrypto] >= 0 ? 'M5 10l7-7m0 0l7 7m-7-7v18' : 'M5 14l7 7m0 0l7-7m-7 7V3'}"/>`;
+    }
     if (selectedCryptoPair) selectedCryptoPair.textContent = selectedCrypto;
-    if (tradePrice) tradePrice.value = cryptoPrices[selectedCrypto]?.toFixed(2) || 0;
+    if (tradePrice) tradePrice.value = cryptoPrices[selectedCrypto]?.toFixed(2) || '0.00';
     if (tradeAmount && cryptoAmount) {
         tradeAmount.oninput = () => {
-            cryptoAmount.value = (tradeAmount.value * tradePrice.value).toFixed(2);
+            cryptoAmount.value = (tradeAmount.value * (tradePrice.value || 0)).toFixed(2);
         };
-        cryptoAmount.value = tradeAmount.value ? (tradeAmount.value * tradePrice.value).toFixed(2) : '0.00';
+        cryptoAmount.value = tradeAmount.value ? (tradeAmount.value * (tradePrice.value || 0)).toFixed(2) : '0.00';
     }
 }
 
@@ -497,14 +494,8 @@ function initChart() {
     const chartContainer = document.getElementById('trading-chart');
     if (!chartContainer) return;
     chart = LightweightCharts.createChart(chartContainer, {
-        layout: {
-            background: { type: 'solid', color: 'transparent' },
-            textColor: '#e6e6e6'
-        },
-        grid: {
-            vertLines: { color: 'rgba(255, 255, 255, 0.1)' },
-            horzLines: { color: 'rgba(255, 255, 255, 0.1)' }
-        },
+        layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#e6e6e6' },
+        grid: { vertLines: { color: 'rgba(255, 255, 255, 0.1)' }, horzLines: { color: 'rgba(255, 255, 255, 0.1)' } },
         rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.1)' },
         timeScale: { borderColor: 'rgba(255, 255, 255, 0.1)', timeVisible: true, secondsVisible: false },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
@@ -516,7 +507,7 @@ function initChart() {
         wickUpColor: '#43e97b',
         wickDownColor: '#f5576c'
     });
-    const volumeContainer = document.getElementById('volume-chart');
+    const volumeContainer = document.getElementById('volume-bottom');
     if (volumeContainer) {
         const volumeChart = LightweightCharts.createChart(volumeContainer, {
             layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#e6e6e6' },
@@ -524,10 +515,7 @@ function initChart() {
             rightPriceScale: { visible: false },
             timeScale: { timeVisible: true, secondsVisible: false }
         });
-        volumeSeries = volumeChart.addHistogramSeries({
-            color: '#7e6bff',
-            priceFormat: { type: 'volume' }
-        });
+        volumeSeries = volumeChart.addHistogramSeries({ color: '#7e6bff', priceFormat: { type: 'volume' } });
         chart.timeScale().subscribeVisibleLogicalRange(range => {
             volumeChart.timeScale().setVisibleLogicalRange(range);
         });
@@ -579,13 +567,17 @@ function updateOrderBook() {
     if (!bidsTbody || !asksTbody) return;
     bidsTbody.innerHTML = '';
     asksTbody.innerHTML = '';
-    const price = cryptoPrices[selectedCrypto];
+    const price = cryptoPrices[selectedCrypto] || 0;
     for (let i = 0; i < 5; i++) {
         const bidPrice = price * (1 - i * 0.001);
         const askPrice = price * (1 + i * 0.001);
         const amount = Math.random() * 10;
-        bidsTbody.innerHTML += `<tr><td class="buy">$${formatPrice(bidPrice)}</td><td>${amount.toFixed(4)}</td></tr>`;
-        asksTbody.innerHTML += `<tr><td class="sell">$${formatPrice(askPrice)}</td><td>${amount.toFixed(4)}</td></tr>`;
+        const bidRow = document.createElement('tr');
+        bidRow.innerHTML = `<td class="buy">$${formatPrice(bidPrice)}</td><td>${amount.toFixed(4)}</td>`;
+        const askRow = document.createElement('tr');
+        askRow.innerHTML = `<td class="sell">$${formatPrice(askPrice)}</td><td>${amount.toFixed(4)}</td>`;
+        bidsTbody.appendChild(bidRow);
+        asksTbody.appendChild(askRow);
     }
 }
 
@@ -613,10 +605,11 @@ function updateStats() {
     const statsLow = document.getElementById('stats-low');
     const statsVolume = document.getElementById('stats-volume');
     const statsMarketCap = document.getElementById('stats-market-cap');
-    if (statsHigh) statsHigh.textContent = `$${formatPrice(cryptoPrices[selectedCrypto] * 1.05)}`;
-    if (statsLow) statsLow.textContent = `$${formatPrice(cryptoPrices[selectedCrypto] * 0.95)}`;
+    const price = cryptoPrices[selectedCrypto] || 0;
+    if (statsHigh) statsHigh.textContent = `$${formatPrice(price * 1.05)}`;
+    if (statsLow) statsLow.textContent = `$${formatPrice(price * 0.95)}`;
     if (statsVolume) statsVolume.textContent = `${(Math.random() * 1000000).toFixed(0)} USDT`;
-    if (statsMarketCap) statsMarketCap.textContent = `$${formatPrice(cryptoPrices[selectedCrypto] * 1000000)}`;
+    if (statsMarketCap) statsMarketCap.textContent = `$${formatPrice(price * 1000000)}`;
 }
 
 // Выполнение торговли
@@ -659,7 +652,7 @@ function executeTrade() {
         amount,
         price,
         total,
-        status: 'success'
+        status: 'completed'
     };
     transactions.push(transaction);
     saveTransaction(transaction);
@@ -695,6 +688,7 @@ function init() {
     supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
             currentUser = session.user;
+            console.log('Сессия найдена:', currentUser);
             fetchUserData();
         }
         updateAuthUI();
