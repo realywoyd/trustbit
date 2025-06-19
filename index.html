@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trust Bit</title>
+    <!-- Подключение стилей из папки css -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- Подключение Supabase для авторизации -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <!-- Подключение главного скрипта из папки js -->
     <script type="module" src="js/main.js"></script>
 </head>
 <body>
@@ -16,13 +19,15 @@
             </svg>
             Trust Bit
         </div>
+        <!-- Навигационное меню с использованием navigateTo -->
         <nav class="nav">
-            <a href="index.html" class="active" onclick="navigateTo('home')">Главная</a>
-            <a href="trading.html" onclick="navigateTo('trade')">Торговля</a>
-            <a href="wallet.html" onclick="navigateTo('wallet')">Кошелек</a>
-            <a href="portfolio.html" onclick="navigateTo('portfolio')">Портфель</a>
-            <a href="history.html" onclick="navigateTo('history')">История</a>
+            <a onclick="navigateTo('home')" class="active">Главная</a>
+            <a onclick="navigateTo('trade')">Торговля</a>
+            <a onclick="navigateTo('wallet')">Кошелек</a>
+            <a onclick="navigateTo('portfolio')">Портфель</a>
+            <a onclick="navigateTo('history')">История</a>
         </nav>
+        <!-- Контролы пользователя с модальными окнами -->
         <div class="user-controls">
             <button class="login-btn" onclick="showLoginModal()">Войти</button>
             <button class="register-btn" onclick="showRegisterModal()">Регистрация</button>
@@ -30,6 +35,7 @@
     </header>
 
     <main class="main-content active">
+        <!-- Секция герой -->
         <section class="hero-section">
             <div class="hero-text">
                 <h1>Торгуйте с Trust Bit</h1>
@@ -37,6 +43,7 @@
             </div>
         </section>
 
+        <!-- Промо-карточки -->
         <section class="promotions">
             <div class="promo-card">
                 <h3>0% комиссии</h3>
@@ -55,12 +62,14 @@
             </div>
         </section>
 
+        <!-- Секция новостей -->
         <section class="news-section">
             <h2>Новости криптовалют</h2>
             <div class="news-list"></div>
         </section>
     </main>
 
+    <!-- Кнопка и чат поддержки -->
     <button class="support-button" onclick="toggleSupport()">💬</button>
     <div class="support-chat" id="support-chat">
         <div class="chat-header">
@@ -76,6 +85,7 @@
         </div>
     </div>
 
+    <!-- Футер -->
     <footer class="custom-footer">
         <div class="footer-section">
             <h3>Trust Bit</h3>
