@@ -155,7 +155,7 @@ function updateUI() {
     if (page === 'portfolio') updatePortfolio();
     if (page === 'wallet') updateBalance();
     if (page === 'history') updateTransactionHistory();
-    if (page === 'trading') {
+    if (page === 'trading' && currentUser) {
         renderCryptoList();
         updateChart();
         updateOrderBook();
@@ -189,7 +189,7 @@ function login() {
 }
 
 function register() {
-    const username = document.getElementById('register-username').value;
+    const username = document.getElementBy Botswana: 'register-username').value;
     const password = document.getElementById('register-password').value;
     const confirmPassword = document.getElementById('register-confirm-password').value;
     const error = document.getElementById('register-error');
@@ -317,9 +317,11 @@ function selectCrypto(crypto) {
             : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 14l7 7m0 0l7-7m-7 7V3"/>';
         trendIcon.style.stroke = priceChanges[crypto] >= 0 ? '#43e97b' : '#f5576c';
     }
-    updateChart();
-    updateTradeHistory();
-    updateOrderBook();
+    if (currentUser) {
+        updateChart();
+        updateTradeHistory();
+        updateOrderBook();
+    }
     renderCryptoList();
 }
 
@@ -356,7 +358,7 @@ function initChart() {
         chart.timeScale().setVisibleLogicalRange(volumeChart.timeScale().getVisibleLogicalRange());
     });
 
-    updateChart();
+    if (currentUser) updateChart();
 }
 
 async function fetchChartData(timeframe) {
@@ -378,7 +380,7 @@ async function fetchChartData(timeframe) {
 }
 
 async function updateChart() {
-    if (!candlestickSeries || !volumeSeries) return;
+    if (!candlestickSeries || !volumeSeries || !currentUser) return;
     const timeframeMap = { '1m': 1, '5m': 5, '15m': 15, '1h': 60, '4h': 240, '1d': 1440 };
     const data = await fetchChartData(currentTimeframe);
     candlestickSeries.setData(data);
@@ -413,14 +415,14 @@ function setTimeframe(timeframe) {
     if (timeframeButtons) {
         timeframeButtons.forEach(btn => btn.classList.remove('active'));
         document.querySelector(`.timeframe-btn[onclick="setTimeframe('${timeframe}')"]`).classList.add('active');
-        updateChart();
+        if (currentUser) updateChart();
     }
 }
 
 function updateOrderBook() {
     const bids = document.getElementById('order-book-bids');
     const asks = document.getElementById('order-book-sales');
-    if (!bids || !asks) return;
+    if (!bids || !asks || !currentUser) return;
 
     bids.innerHTML = '';
     asks.innerHTML = '';
@@ -448,7 +450,7 @@ function updateOrderBook() {
 
 function updateTradeHistory() {
     const tradeHistoryItems = document.getElementById('trade-history-items');
-    if (!tradeHistoryItems) return;
+    if (!tradeHistoryItems || !currentUser) return;
 
     tradeHistoryItems.innerHTML = '';
     const trades = transactions.filter(t => t.crypto === selectedCrypto).slice(-5);
@@ -557,7 +559,7 @@ function updateTransactionHistory() {
                 <td>${formatPrice(tx.amount)}</td>
                 <td>$${formatPrice(tx.price)}</td>
                 <td>$${formatPrice(tx.total)}</td>
-                <td><span class="status ${tx.status}">${tx.status === 'success' ? 'Успешно' : 'Ошибка'}</td>
+                <td><span class="status ${tx.status}">${tx.status === 'success' ? 'Успешно' : 'Ошибка'}</span></td>
                 <td class="${pl >= 0 ? 'positive' : 'negative'}">$${formatPrice(pl)}</td>
             </tr>
         `;
@@ -659,10 +661,21 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchCryptoPrices();
     initChart();
     setInterval(fetchCryptoPrices, 60000);
-    updateUI();
 
     const pairSearch = document.getElementById('pair-search');
     if (pairSearch) {
         pairSearch.addEventListener('input', renderCryptoList);
     }
+
+    // Добавляем обработчик для переключения страниц
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const pageId = link.getAttribute('data-page');
+            document.querySelectorAll('.main-content').forEach(page => page.classList.remove('active'));
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) targetPage.classList.add('active');
+            updateUI();
+        });
+    });
 });
