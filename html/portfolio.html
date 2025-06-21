@@ -3,66 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trust Bitcoin - Portfolio</title>
+    <title>Portfolio - Trust Bit</title>
     <link rel="stylesheet" href="../css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <script type="module" src="../js/main.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
     <header class="header">
         <div class="logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                <path d="M12 8H20V12H16V24H12V12H8V8H12Z" fill="white"/>
+                <defs>
+                    <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#7e6bff"/>
+                        <stop offset="1" stop-color="#5a4bff"/>
+                    </linearGradient>
+                </defs>
             </svg>
-            Trust Bitcoin
+            Trust Bit
         </div>
         <nav class="nav">
-            <a onclick="navigateTo('home')">Home</a>
-            <a onclick="navigateTo('trade')">Trade</a>
-            <a onclick="navigateTo('wallet')">Wallet</a>
-            <a onclick="navigateTo('portfolio')" class="active">Portfolio</a>
-            <a onclick="navigateTo('history')">History</a>
+            <a href="../index.html">Home</a>
+            <a href="trading.html">Trade</a>
+            <a href="wallet.html">Wallet</a>
+            <a href="portfolio.html" class="active">Portfolio</a>
+            <a href="history.html">History</a>
         </nav>
         <div class="user-controls">
-            <button class="login-btn" onclick="showLoginModal()">Login</button>
-            <button class="register-btn" onclick="showRegisterModal()">Register</button>
+            <div class="profile-dropdown" id="profile-dropdown" style="display: none;">
+                <button class="profile-btn" id="profile-btn">Profile</button>
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="#" onclick="logout()">Logout</a>
+                </div>
+            </div>
+            <button class="login-btn" id="login-btn" onclick="openModal('login-modal')">Login</button>
+            <button class="register-btn" id="register-btn" onclick="openModal('register-modal')">Register</button>
         </div>
     </header>
 
-    <main class="main-content active">
-        <section class="portfolio-section">
-            <h2>Your Portfolio</h2>
-            <div class="portfolio-grid"></div>
-        </section>
-    </main>
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('login-modal')">×</span>
+            <h2>Login</h2>
+            <input type="text" id="login-username" placeholder="Username" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <p id="login-error" class="error">Invalid username or password</p>
+            <button onclick="login()">Login</button>
+        </div>
+    </div>
 
-    <button class="support-button" onclick="toggleSupport()">💬</button>
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('register-modal')">×</span>
+            <h2>Register</h2>
+            <input type="text" id="register-username" placeholder="Username" required>
+            <input type="password" id="register-password" placeholder="Password" required>
+            <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
+            <p id="register-error" class="error">Please check your input</p>
+            <button onclick="register()">Register</button>
+        </div>
+    </div>
+
+    <div id="portfolio" class="main-content active">
+        <div class="card">
+            <h2>Your Portfolio</h2>
+            <div class="portfolio-grid" id="portfolio-grid"></div>
+        </div>
+    </div>
+
+    <button class="support-button" title="Support" onclick="toggleSupportChat()">💬</button>
     <div class="support-chat" id="support-chat">
         <div class="chat-header">
-            <h3>Trust Bitcoin Support</h3>
-            <button class="chat-close" onclick="toggleSupport()">✕</button>
+            <h3>Trust Bit Support</h3>
+            <button class="chat-close" onclick="toggleSupportChat()">✕</button>
         </div>
         <div class="chat-body" id="chat-body">
-            <div class="chat-message support">Welcome! How can we help you?</div>
+            <div class="chat-message support">Welcome! How can I assist you?</div>
         </div>
         <div class="chat-input">
-            <input type="text" id="chat-input" placeholder="Type a message...">
+            <input type="text" id="chat-input" placeholder="Enter message...">
             <button onclick="sendMessage()">Send</button>
         </div>
     </div>
 
-    <footer class="custom-footer">
+    <div class="custom-footer">
         <div class="footer-section">
-            <h3>Trust Bitcoin</h3>
-            <a href="#">About</a>
+            <h3>Trust Bit</h3>
+            <a href="#">About Us</a>
             <a href="#">Team</a>
             <a href="#">Support</a>
         </div>
         <div class="footer-section">
-            <h3>Legal</h3>
+            <h3>Features</h3>
+            <a href="#">Technical Data</a>
+            <a href="#">Security</a>
+            <a href="#">Performance</a>
+        </div>
+        <div class="footer-section">
+            <h3>Market Tools</h3>
+            <a href="#">Analytics</a>
+            <a href="#">Indicators</a>
+            <a href="#">Trading Signals</a>
+        </div>
+        <div class="footer-section">
+            <h3>Legal Information</h3>
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Use</a>
+            <a href="#">Licenses</a>
         </div>
-    </footer>
+        <div class="footer-section">
+            <h3>Trading Pairs</h3>
+            <a href="#">BTC/USD</a>
+            <a href="#">ETH/USDT</a>
+            <a href="#">ADA/USDT</a>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
 </body>
 </html>
