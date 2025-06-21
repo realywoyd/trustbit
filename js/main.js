@@ -119,6 +119,7 @@ function hashPassword(password) {
 function saveUserData() {
     if (currentUser) {
         localStorage.setItem(`user_${currentUser}`, JSON.stringify({ balance, portfolio, transactions, favoritePairs: [...favoritePairs] }));
+        console.log('User data saved for:', currentUser);
     }
 }
 
@@ -131,27 +132,31 @@ function loadUserData() {
             portfolio = parsed.portfolio || {};
             transactions = parsed.transactions || [];
             favoritePairs = new Set(parsed.favoritePairs || []);
+            console.log('User data loaded for:', currentUser);
         }
     }
     updateUI();
 }
 
 function updateUI() {
+    console.log('Updating UI, currentUser:', currentUser);
     const profileDropdown = document.getElementById('profile-dropdown');
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
     if (currentUser) {
-        profileDropdown.style.display = 'block';
-        loginBtn.style.display = 'none';
-        registerBtn.style.display = 'none';
-        document.getElementById('profile-btn').textContent = currentUser;
+        if (profileDropdown) profileDropdown.style.display = 'block';
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (registerBtn) registerBtn.style.display = 'none';
+        const profileBtn = document.getElementById('profile-btn');
+        if (profileBtn) profileBtn.textContent = currentUser;
     } else {
-        profileDropdown.style.display = 'none';
-        loginBtn.style.display = 'block';
-        registerBtn.style.display = 'block';
+        if (profileDropdown) profileDropdown.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'block';
+        if (registerBtn) registerBtn.style.display = 'block';
     }
 
     const page = document.querySelector('.main-content.active')?.id;
+    console.log('Active page:', page);
     if (page === 'portfolio') updatePortfolio();
     if (page === 'wallet') updateBalance();
     if (page === 'history') updateTransactionHistory();
@@ -164,11 +169,13 @@ function updateUI() {
 }
 
 function openModal(modalId) {
+    console.log('Opening modal:', modalId, 'currentUser:', currentUser);
     const modal = document.getElementById(modalId);
     if (modal) modal.style.display = 'flex';
 }
 
 function closeModal(modalId) {
+    console.log('Closing modal:', modalId);
     const modal = document.getElementById(modalId);
     const error = document.getElementById(`${modalId}-error`);
     if (modal) modal.style.display = 'none';
@@ -192,6 +199,7 @@ function login() {
     if (user && JSON.parse(user).password === hashPassword(password)) {
         currentUser = username;
         localStorage.setItem('currentUser', currentUser);
+        console.log('User logged in:', currentUser);
         loadUserData();
         closeModal('login-modal');
     } else {
@@ -265,6 +273,7 @@ function register() {
 }
 
 function logout() {
+    console.log('Logging out, currentUser:', currentUser);
     currentUser = null;
     localStorage.removeItem('currentUser');
     balance = 1000;
@@ -465,9 +474,10 @@ function setTimeframe(timeframe) {
 }
 
 function updateOrderBook() {
+    if (!currentUser) return;
     const bids = document.getElementById('order-book-bids');
     const asks = document.getElementById('order-book-sales');
-    if (!bids || !asks || !currentUser) return;
+    if (!bids || !asks) return;
 
     bids.innerHTML = '';
     asks.innerHTML = '';
@@ -494,8 +504,9 @@ function updateOrderBook() {
 }
 
 function updateTradeHistory() {
+    if (!currentUser) return;
     const tradeHistoryItems = document.getElementById('trade-history-items');
-    if (!tradeHistoryItems || !currentUser) return;
+    if (!tradeHistoryItems) return;
 
     tradeHistoryItems.innerHTML = '';
     const trades = transactions.filter(t => t.crypto === selectedCrypto).slice(-5);
@@ -514,6 +525,7 @@ function updateTradeHistory() {
 
 function executeTrade() {
     if (!currentUser) {
+        console.log('executeTrade: User not authenticated, opening login modal');
         openModal('login-modal');
         return;
     }
@@ -613,6 +625,7 @@ function updateTransactionHistory() {
 
 function depositFunds() {
     if (!currentUser) {
+        console.log('depositFunds: User not authenticated, opening login modal');
         openModal('login-modal');
         return;
     }
@@ -684,6 +697,7 @@ function sendMessage() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, checking for currentUser:', localStorage.getItem('currentUser'));
     const profileBtn = document.getElementById('profile-btn');
     if (profileBtn) {
         profileBtn.addEventListener('click', () => {
@@ -715,6 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
+            console.log('Navigating to page:', link.getAttribute('data-page'), 'currentUser:', currentUser);
             const pageId = link.getAttribute('data-page');
             document.querySelectorAll('.main-content').forEach(page => page.classList.remove('active'));
             const targetPage = document.getElementById(pageId);
