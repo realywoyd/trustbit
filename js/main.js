@@ -164,38 +164,75 @@ function updateUI() {
 }
 
 function openModal(modalId) {
-    document.getElementById(modalId).style.display = 'flex';
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-    document.getElementById(`${modalId}-error`).style.display = 'none';
+    const modal = document.getElementById(modalId);
+    const error = document.getElementById(`${modalId}-error`);
+    if (modal) modal.style.display = 'none';
+    if (error) error.style.display = 'none';
 }
 
 function login() {
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
+    const username = document.getElementById('login-username')?.value;
+    const password = document.getElementById('login-password')?.value;
     const error = document.getElementById('login-error');
-    const user = localStorage.getItem(`user_${username}`);
 
+    if (!username || !password) {
+        if (error) {
+            error.textContent = 'Введите имя пользователя и пароль';
+            error.style.display = 'block';
+        }
+        return;
+    }
+
+    const user = localStorage.getItem(`user_${username}`);
     if (user && JSON.parse(user).password === hashPassword(password)) {
         currentUser = username;
         localStorage.setItem('currentUser', currentUser);
         loadUserData();
         closeModal('login-modal');
     } else {
-        error.style.display = 'block';
+        if (error) {
+            error.textContent = 'Неверное имя пользователя или пароль';
+            error.style.display = 'block';
+        }
     }
 }
 
 function register() {
-    const username = document.getElementBy Botswana: 'register-username').value;
-    const password = document.getElementById('register-password').value;
-    const confirmPassword = document.getElementById('register-confirm-password').value;
+    const usernameInput = document.getElementById('register-username');
+    const passwordInput = document.getElementById('register-password');
+    const confirmPasswordInput = document.getElementById('register-confirm-password');
     const error = document.getElementById('register-error');
 
-    if (!username || password !== confirmPassword || password.length < 6) {
-        error.textContent = password !== confirmPassword ? 'Пароли не совпадают' : 'Некорректные данные';
+    if (!usernameInput || !passwordInput || !confirmPasswordInput || !error) {
+        console.error('Registration form elements not found');
+        return;
+    }
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    console.log('Register attempt:', { username, passwordLength: password.length, passwordsMatch: password === confirmPassword });
+
+    if (!username) {
+        error.textContent = 'Введите имя пользователя';
+        error.style.display = 'block';
+        return;
+    }
+
+    if (password.length < 6) {
+        error.textContent = 'Пароль должен содержать не менее 6 символов';
+        error.style.display = 'block';
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        error.textContent = 'Пароли не совпадают';
         error.style.display = 'block';
         return;
     }
@@ -206,17 +243,25 @@ function register() {
         return;
     }
 
-    localStorage.setItem(`user_${username}`, JSON.stringify({
-        password: hashPassword(password),
-        balance: 1000,
-        portfolio: {},
-        transactions: [],
-        favoritePairs: []
-    }));
-    currentUser = username;
-    localStorage.setItem('currentUser', currentUser);
-    loadUserData();
-    closeModal('register-modal');
+    try {
+        const userData = {
+            password: hashPassword(password),
+            balance: 1000,
+            portfolio: {},
+            transactions: [],
+            favoritePairs: []
+        };
+        localStorage.setItem(`user_${username}`, JSON.stringify(userData));
+        currentUser = username;
+        localStorage.setItem('currentUser', currentUser);
+        console.log('User registered successfully:', username);
+        loadUserData();
+        closeModal('register-modal');
+    } catch (e) {
+        console.error('Error during registration:', e);
+        error.textContent = 'Ошибка при регистрации. Попробуйте снова.';
+        error.style.display = 'block';
+    }
 }
 
 function logout() {
@@ -667,7 +712,6 @@ document.addEventListener('DOMContentLoaded', () => {
         pairSearch.addEventListener('input', renderCryptoList);
     }
 
-    // Добавляем обработчик для переключения страниц
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
