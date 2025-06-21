@@ -169,9 +169,16 @@ function updateUI() {
 }
 
 function openModal(modalId) {
-    console.log('Opening modal:', modalId, 'currentUser:', currentUser);
+    console.log('Attempting to open modal:', modalId, 'currentUser:', currentUser);
+    if (modalId === 'register-modal' && currentUser) {
+        console.log('Blocked register-modal opening: User is already authenticated');
+        return;
+    }
     const modal = document.getElementById(modalId);
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        console.log('Modal opened:', modalId);
+    }
 }
 
 function closeModal(modalId) {
@@ -202,6 +209,7 @@ function login() {
         console.log('User logged in:', currentUser);
         loadUserData();
         closeModal('login-modal');
+        closeModal('register-modal'); // Ensure register modal is closed
     } else {
         if (error) {
             error.textContent = 'Неверное имя пользователя или пароль';
@@ -265,6 +273,7 @@ function register() {
         console.log('User registered successfully:', username);
         loadUserData();
         closeModal('register-modal');
+        closeModal('login-modal'); // Ensure login modal is closed
     } catch (e) {
         console.error('Error during registration:', e);
         error.textContent = 'Ошибка при регистрации. Попробуйте снова.';
@@ -284,6 +293,7 @@ function logout() {
 }
 
 function renderCryptoList() {
+    if (!currentUser) return;
     const cryptoItems = document.getElementById('crypto-items');
     if (!cryptoItems) return;
 
@@ -403,21 +413,23 @@ function initChart() {
         timeScale: { borderColor: 'rgba(255, 255, 255, 0.1)', timeVisible: true, secondsVisible: false },
     });
 
-    volumeSeries = volumeChart.addHistogramSeries({ color: '#7e6bff', priceFormat: { type: 'volume' } });
+    volumeSeries = volumeChart.addHistogramSeries({ color: '#7e97b9', priceFormat: { type: 'volume' } });
 
     chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
         volumeChart.timeScale().setVisibleLogicalRange(chart.timeScale().getVisibleLogicalRange());
-    });
-    volumeChart.timeScale().subscribeVisibleLogicalRangeChange(() => {
-        chart.timeScale().setVisibleLogicalRange(volumeChart.timeScale().getVisibleLogicalRange());
-    });
+        volumeChart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+            chart.timeScale().setVisibleLogicalRange(volumeChart.timeScale().getVisibleLogicalRange());
+        });
+    }));
 
-    if (currentUser) updateChart();
+    if (currentUser) {
+        updateChart();
+    }
 }
 
 async function fetchChartData(timeframe) {
     try {
-        const response = await fetch(`https://api.coingecko.com/api/v3/coins/${cryptoIdMap[selectedCrypto]}/ohlc?vs_currency=usd&days=${timeframe === '1d' ? 1 : 30}`);
+        const response = await fetch(`https://api.coingecko.com/api/v3/simple/coins/${cryptoIdMap[crypto]})/[${selectedCrypto}]/ohlc?vs_currency=usd&days=${timeframe === '1d' ? 1 : 30}`);
         const data = await response.json();
         return data.map(([time, open, high, low, close]) => ({
             time: time / 1000,
@@ -438,7 +450,7 @@ async function updateChart() {
     const timeframeMap = { '1m': 1, '5m': 5, '15m': 15, '1h': 60, '4h': 240, '1d': 1440 };
     const data = await fetchChartData(currentTimeframe);
     candlestickSeries.setData(data);
-    volumeSeries.setData(data.map(d => ({ time: d.time, value: d.volume, color: d.close >= d.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 108, 0.3)'})));
+    volumeSeries.setData(data.map(d => ({ time: d.time, value: d.volume, color: d.close >= d.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 108, 0.3)' })));
     chart.timeScale().fitContent();
 
     const statsHigh = document.getElementById('stats-high');
@@ -455,9 +467,10 @@ function setTradeMode(mode) {
     tradeMode = mode;
     const tabs = document.querySelectorAll('.tab');
     const tradeBtn = document.getElementById('trade-btn');
-    if (tabs && tradeBtn) {
+    if (tabs && tabs.length > 0 && tradeBtn) {
         tabs.forEach(tab => tab.classList.remove('active'));
-        document.querySelector(`.tab[onclick="setTradeMode('${mode}')"]`).classList.add('active');
+        const activeTab = document.querySelector(`.tab[onclick="setTradeMode('${mode}')"]`);
+        if (activeTab) activeTab.classList.add('active');
         tradeBtn.textContent = mode === 'buy' ? 'Купить' : 'Продать';
         tradeBtn.style.background = mode === 'buy' ? 'linear-gradient(45deg, #43e97b, #38f9d7)' : 'linear-gradient(45deg, #f5576c, #f093fb)';
     }
@@ -466,9 +479,10 @@ function setTradeMode(mode) {
 function setTimeframe(timeframe) {
     currentTimeframe = timeframe;
     const timeframeButtons = document.querySelectorAll('.timeframe-btn');
-    if (timeframeButtons) {
+    if (timeframeButtons && timeframeButtons.length > 0) {
         timeframeButtons.forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`.timeframe-btn[onclick="setTimeframe('${timeframe}')"]`).classList.add('active');
+        const activeBtn = document.querySelector(`.timeframe-btn[onclick="setTimeframe('${timeframe}')"]`);
+        if (activeBtn) activeBtn.classList.add('active');
         if (currentUser) updateChart();
     }
 }
@@ -483,6 +497,8 @@ function updateOrderBook() {
     asks.innerHTML = '';
 
     const price = cryptoPrices[selectedCrypto];
+    if (!price) return;
+
     for (let i = 1; i <= 5; i++) {
         const bidPrice = price * (1 - i * 0.002);
         const askPrice = price * (1 + i * 0.002);
@@ -691,13 +707,26 @@ function sendMessage() {
             <div class="chat-message support">Спасибо за ваше сообщение! Наша команда ответит вам в ближайшее время.</div>
         `;
         chatBody.scrollTop = chatBody.scrollHeight;
-    }, 1000);
+    }, 500);
 
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, checking for currentUser:', localStorage.getItem('currentUser'));
+
+    // Close modals on page load if user is authenticated
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        currentUser = savedUser;
+        console.log('User authenticated on load:', currentUser);
+        closeModal('register-modal');
+        closeModal('login-modal');
+        loadUserData();
+    } else {
+        console.log('No authenticated user found');
+    }
+
     const profileBtn = document.getElementById('profile-btn');
     if (profileBtn) {
         profileBtn.addEventListener('click', () => {
@@ -709,12 +738,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedFavorites = localStorage.getItem('favoritePairs');
     if (savedFavorites) {
         favoritePairs = new Set(JSON.parse(savedFavorites));
-    }
-
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = savedUser;
-        loadUserData();
     }
 
     fetchCryptoPrices();
@@ -734,6 +757,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.main-content').forEach(page => page.classList.remove('active'));
             const targetPage = document.getElementById(pageId);
             if (targetPage) targetPage.classList.add('active');
+            if (currentUser) {
+                closeModal('register-modal');
+                closeModal('login-modal');
+            }
             updateUI();
         });
     });
