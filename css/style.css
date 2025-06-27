@@ -395,6 +395,37 @@ body {
     overflow-y: auto;
 }
 
+.crypto-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.crypto-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.crypto-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #7e6bff, #5a4bff);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.crypto-list::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #5a4bff, #7e6bff);
+}
+
+.no-auth-message {
+    color: #f5576c;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+.price.zero {
+    color: #9ca3af;
+    font-style: italic;
+}
+
 .crypto-item {
     display: flex;
     justify-content: space-between;
