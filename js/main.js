@@ -1,4 +1,4 @@
-let balance = 1000;
+let balance = 0;
 let portfolio = {};
 let transactions = [];
 let cryptoPrices = {
@@ -192,6 +192,11 @@ function updateUI() {
     }
 }
 
+function restrictRegion(event) {
+    event.preventDefault();
+    alert('Недоступно в Вашем регионе');
+}
+
 function openModal(modalId) {
     console.log('Attempting to open modal:', modalId, 'currentUser:', currentUser);
     if (modalId === 'register-modal' && currentUser) {
@@ -255,65 +260,8 @@ function login() {
 }
 
 function register() {
-    const usernameInput = document.getElementById('register-username');
-    const passwordInput = document.getElementById('register-password');
-    const confirmPasswordInput = document.getElementById('register-confirm-password');
-    const error = document.getElementById('register-error');
-
-    if (!usernameInput || !passwordInput || !confirmPasswordInput || !error) {
-        console.error('Registration form elements not found');
-        return;
-    }
-
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-    const confirmPassword = confirmPasswordInput.value;
-
-    console.log('Register attempt:', { username, passwordLength: password.length, passwordsMatch: password === confirmPassword });
-
-    if (!username) {
-        error.textContent = 'Введите имя пользователя';
-        error.style.display = 'block';
-        return;
-    }
-
-    if (password.length < 6) {
-        error.textContent = 'Пароль должен содержать не менее 6 символов';
-        error.style.display = 'block';
-        return;
-    }
-
-    if (password !== confirmPassword) {
-        error.textContent = 'Пароли не совпадают';
-        error.style.display = 'block';
-        return;
-    }
-
-    if (localStorage.getItem(`user_${username}`)) {
-        error.textContent = 'Пользователь уже существует';
-        error.style.display = 'block';
-        return;
-    }
-
-    try {
-        const userData = {
-            password: hashPassword(password),
-            balance: 1000,
-            portfolio: {},
-            transactions: [],
-            favoritePairs: []
-        };
-        localStorage.setItem(`user_${username}`, JSON.stringify(userData));
-        currentUser = username;
-        localStorage.setItem('currentUser', currentUser);
-        console.log('User registered successfully:', username);
-        closeAllModals();
-        loadUserData();
-    } catch (e) {
-        console.error('Error during registration:', e);
-        error.textContent = 'Ошибка при регистрации. Попробуйте снова.';
-        error.style.display = 'block';
-    }
+    alert('Недоступно в Вашем регионе');
+    return;
 }
 
 function logout() {
