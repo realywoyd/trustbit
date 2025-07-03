@@ -24,6 +24,7 @@ let chart = null;
 let candlestickSeries = null;
 let volumeSeries = null;
 let ws = null;
+let isFetchingPrices = false;
 
 const cryptoIdMap = {
     BTC: 'BTC', ETH: 'ETH', USDT: 'USDT', BNB: 'BNB', LTC: 'LTC',
@@ -44,12 +45,24 @@ const cryptoIdMap = {
     RVN: 'RVN', HOT: 'HOT', OMG: 'OMG', LUNA: 'LUNA'
 };
 
-// Маппинг для CoinGecko (некоторые тикеры отличаются, например, LUNA -> terra-luna-v2)
 const coingeckoIdMap = {
-    ...cryptoIdMap,
-    LUNA: 'terra-luna-v2', // Terra 2.0 в CoinGecko
-    '1INCH': '1inch',
-    RNDR: 'render-token'
+    BTC: 'bitcoin', ETH: 'ethereum', USDT: 'tether', BNB: 'binancecoin', LTC: 'litecoin',
+    TON: 'toncoin', XRP: 'ripple', SOL: 'solana', USDC: 'usd-coin', DOGE: 'dogecoin',
+    TRX: 'tron', ADA: 'cardano', WBTC: 'wrapped-bitcoin', AVAX: 'avalanche-2', SHIB: 'shiba-inu',
+    LINK: 'chainlink', DOT: 'polkadot', MATIC: 'matic-network', BCH: 'bitcoin-cash',
+    UNI: 'uniswap', XLM: 'stellar', VET: 'vechain', ATOM: 'cosmos', FIL: 'filecoin',
+    ALGO: 'algorand', NEAR: 'near', ICP: 'internet-computer', APT: 'aptos',
+    ARB: 'arbitrum', OP: 'optimism', INJ: 'injective-protocol', SUI: 'sui',
+    XTZ: 'tezos', EOS: 'eos', HBAR: 'hedera-hashgraph', XMR: 'monero',
+    KSM: 'kusama', AAVE: 'aave', MKR: 'maker', GRT: 'the-graph', RUNE: 'thorchain',
+    FTM: 'fantom', SAND: 'the-sandbox', MANA: 'decentraland', AXS: 'axie-infinity',
+    CHZ: 'chiliz', CRV: 'curve-dao-token', COMP: 'compound-governance-token', SNX: 'synthetix-network-token',
+    '1INCH': '1inch', LDO: 'lido-dao', RNDR: 'render-token', STX: 'blockstack',
+    IMX: 'immutable-x', FLOW: 'flow', GALA: 'gala', APE: 'apecoin', EGLD: 'elrond-erd-2',
+    KAVA: 'kava', ZEC: 'zcash', DASH: 'dash', NEO: 'neo', IOTA: 'iota',
+    QTUM: 'qtum', WAVES: 'waves', ZIL: 'zilliqa', ENJ: 'enjincoin', BAT: 'basic-attention-token',
+    LRC: 'loopring', ANKR: 'ankr', RVN: 'ravencoin', HOT: 'holotoken', OMG: 'omisego',
+    LUNA: 'terra-luna-v2'
 };
 
 const cryptoSymbols = {
@@ -119,13 +132,15 @@ const colorMap = {
     LRC: { start: '2ab6f6', end: '6bd4ff' }, ANKR: { start: '1e4dd8', end: '4d8bff' },
     RVN: { start: '3848a0', end: '6b7aa8' }, HOT: { start: 'ff3c3c', end: 'ff7a7a' },
     OMG: { start: '1a1a1a', end: '4d4d4d' }, LUNA: { start: '2a2a72', end: '5c5cff' },
-    default: { start: '7e6bff', end: '5a4bff' } // Добавлено: резервный цвет
+    default: { start: '7e6bff', end: '5a4bff' }
 };
 
 function formatPrice(value) {
-    if (typeof value !== 'number') return 'N/A';
+    if (typeof value !== 'number' || isNaN(value) || value <= 0) return 'Loading...';
     const fractionDigits = value < 1 ? 6 : value < 100 ? 4 : 2;
-    return new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
         minimumFractionDigits: fractionDigits,
         maximumFractionDigits: fractionDigits
     }).format(value);
@@ -153,14 +168,19 @@ function loadUserData() {
         const data = localStorage.getItem(`user_${currentUser}`);
         if (data) {
             const parsed = JSON.parse(data);
-            balance = parsed.balance || 1000;
+            balance = parsed.balance || 0;
             portfolio = parsed.portfolio || {};
             transactions = parsed.transactions || [];
             favoritePairs = new Set(parsed.favoritePairs || []);
             console.log('User data loaded for:', currentUser);
+        } else {
+            balance = 0;
+            portfolio = {};
+            transactions = [];
+            favoritePairs = new Set();
         }
+        updateUI();
     }
-    updateUI();
 }
 
 function updateUI() {
@@ -184,11 +204,13 @@ function updateUI() {
     console.log('Active page:', page);
     if (page === 'portfolio') updatePortfolio();
     if (page === 'wallet') updateBalance();
-    if (page === 'trading' && currentUser) {
+    if (page === 'trading') {
         renderCryptoList();
-        updateChart();
-        updateOrderBook();
-        updateTradeHistory();
+        if (currentUser) {
+            updateChart();
+            updateOrderBook();
+            updateTradeHistory();
+        }
     }
 }
 
@@ -272,7 +294,7 @@ function logout() {
     }
     currentUser = null;
     localStorage.removeItem('currentUser');
-    balance = 1000;
+    balance = 0;
     portfolio = {};
     transactions = [];
     favoritePairs = new Set();
@@ -286,20 +308,27 @@ function renderCryptoList() {
         return;
     }
 
+    cryptoItems.innerHTML = '';
     if (!currentUser) {
         cryptoItems.innerHTML = '<div class="no-auth-message">Пожалуйста, войдите, чтобы просмотреть цены криптовалют.</div>';
         console.log('renderCryptoList: User not authenticated');
         return;
     }
 
-    cryptoItems.innerHTML = '';
+    if (isFetchingPrices) {
+        cryptoItems.innerHTML = '<div class="loading-message">Loading prices...</div>';
+        return;
+    }
+
     const searchInput = document.getElementById('pair-search');
     const searchQuery = searchInput ? searchInput.value.toUpperCase() : '';
+    let displayedCoins = 0;
     Object.keys(cryptoPrices).forEach(crypto => {
         if (searchQuery && !crypto.includes(searchQuery) && !favoritePairs.has(`${crypto}/USDT`)) return;
+        const price = cryptoPrices[crypto];
         const colors = colorMap[crypto] || colorMap.default;
         const isFavorite = favoritePairs.has(`${crypto}/USDT`);
-        const price = cryptoPrices[crypto] || 0;
+        const changePercentage = previousPrices[crypto] && price > 0 ? ((price - previousPrices[crypto]) / previousPrices[crypto] * 100).toFixed(2) : '0.00';
         const item = document.createElement('div');
         item.className = `crypto-item ${selectedMarket.split('/')[0] === crypto ? 'selected' : ''}`;
         item.innerHTML = `
@@ -311,15 +340,19 @@ function renderCryptoList() {
                 <span>${crypto}/USDT</span>
             </div>
             <div class="crypto-price">
-                <div class="price ${price === 0 ? 'zero' : ''}">$${formatPrice(price)}</div>
+                <div class="price">${formatPrice(price)}</div>
                 <div class="change ${priceChanges[crypto] >= 0 ? 'positive' : 'negative'}">
-                    ${priceChanges[crypto] >= 0 ? '+' : ''}${formatPrice(priceChanges[crypto])} (${((priceChanges[crypto] / previousPrices[crypto]) * 100).toFixed(2)}%)
+                    ${priceChanges[crypto] >= 0 ? '+' : ''}${formatPrice(priceChanges[crypto])} (${changePercentage}%)
                 </div>
             </div>
         `;
         item.onclick = () => selectCrypto(crypto);
         cryptoItems.appendChild(item);
+        displayedCoins++;
     });
+    if (displayedCoins === 0) {
+        cryptoItems.innerHTML = '<div class="no-data-message">No coins match your search or favorites.</div>';
+    }
 }
 
 function toggleFavorite(pair, event) {
@@ -334,23 +367,31 @@ function toggleFavorite(pair, event) {
 }
 
 async function fetchCryptoPrices() {
+    if (isFetchingPrices) return;
+    isFetchingPrices = true;
+    const cryptoItems = document.getElementById('crypto-items');
+    if (cryptoItems) {
+        cryptoItems.innerHTML = '<div class="loading-message">Loading prices...</div>';
+    }
+
     const cacheKey = 'cryptoPricesCache';
-    const cacheTTL = 5 * 60 * 1000; // 5 минут
+    const cacheTTL = 5 * 60 * 1000; // 5 minutes
     const cachedData = localStorage.getItem(cacheKey);
     const now = Date.now();
 
     if (cachedData) {
         const { timestamp, prices } = JSON.parse(cachedData);
-        if (now - timestamp < cacheTTL) {
+        if (now - timestamp < cacheTTL && Object.values(prices).some(p => p > 0)) {
             Object.assign(cryptoPrices, prices);
             Object.keys(cryptoPrices).forEach(crypto => {
-                previousPrices[crypto] = cryptoPrices[crypto];
-                priceChanges[crypto] = 0;
+                previousPrices[crypto] = cryptoPrices[crypto] || previousPrices[crypto];
+                priceChanges[crypto] = cryptoPrices[crypto] && previousPrices[crypto] ? cryptoPrices[crypto] - previousPrices[crypto] : 0;
                 cryptoPriceHistory[crypto].push({ time: Math.floor(now / 1000), value: cryptoPrices[crypto] });
                 if (cryptoPriceHistory[crypto].length > 100) {
                     cryptoPriceHistory[crypto].shift();
                 }
             });
+            isFetchingPrices = false;
             updateUI();
             console.log('Loaded prices from cache');
             return;
@@ -358,62 +399,87 @@ async function fetchCryptoPrices() {
     }
 
     try {
-        // Основной API: CryptoCompare
-        const symbols = Object.keys(cryptoIdMap).join(',');
-        const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${symbols}&tsyms=USD&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
-        const data = await response.json();
-        const missingCoins = [];
+        // Batch CryptoCompare requests to avoid rate limits
+        const symbols = Object.keys(cryptoIdMap);
+        const batchSize = 30; // CryptoCompare supports up to ~40 symbols per request
+        const batches = [];
+        for (let i = 0; i < symbols.length; i += batchSize) {
+            batches.push(symbols.slice(i, i + batchSize));
+        }
 
+        const cryptoComparePrices = {};
+        for (const batch of batches) {
+            const batchSymbols = batch.join(',');
+            const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${batchSymbols}&tsyms=USD&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
+            if (!response.ok) {
+                console.warn(`CryptoCompare API error for batch ${batchSymbols}: ${response.status} ${response.statusText}`);
+                continue;
+            }
+            const data = await response.json();
+            Object.assign(cryptoComparePrices, data);
+        }
+
+        const missingCoins = [];
         Object.keys(cryptoIdMap).forEach(crypto => {
-            const price = data[crypto]?.USD || 0;
-            if (price === 0) {
+            const price = cryptoComparePrices[crypto]?.USD || 0;
+            if (!price || price <= 0) {
                 missingCoins.push(crypto);
-                console.warn(`No USD price for ${crypto} from CryptoCompare`);
             } else {
                 previousPrices[crypto] = cryptoPrices[crypto] || price;
                 cryptoPrices[crypto] = price;
-                priceChanges[crypto] = (price - previousPrices[crypto]) || 0;
-                cryptoPriceHistory[crypto].push({ time: Math.floor(Date.now() / 1000), value: price });
+                priceChanges[crypto] = price - previousPrices[crypto];
+                cryptoPriceHistory[crypto].push({ time: Math.floor(now / 1000), value: price });
                 if (cryptoPriceHistory[crypto].length > 100) {
                     cryptoPriceHistory[crypto].shift();
                 }
             }
         });
 
-        // Резервный API: CoinGecko для монет, не найденных в CryptoCompare
         if (missingCoins.length > 0) {
             console.log('Fetching missing coins from CoinGecko:', missingCoins);
-            const coingeckoIds = missingCoins.map(c => coingeckoIdMap[c]).join(',');
-            const coingeckoResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoIds}&vs_currencies=usd`);
-            const coingeckoData = await coingeckoResponse.json();
-            missingCoins.forEach(crypto => {
-                const cgId = coingeckoIdMap[crypto];
-                const price = coingeckoData[cgId]?.usd || 0;
-                if (price === 0) {
-                    console.warn(`No USD price for ${crypto} from CoinGecko`);
+            // Batch CoinGecko requests to avoid rate limits
+            const cgBatchSize = 20; // CoinGecko rate limit is ~50 calls/minute
+            const cgBatches = [];
+            for (let i = 0; i < missingCoins.length; i += cgBatchSize) {
+                cgBatches.push(missingCoins.slice(i, i + cgBatchSize));
+            }
+
+            for (const batch of cgBatches) {
+                const coingeckoIds = batch.map(c => coingeckoIdMap[c]).join(',');
+                const coingeckoResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoIds}&vs_currencies=usd`);
+                if (!coingeckoResponse.ok) {
+                    console.warn(`CoinGecko API error for batch ${coingeckoIds}: ${coingeckoResponse.status} ${coingeckoResponse.statusText}`);
+                    continue;
                 }
-                previousPrices[crypto] = cryptoPrices[crypto] || price;
-                cryptoPrices[crypto] = price;
-                priceChanges[crypto] = (price - previousPrices[crypto]) || 0;
-                cryptoPriceHistory[crypto].push({ time: Math.floor(Date.now() / 1000), value: price });
-                if (cryptoPriceHistory[crypto].length > 100) {
-                    cryptoPriceHistory[crypto].shift();
-                }
-            });
+                const coingeckoData = await coingeckoResponse.json();
+                batch.forEach(crypto => {
+                    const cgId = coingeckoIdMap[crypto];
+                    const price = coingeckoData[cgId]?.usd || 0;
+                    if (!price || price <= 0) {
+                        console.warn(`No valid USD price for ${crypto} from CoinGecko`);
+                    } else {
+                        previousPrices[crypto] = cryptoPrices[crypto] || price;
+                        cryptoPrices[crypto] = price;
+                        priceChanges[crypto] = price - previousPrices[crypto];
+                        cryptoPriceHistory[crypto].push({ time: Math.floor(now / 1000), value: price });
+                        if (cryptoPriceHistory[crypto].length > 100) {
+                            cryptoPriceHistory[crypto].shift();
+                        }
+                    }
+                });
+                // Add delay to respect CoinGecko rate limits
+                await new Promise(resolve => setTimeout(resolve, 1200)); // 1.2s delay between batches
+            }
         }
 
         localStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, prices: cryptoPrices }));
+        isFetchingPrices = false;
         updateUI();
         console.log('Fetched and cached crypto prices');
     } catch (error) {
-        console.error('Error fetching crypto prices:', error);
-        Object.keys(cryptoPrices).forEach(crypto => {
-            if (cryptoPrices[crypto] === 0) {
-                cryptoPrices[crypto] = Math.random() * 1000; // Последний резерв для тестирования
-                previousPrices[crypto] = cryptoPrices[crypto];
-                priceChanges[crypto] = 0;
-            }
-        });
+        console.error('Error fetching crypto prices:', error.message);
+        localStorage.removeItem(cacheKey); // Clear invalid cache
+        isFetchingPrices = false;
         updateUI();
     }
 }
@@ -432,8 +498,8 @@ function selectCrypto(crypto) {
     if (pairIcon) pairIcon.textContent = cryptoSymbols[crypto] || crypto;
     if (selectedCryptoPair) selectedCryptoPair.textContent = crypto;
     if (tradePrice) tradePrice.value = formatPrice(cryptoPrices[crypto]);
-    if (currentPrice) currentPrice.textContent = `$${formatPrice(cryptoPrices[crypto])}`;
-    if (changeValue) changeValue.textContent = `${priceChanges[crypto] >= 0 ? '+' : ''}${formatPrice(priceChanges[crypto])} (${((priceChanges[crypto] / previousPrices[crypto]) * 100).toFixed(2)}%)`;
+    if (currentPrice) currentPrice.textContent = formatPrice(cryptoPrices[crypto]);
+    if (changeValue) changeValue.textContent = `${priceChanges[crypto] >= 0 ? '+' : ''}${formatPrice(priceChanges[crypto])} (${previousPrices[crypto] && cryptoPrices[crypto] > 0 ? ((priceChanges[crypto] / previousPrices[crypto]) * 100).toFixed(2) : '0.00'}%)`;
     if (trendIcon) {
         trendIcon.innerHTML = priceChanges[crypto] >= 0
             ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>'
@@ -527,9 +593,13 @@ function initWebSocket() {
                 value: candlestick.volume,
                 color: candlestick.close >= candlestick.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 108, 0.3)'
             });
+            previousPrices[selectedCrypto] = cryptoPrices[selectedCrypto] || candlestick.close;
             cryptoPrices[selectedCrypto] = candlestick.close;
-            previousPrices[selectedCrypto] = cryptoPrices[selectedCrypto];
-            priceChanges[selectedCrypto] = 0;
+            priceChanges[selectedCrypto] = candlestick.close - previousPrices[selectedCrypto];
+            cryptoPriceHistory[selectedCrypto].push({ time: Math.floor(now / 1000), value: candlestick.close });
+            if (cryptoPriceHistory[selectedCrypto].length > 100) {
+                cryptoPriceHistory[selectedCrypto].shift();
+            }
             updateUI();
         }
     };
@@ -554,6 +624,10 @@ async function fetchChartData(timeframe) {
 
         while (toTs > launchTs) {
             const response = await fetch(`https://min-api.cryptocompare.com/data/v2/${interval}?fsym=${symbol}&tsym=USDT&limit=${limit}&aggregate=${aggregate}&toTs=${toTs}&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
+            if (!response.ok) {
+                console.warn(`CryptoCompare chart API error: ${response.status} ${response.statusText}`);
+                break;
+            }
             const data = await response.json();
             if (data.Response !== 'Success' || !data.Data || data.Data.length === 0) {
                 console.log('No more historical data available from CryptoCompare');
@@ -572,12 +646,15 @@ async function fetchChartData(timeframe) {
             if (data.Data.Data.length < limit) break;
         }
 
-        // Если данных нет, пробуем CoinGecko
         if (allData.length === 0) {
             console.log(`Fetching chart data for ${selectedCrypto} from CoinGecko`);
             const cgId = coingeckoIdMap[selectedCrypto];
             const days = timeframe === '1m' || timeframe === '5m' || timeframe === '15m' ? 1 : timeframe === '1h' || timeframe === '4h' ? 7 : 30;
             const cgResponse = await fetch(`https://api.coingecko.com/api/v3/coins/${cgId}/market_chart?vs_currency=usd&days=${days}`);
+            if (!cgResponse.ok) {
+                console.warn(`CoinGecko chart API error: ${cgResponse.status} ${cgResponse.statusText}`);
+                return [];
+            }
             const cgData = await cgResponse.json();
             allData = cgData.prices.map(([time, price]) => ({
                 time: Math.floor(time / 1000),
@@ -592,7 +669,7 @@ async function fetchChartData(timeframe) {
         const uniqueData = Array.from(new Map(allData.map(item => [item.time, item])).values()).sort((a, b) => a.time - b.time);
         return uniqueData;
     } catch (error) {
-        console.error('Error fetching chart data:', error);
+        console.error('Error fetching chart data:', error.message);
         return [];
     }
 }
@@ -627,8 +704,8 @@ async function updateChart() {
     const statsLow = document.getElementById('stats-low');
     const statsVolume = document.getElementById('stats-volume');
     const statsMarketCap = document.getElementById('stats-market-cap');
-    if (statsHigh && data.length) statsHigh.textContent = `$${formatPrice(Math.max(...data.map(d => d.high)))}`;
-    if (statsLow && data.length) statsLow.textContent = `$${formatPrice(Math.min(...data.map(d => d.low)))}`;
+    if (statsHigh && data.length) statsHigh.textContent = formatPrice(Math.max(...data.map(d => d.high)));
+    if (statsLow && data.length) statsLow.textContent = formatPrice(Math.min(...data.map(d => d.low)));
     if (statsVolume && data.length) statsVolume.textContent = `${formatPrice(data.reduce((sum, d) => sum + d.volume, 0))} USDT`;
     if (statsMarketCap) statsMarketCap.textContent = `${formatPrice(cryptoPrices[selectedCrypto] * 1000000)} USDT`;
 }
@@ -668,6 +745,7 @@ function updateOrderBook() {
     asks.innerHTML = '';
 
     const price = cryptoPrices[selectedCrypto];
+    if (!price || price <= 0) return;
     for (let i = 1; i <= 5; i++) {
         const bidPrice = price * (1 - i * 0.002);
         const askPrice = price * (1 + i * 0.002);
@@ -717,7 +795,7 @@ function executeTrade() {
 
     const amount = parseFloat(document.getElementById('trade-amount')?.value);
     const price = parseFloat(document.getElementById('trade-price')?.value);
-    if (!amount || amount <= 0 || !price) {
+    if (!amount || amount <= 0 || !price || price <= 0) {
         alert('Введите корректные данные');
         return;
     }
@@ -765,6 +843,10 @@ function updatePortfolio() {
     if (!portfolioGrid) return;
 
     portfolioGrid.innerHTML = '';
+    if (Object.keys(portfolio).length === 0) {
+        portfolioGrid.innerHTML = '<div class="no-portfolio-message">Ваш портфель пуст.</div>';
+        return;
+    }
     Object.entries(portfolio).forEach(([crypto, amount]) => {
         const value = amount * cryptoPrices[crypto];
         const item = document.createElement('div');
@@ -775,7 +857,7 @@ function updatePortfolio() {
             </div>
             <h3>${crypto}</h3>
             <div class="portfolio-amount">${formatPrice(amount)} ${crypto}</div>
-            <div class="portfolio-value">$${formatPrice(value)}</div>
+            <div class="portfolio-value">${formatPrice(value)}</div>
         `;
         portfolioGrid.appendChild(item);
     });
@@ -783,7 +865,7 @@ function updatePortfolio() {
 
 function updateBalance() {
     const walletBalance = document.getElementById('wallet-balance-page');
-    if (walletBalance) walletBalance.textContent = formatPrice(balance);
+    if (walletBalance) walletBalance.textContent = `$${formatPrice(balance)}`;
 }
 
 function updateTransactionHistory() {
@@ -799,8 +881,8 @@ function depositFunds() {
 
     const amount = parseFloat(document.getElementById('deposit-amount-page')?.value);
     const crypto = document.getElementById('deposit-crypto')?.value;
-    if (!amount || amount <= 0 || !crypto) {
-        alert('Введите корректные данные');
+    if (!amount || amount <= 0 || !crypto || !cryptoPrices[crypto] || cryptoPrices[crypto] <= 0) {
+        alert('Введите корректные данные или дождитесь загрузки цен');
         return;
     }
 
@@ -893,7 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchCryptoPrices();
     initChart();
-    setInterval(fetchCryptoPrices, 60000);
+    setInterval(fetchCryptoPrices, 30000); // Update prices every 30 seconds
 
     const pairSearch = document.getElementById('pair-search');
     if (pairSearch) {
