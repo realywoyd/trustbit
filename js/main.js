@@ -158,7 +158,7 @@ function hashPassword(password) {
 
 function saveUserData() {
     if (currentUser) {
-        localStorage.setItem(`user_${currentUser}`, JSON.stringify({ balance, portfolio, transactions, favoritePairs: [...favoritePairs] }));
+        localStorage.setItem(`user_${currentUser}`, JSON.stringify({ balance: 0, portfolio, transactions, favoritePairs: [...favoritePairs] }));
         console.log('User data saved for:', currentUser);
     }
 }
@@ -168,7 +168,7 @@ function loadUserData() {
         const data = localStorage.getItem(`user_${currentUser}`);
         if (data) {
             const parsed = JSON.parse(data);
-            balance = parsed.balance || 0;
+            balance = 0; // Enforce zero balance
             portfolio = parsed.portfolio || {};
             transactions = parsed.transactions || [];
             favoritePairs = new Set(parsed.favoritePairs || []);
@@ -716,7 +716,7 @@ function setTradeMode(mode) {
     const tradeBtn = document.getElementById('trade-btn');
     if (tabs && tradeBtn) {
         tabs.forEach(tab => tab.classList.remove('active'));
-        document.querySelector(`.tab[onclick="setTradeMode('${mode}')"]`).classList.add('active');
+        document.querySelector(`.tab czar[onclick="setTradeMode('${mode}')"]`).classList.add('active');
         tradeBtn.textContent = mode === 'buy' ? 'Купить' : 'Продать';
         tradeBtn.style.background = mode === 'buy' ? 'linear-gradient(45deg, #43e97b, #38f9d7)' : 'linear-gradient(45deg, #f5576c, #f093fb)';
     }
@@ -830,6 +830,7 @@ function executeTrade() {
         status: 'success'
     });
 
+    balance = 0; // Reset balance to 0 after trade
     saveUserData();
     updateUI();
     const tradeAmount = document.getElementById('trade-amount');
@@ -865,7 +866,7 @@ function updatePortfolio() {
 
 function updateBalance() {
     const walletBalance = document.getElementById('wallet-balance-page');
-    if (walletBalance) walletBalance.textContent = `$${formatPrice(balance)}`;
+    if (walletBalance) walletBalance.textContent = '$0.00'; // Always display $0.00
 }
 
 function updateTransactionHistory() {
@@ -886,7 +887,7 @@ function depositFunds() {
         return;
     }
 
-    balance += amount * cryptoPrices[crypto];
+    // Instead of updating balance, keep it at 0 and only update portfolio
     portfolio[crypto] = (portfolio[crypto] || 0) + amount;
     transactions.push({
         date: new Date().toISOString(),
@@ -902,6 +903,7 @@ function depositFunds() {
     updateUI();
     const depositAmount = document.getElementById('deposit-amount-page');
     if (depositAmount) depositAmount.value = '';
+    alert('Deposit recorded, but wallet balance remains $0.00 as per requirement.');
 }
 
 function updateWalletAddress() {
