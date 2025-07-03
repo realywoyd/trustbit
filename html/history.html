@@ -6,6 +6,14 @@
     <title>History - Trust Bit</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        .status.success {
+            background: none; /* Убираем фон для Completed */
+        }
+        .status.loss {
+            color: #f5576c; /* Красный цвет для Loss */
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -84,7 +92,7 @@
                 </thead>
                 <tbody id="transactions-tbody">
                     <tr>
-                        <td>03.06.2023 11:23:45</td>
+                        <td>02.06.2023</td>
                         <td>Deposit</td>
                         <td>USDT</td>
                         <td>223,529</td>
@@ -94,7 +102,7 @@
                         <td>-</td>
                     </tr>
                     <tr>
-                        <td>03.06.2023 12:47:19</td>
+                        <td>03.06.2023</td>
                         <td>Buy</td>
                         <td>LUNA</td>
                         <td>174,352</td>
@@ -104,13 +112,13 @@
                         <td>-</td>
                     </tr>
                     <tr>
-                        <td>05.06.2023 19:15:32</td>
+                        <td>05.06.2023</td>
                         <td>Sell</td>
                         <td>LUNA</td>
                         <td>174,352</td>
                         <td>$0.000</td>
                         <td>$0</td>
-                        <td class="status">Loss</td>
+                        <td class="status loss">Loss</td>
                         <td>-$223,529</td>
                     </tr>
                 </tbody>
