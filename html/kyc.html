@@ -313,6 +313,24 @@
             box-shadow: 0 10px 20px rgba(126, 107, 255, 0.3);
         }
 
+        .verify-button.disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .verify-button.disabled:hover {
+            transform: none;
+        }
+
+        .region-restriction {
+            color: #f5576c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
         .contact-info {
             text-align: center;
             margin-top: 30px;
@@ -624,7 +642,8 @@
                         Система попросит вас загрузить документ, в котором содержится указанный вами адрес. В документе должна быть указана следующая информация: ваше имя, ваш адрес, дата выдачи и орган, выдавший документ.
                     </div>
 
-                    <button class="verify-button">Я готов(а) к прохождению верификации</button>
+                    <button class="verify-button disabled" disabled>Я готов(а) к прохождению верификации</button>
+                    <div class="region-restriction">Недоступно в вашем регионе.</div>
                 </div>
             </div>
         </div>
