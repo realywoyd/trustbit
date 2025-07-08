@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KYC - Верификация личности</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css">
     <style>
         * {
             margin: 0;
@@ -478,112 +477,44 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-            Trust Bit
-        </div>
-
-        <nav class="nav">
-            <a href="../index.html" data-page="home">Home</a>
-            <a href="trading.html" data-page="trading">Trade</a>
-            <a href="wallet.html" data-page="wallet">Wallet</a>
-            <a href="portfolio.html" data-page="portfolio">Portfolio</a>
-            <a href="history.html" data-page="history">History</a>
-            <a href="kyc.html" data-page="kyc">Profile</a>
-        </nav>
-
-        <div class="user-controls">
-            <div class="profile-dropdown" id="profile-dropdown">
-                <button class="profile-btn" id="profile-btn">Profile</button>
-                <div class="dropdown-menu" id="dropdown-menu">
-                    <a href="kyc.html" data-page="kyc">Profile</a>
-                    <a href="#" onclick="logout()">Logout</a>
-                </div>
-            </div>
-            <button class="login-btn" id="login-btn" onclick="openModal('login-modal')">Login</button>
-            <button class="register-btn" id="register-btn" onclick="restrictRegion(event)">Register</button>
-        </div>
-    </header>
-
-    <div class="modal" id="login-modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeModal('login-modal')">×</span>
-            <h2>Login</h2>
-            <div class="input-group">
-                <label for="login-username">Username</label>
-                <input type="text" id="login-username" placeholder="Enter username">
-            </div>
-            <div class="input-group">
-                <label for="login-password">Password</label>
-                <input type="password" id="login-password" placeholder="Enter password">
-            </div>
-            <p id="login-error">Invalid username or password</p>
-            <button class="btn btn-primary" onclick="login()">Login</button>
-        </div>
-    </div>
-
-    <div class="modal" id="register-modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeModal('register-modal')">×</span>
-            <h2>Register</h2>
-            <div class="input-group">
-                <label for="register-username">Username</label>
-                <input type="text" id="register-username" placeholder="Enter username">
-            </div>
-            <div class="input-group">
-                <label for="register-password">Password</label>
-                <input type="password" id="register-password" placeholder="Enter password">
-            </div>
-            <div class="input-group">
-                <label for="register-email">Email</label>
-                <input type="email" id="register-email" placeholder="Enter email">
-            </div>
-            <p id="register-error">Please check your input</p>
-            <button class="btn btn-primary" onclick="restrictRegion(event)">Register</button>
-        </div>
-    </div>
-
     <div class="sidebar">
-        <div class="sidebar-item" data-section="overview">
+        <div class="sidebar-item">
             <div class="icon user">👤</div>
             <span>Обзор аккаунта</span>
         </div>
-        <div class="sidebar-item" data-section="security">
+        <div class="sidebar-item">
             <div class="icon security">🔒</div>
             <span>Безопасность</span>
         </div>
-        <div class="sidebar-item active" data-section="kyc">
+        <div class="sidebar-item active">
             <div class="icon verified">✓</div>
             <span>Верификация личности</span>
         </div>
-        <div class="sidebar-item" data-section="settings">
+        <div class="sidebar-item">
             <div class="icon settings">⚙️</div>
             <span>Настройки</span>
         </div>
-        <div class="sidebar-item" data-section="messages">
+        <div class="sidebar-item">
             <div class="icon messages">💬</div>
             <span>Сообщения</span>
         </div>
-        <div class="sidebar-item" data-section="interactive">
+        <div class="sidebar-item">
             <div class="icon interactive">📱</div>
             <span>Интерактивные сообщения</span>
         </div>
-        <div class="sidebar-item" data-section="rewards">
+        <div class="sidebar-item">
             <div class="icon rewards">🎁</div>
             <span>Центр наград</span>
         </div>
-        <div class="sidebar-item" data-section="vouchers">
+        <div class="sidebar-item">
             <div class="icon vouchers">🎫</div>
             <span>Центр ваучеров</span>
         </div>
-        <div class="sidebar-item" data-section="sub-account">
+        <div class="sidebar-item">
             <div class="icon sub-account">👥</div>
             <span>Суб-аккаунт</span>
         </div>
-        <div class="sidebar-item" data-section="api">
+        <div class="sidebar-item">
             <div class="icon api">⚡</div>
             <span>Управление API</span>
         </div>
@@ -591,7 +522,7 @@
 
     <div class="main-content">
         <div class="header">
-            <span class="back-arrow" onclick="window.location.href='../index.html'">←</span>
+            <span class="back-arrow">←</span>
             <h1 class="page-title">KYC</h1>
         </div>
 
@@ -599,8 +530,8 @@
             <div class="user-header">
                 <div class="user-avatar">U</div>
                 <div class="user-info">
-                    <h2 id="user-username">User_🔒</h2>
-                    <p id="user-info">Имя аккаунта: @user4016 👤 | Email: ivan******st@gmail.com</p>
+                    <h2>User_🔒</h2>
+                    <p>Имя аккаунта: @user4016 👤 | Email: ivan******st@gmail.com</p>
                 </div>
             </div>
 
@@ -646,7 +577,7 @@
                         <span>Первичная верификация одобрена</span>
                     </div>
                     <p style="font-size: 14px; color: #9ca3af; margin-bottom: 15px;">
-                        Информация о личности неверна? <a href="#" style="color: #7e6bff; text-decoration: none;" onclick="restrictRegion(event)">Повторная верификация</a>
+                        Информация о личности неверна? <a href="#" style="color: #7e6bff; text-decoration: none;">Повторная верификация</a>
                     </p>
                     
                     <div class="verification-details">
@@ -693,7 +624,7 @@
                         Система попросит вас загрузить документ, в котором содержится указанный вами адрес. В документе должна быть указана следующая информация: ваше имя, ваш адрес, дата выдачи и орган, выдавший документ.
                     </div>
 
-                    <button class="verify-button" onclick="restrictRegion(event)">Я готов(а) к прохождению верификации</button>
+                    <button class="verify-button">Я готов(а) к прохождению верификации</button>
                 </div>
             </div>
         </div>
@@ -703,55 +634,5 @@
             <a href="mailto:vip@coinex.com">vip@coinex.com</a> 📧</p>
         </div>
     </div>
-
-    <button class="support-button" onclick="toggleSupportChat()">💬</button>
-    <div class="support-chat" id="support-chat">
-        <div class="chat-header">
-            <h3>Trust Bit Support</h3>
-            <button class="chat-close" onclick="toggleSupportChat()">✕</button>
-        </div>
-        <div class="chat-body" id="chat-body">
-            <div class="chat-message support">Welcome! How can I assist you?</div>
-        </div>
-        <div class="chat-input">
-            <input type="text" id="chat-input" placeholder="Type your message...">
-            <button onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-
-    <footer class="custom-footer">
-        <div class="footer-section">
-            <h3>Trust Bit</h3>
-            <a href="#">About Us</a>
-            <a href="#">Team</a>
-            <a href="#">Support</a>
-        </div>
-        <div class="footer-section">
-            <h3>Features</h3>
-            <a href="#">Technical Data</a>
-            <a href="#">Security</a>
-            <a href="#">Performance</a>
-        </div>
-        <div class="footer-section">
-            <h3>Market Tools</h3>
-            <a href="#">Analytics</a>
-            <a href="#">Indicators</a>
-            <a href="#">Trading Signals</a>
-        </div>
-        <div class="footer-section">
-            <h3>Legal Information</h3>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Use</a>
-            <a href="#">Licenses</a>
-        </div>
-        <div class="footer-section">
-            <h3>Trading Pairs</h3>
-            <a href="#">BTC/USD</a>
-            <a href="#">ETH/USDT</a>
-            <a href="#">ADA/USDT</a>
-        </div>
-    </footer>
-
-    <script src="../js/main.js"></script>
 </body>
 </html>
