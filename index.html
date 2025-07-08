@@ -1,31 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trust Bit</title>
+    <title>Trust Bit - Cryptocurrency Exchange</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.min.js"></script>
 </head>
 <body>
     <header class="header">
         <div class="logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
             Trust Bit
         </div>
+
         <nav class="nav">
-            <a class="nav-link" data-page="home" href="#">Home</a>
-            <a class="nav-link" data-page="trading" href="html/trading.html">Trade</a>
-            <a class="nav-link" data-page="wallet" href="html/wallet.html">Wallet</a>
-            <a class="nav-link" data-page="portfolio" href="html/portfolio.html">Portfolio</a>
-            <a class="nav-link" data-page="history" href="html/history.html">History</a>
+            <a href="index.html" data-page="home" class="active">Home</a>
+            <a href="html/trading.html" data-page="trading">Trade</a>
+            <a href="html/wallet.html" data-page="wallet">Wallet</a>
+            <a href="html/portfolio.html" data-page="portfolio">Portfolio</a>
+            <a href="html/history.html" data-page="history">History</a>
+            <a href="html/kyc.html" data-page="kyc">Profile</a>
         </nav>
+
         <div class="user-controls">
             <div class="profile-dropdown" id="profile-dropdown">
-                <button class="profile-btn" id="profile-btn">Profile</button>
+                <button class="profile-btn" id="profile-btn" onclick="window.location.href='html/kyc.html'">Profile</button>
                 <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="html/kyc.html" data-page="kyc">Profile</a>
                     <a href="#" onclick="logout()">Logout</a>
                 </div>
             </div>
@@ -36,33 +40,38 @@
 
     <div class="modal" id="login-modal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeModal('login-modal')">&times;</span>
+            <span class="modal-close" onclick="closeModal('login-modal')">×</span>
             <h2>Login</h2>
             <div class="input-group">
-                <input type="text" id="login-username" placeholder="Username">
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" placeholder="Enter username">
             </div>
             <div class="input-group">
-                <input type="password" id="login-password" placeholder="Password">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="Enter password">
             </div>
-            <div id="login-error" style="display: none;">Invalid username or password</div>
+            <p id="login-error">Invalid username or password</p>
             <button class="btn btn-primary" onclick="login()">Login</button>
         </div>
     </div>
 
     <div class="modal" id="register-modal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeModal('register-modal')">&times;</span>
+            <span class="modal-close" onclick="closeModal('register-modal')">×</span>
             <h2>Register</h2>
             <div class="input-group">
-                <input type="text" id="register-username" placeholder="Username">
+                <label for="register-username">Username</label>
+                <input type="text" id="register-username" placeholder="Enter username">
             </div>
             <div class="input-group">
-                <input type="password" id="register-password" placeholder="Password">
+                <label for="register-password">Password</label>
+                <input type="password" id="register-password" placeholder="Enter password">
             </div>
             <div class="input-group">
-                <input type="password" id="register-confirm-password" placeholder="Confirm Password">
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" placeholder="Enter email">
             </div>
-            <div id="register-error" style="display: none;">Please check your input</div>
+            <p id="register-error">Please check your input</p>
             <button class="btn btn-primary" onclick="restrictRegion(event)">Register</button>
         </div>
     </div>
@@ -75,23 +84,23 @@
             </div>
         </section>
 
-        <div class="promotions">
+        <section class="promotions">
             <div class="promo-card">
                 <h3>0% Fees</h3>
                 <p>Trade with zero fees on the spot market until the end of the month!</p>
-                <button class="btn-primary">Learn More</button>
+                <button class="btn-primary" onclick="restrictRegion(event)">Learn More</button>
             </div>
             <div class="promo-card">
                 <h3>Staking</h3>
                 <p>Earn up to 8% annually on ETH and USDT staking.</p>
-                <button class="btn-primary">Start Staking</button>
+                <button class="btn-primary" onclick="restrictRegion(event)">Start Staking</button>
             </div>
             <div class="promo-card">
                 <h3>Referral Program</h3>
                 <p>Invite friends and earn 20% of their trading fees.</p>
-                <button class="btn-primary">Invite a Friend</button>
+                <button class="btn-primary" onclick="restrictRegion(event)">Invite a Friend</button>
             </div>
-        </div>
+        </section>
 
         <section class="news-section">
             <h2>Cryptocurrency News</h2>
@@ -117,33 +126,33 @@
     <footer class="custom-footer">
         <div class="footer-section">
             <h3>Trust Bit</h3>
-            <a href="#" onclick="restrictRegion(event)">About Us</a>
-            <a href="#" onclick="restrictRegion(event)">Team</a>
-            <a href="#" onclick="restrictRegion(event)">Support</a>
+            <a href="#">About Us</a>
+            <a href="#">Team</a>
+            <a href="#">Support</a>
         </div>
         <div class="footer-section">
             <h3>Features</h3>
-            <a href="#" onclick="restrictRegion(event)">Technical Data</a>
-            <a href="#" onclick="restrictRegion(event)">Security</a>
-            <a href="#" onclick="restrictRegion(event)">Performance</a>
+            <a href="#">Technical Data</a>
+            <a href="#">Security</a>
+            <a href="#">Performance</a>
         </div>
         <div class="footer-section">
             <h3>Market Tools</h3>
-            <a href="#" onclick="restrictRegion(event)">Analytics</a>
-            <a href="#" onclick="restrictRegion(event)">Indicators</a>
-            <a href="#" onclick="restrictRegion(event)">Trading Signals</a>
+            <a href="#">Analytics</a>
+            <a href="#">Indicators</a>
+            <a href="#">Trading Signals</a>
         </div>
         <div class="footer-section">
             <h3>Legal Information</h3>
-            <a href="#" onclick="restrictRegion(event)">Privacy Policy</a>
-            <a href="#" onclick="restrictRegion(event)">Terms of Use</a>
-            <a href="#" onclick="restrictRegion(event)">Licenses</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Use</a>
+            <a href="#">Licenses</a>
         </div>
         <div class="footer-section">
             <h3>Trading Pairs</h3>
-            <a href="#" data-page="trading">BTC/USD</a>
-            <a href="#" data-page="trading">ETH/USDT</a>
-            <a href="#" data-page="trading">ADA/USDT</a>
+            <a href="#">BTC/USD</a>
+            <a href="#">ETH/USDT</a>
+            <a href="#">ADA/USDT</a>
         </div>
     </footer>
 
