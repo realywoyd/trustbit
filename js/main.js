@@ -135,8 +135,42 @@ const colorMap = {
     default: { start: '7e6bff', end: '5a4bff' }
 };
 
+// Default transactions from history.html
+const defaultTransactions = [
+    {
+        date: "2023-06-03T11:23:45Z",
+        type: "deposit",
+        crypto: "USDT",
+        amount: 223529,
+        price: 1.00,
+        total: 223529,
+        status: "success",
+        pl: null
+    },
+    {
+        date: "2023-06-03T12:47:19Z",
+        type: "buy",
+        crypto: "LUNA",
+        amount: 174352,
+        price: 1.282,
+        total: 223529,
+        status: "success",
+        pl: null
+    },
+    {
+        date: "2023-06-05T19:15:32Z",
+        type: "sell",
+        crypto: "LUNA",
+        amount: 174352,
+        price: 0.000,
+        total: 0,
+        status: "loss",
+        pl: -223529
+    }
+];
+
 function formatPrice(value) {
-    if (typeof value !== 'number' || isNaN(value) || value <= 0) return 'Loading...';
+    if (typeof value !== 'number' || isNaN(value) || value <= 0) return '$0.000000';
     const fractionDigits = value < 1 ? 6 : value < 100 ? 4 : 2;
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -170,13 +204,13 @@ function loadUserData() {
             const parsed = JSON.parse(data);
             balance = 0; // Enforce zero balance
             portfolio = parsed.portfolio || {};
-            transactions = parsed.transactions || [];
+            transactions = parsed.transactions || [...defaultTransactions]; // Ensure default transactions
             favoritePairs = new Set(parsed.favoritePairs || []);
             console.log('User data loaded for:', currentUser);
         } else {
             balance = 0;
             portfolio = {};
-            transactions = [];
+            transactions = [...defaultTransactions]; // Initialize with default transactions
             favoritePairs = new Set();
         }
         updateUI();
@@ -194,16 +228,52 @@ function updateUI() {
         if (registerBtn) registerBtn.style.display = 'none';
         const profileBtn = document.getElementById('profile-btn');
         if (profileBtn) profileBtn.textContent = currentUser;
+        // Update user info on kyc page
+        const userUsername = document.getElementById('user-username');
+        const userInfo = document.getElementById('user-info');
+        if (userUsername) userUsername.textContent = currentUser;
+        if (userInfo) userInfo.textContent = `Имя аккаунта: @${currentUser} 👤 | Email: ${currentUser.toLowerCase()}@example.com`;
     } else {
         if (profileDropdown) profileDropdown.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'block';
         if (registerBtn) registerBtn.style.display = 'block';
+        // Redirect to login if trying to access kyc page while not authenticated
+        if (window.location.pathname.includes('kyc.html')) {
+            openModal('login-modal');
+            window.location.href = '../index.html';
+        }
     }
 
-    const page = document.querySelector('.main-content.active')?.id;
+    const path = window.location.pathname;
+    let page;
+    if (path.includes('index.html') || path === '/') page = 'home';
+    else if (path.includes('trading.html')) page = 'trading';
+    else if (path.includes('wallet.html')) page = 'wallet';
+    else if (path.includes('portfolio.html')) page = 'portfolio';
+    else if (path.includes('history.html')) page = 'history';
+    else if (path.includes('kyc.html')) page = 'kyc';
     console.log('Active page:', page);
+
+    // Update navigation active state
+    const navLinks = document.querySelectorAll('.nav a');
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-page') === page) {
+            link.classList.add('active');
+        }
+    });
+
+    // Update main content visibility
+    document.querySelectorAll('.main-content').forEach(content => {
+        content.classList.remove('active');
+        if (content.id === page) {
+            content.classList.add('active');
+        }
+    });
+
     if (page === 'portfolio') updatePortfolio();
     if (page === 'wallet') updateBalance();
+    if (page === 'history') updateTransactionHistory();
     if (page === 'trading') {
         renderCryptoList();
         if (currentUser) {
@@ -212,6 +282,26 @@ function updateUI() {
             updateTradeHistory();
         }
     }
+    if (page === 'kyc' && currentUser) {
+        updateKycPage();
+    }
+}
+
+function updateKycPage() {
+    // Handle sidebar navigation
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', () => {
+            sidebarItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            const section = item.getAttribute('data-section');
+            console.log('Selected sidebar section:', section);
+            // Future implementation: switch content based on section
+            if (section !== 'kyc') {
+                alert('Эта секция еще не реализована');
+            }
+        });
+    });
 }
 
 function restrictRegion(event) {
@@ -299,6 +389,7 @@ function logout() {
     transactions = [];
     favoritePairs = new Set();
     updateUI();
+    window.location.href = '../index.html';
 }
 
 function renderCryptoList() {
@@ -399,9 +490,8 @@ async function fetchCryptoPrices() {
     }
 
     try {
-        // Batch CryptoCompare requests to avoid rate limits
         const symbols = Object.keys(cryptoIdMap);
-        const batchSize = 30; // CryptoCompare supports up to ~40 symbols per request
+        const batchSize = 30;
         const batches = [];
         for (let i = 0; i < symbols.length; i += batchSize) {
             batches.push(symbols.slice(i, i + batchSize));
@@ -437,8 +527,7 @@ async function fetchCryptoPrices() {
 
         if (missingCoins.length > 0) {
             console.log('Fetching missing coins from CoinGecko:', missingCoins);
-            // Batch CoinGecko requests to avoid rate limits
-            const cgBatchSize = 20; // CoinGecko rate limit is ~50 calls/minute
+            const cgBatchSize = 20;
             const cgBatches = [];
             for (let i = 0; i < missingCoins.length; i += cgBatchSize) {
                 cgBatches.push(missingCoins.slice(i, i + cgBatchSize));
@@ -453,11 +542,8 @@ async function fetchCryptoPrices() {
                 }
                 const coingeckoData = await coingeckoResponse.json();
                 batch.forEach(crypto => {
-                    const cgId = coingeckoIdMap[crypto];
-                    const price = coingeckoData[cgId]?.usd || 0;
-                    if (!price || price <= 0) {
-                        console.warn(`No valid USD price for ${crypto} from CoinGecko`);
-                    } else {
+                    const price = coingeckoData[coingeckoIdMap[crypto]]?.usd || 0;
+                    if (price > 0) {
                         previousPrices[crypto] = cryptoPrices[crypto] || price;
                         cryptoPrices[crypto] = price;
                         priceChanges[crypto] = price - previousPrices[crypto];
@@ -467,544 +553,265 @@ async function fetchCryptoPrices() {
                         }
                     }
                 });
-                // Add delay to respect CoinGecko rate limits
-                await new Promise(resolve => setTimeout(resolve, 1200)); // 1.2s delay between batches
             }
         }
 
         localStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, prices: cryptoPrices }));
-        isFetchingPrices = false;
-        updateUI();
-        console.log('Fetched and cached crypto prices');
+        console.log('Crypto prices fetched and cached:', cryptoPrices);
     } catch (error) {
-        console.error('Error fetching crypto prices:', error.message);
-        localStorage.removeItem(cacheKey); // Clear invalid cache
+        console.error('Error fetching crypto prices:', error);
+        const cryptoItems = document.getElementById('crypto-items');
+        if (cryptoItems) {
+            cryptoItems.innerHTML = '<div class="no-data-message">Failed to load prices. Please try again later.</div>';
+        }
+    } finally {
         isFetchingPrices = false;
         updateUI();
     }
 }
 
 function selectCrypto(crypto) {
+    if (!currentUser) {
+        openModal('login-modal');
+        return;
+    }
     selectedMarket = `${crypto}/USDT`;
     selectedCrypto = crypto;
-    const selectedPair = document.getElementById('selected-pair');
-    const pairIcon = document.getElementById('pair-icon');
-    const selectedCryptoPair = document.getElementById('selected-crypto-pair');
-    const tradePrice = document.getElementById('trade-price');
-    const currentPrice = document.getElementById('current-price');
-    const changeValue = document.getElementById('change-value');
-    const trendIcon = document.getElementById('trend-icon');
-    if (selectedPair) selectedPair.textContent = selectedMarket;
-    if (pairIcon) pairIcon.textContent = cryptoSymbols[crypto] || crypto;
-    if (selectedCryptoPair) selectedCryptoPair.textContent = crypto;
-    if (tradePrice) tradePrice.value = formatPrice(cryptoPrices[crypto]);
-    if (currentPrice) currentPrice.textContent = formatPrice(cryptoPrices[crypto]);
-    if (changeValue) changeValue.textContent = `${priceChanges[crypto] >= 0 ? '+' : ''}${formatPrice(priceChanges[crypto])} (${previousPrices[crypto] && cryptoPrices[crypto] > 0 ? ((priceChanges[crypto] / previousPrices[crypto]) * 100).toFixed(2) : '0.00'}%)`;
-    if (trendIcon) {
-        trendIcon.innerHTML = priceChanges[crypto] >= 0
-            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>'
-            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 14l7 7m0 0l7-7m-7 7V3"/>';
-        trendIcon.style.stroke = priceChanges[crypto] >= 0 ? '#43e97b' : '#f5576c';
+    const marketSelect = document.getElementById('market-select');
+    if (marketSelect) {
+        marketSelect.value = selectedMarket;
     }
-    if (currentUser) {
-        initWebSocket();
-        updateChart();
-        updateTradeHistory();
-        updateOrderBook();
-    }
+    updateChart();
+    updateOrderBook();
+    updateTradeHistory();
     renderCryptoList();
 }
 
-function initChart() {
-    const chartContainer = document.getElementById('trading-chart');
-    const volumeContainer = document.getElementById('volume-chart');
-    if (!chartContainer || !volumeContainer) {
-        console.error('Chart containers not found');
-        return;
-    }
+function updateChart() {
+    if (!currentUser) return;
+    const chartContainer = document.getElementById('chart');
+    if (!chartContainer) return;
 
-    chart = LightweightCharts.createChart(chartContainer, {
-        width: chartContainer.clientWidth,
-        height: 400,
-        layout: { background: { type: 'solid', color: '#1e222d' }, textColor: '#e6e6e6' },
-        grid: { vertLines: { color: 'rgba(255, 255, 255, 0.1)' }, horzLines: { color: 'rgba(255, 255, 255, 0.1)' } },
-        rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.1)' },
-        timeScale: { borderColor: 'rgba(255, 255, 255, 0.1)', timeVisible: true, secondsVisible: false },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-    });
-
-    candlestickSeries = chart.addCandlestickSeries({
-        upColor: '#43e97b', downColor: '#f5576c', borderVisible: false, wickUpColor: '#43e97b', wickDownColor: '#f5576c'
-    });
-
-    const volumeChart = LightweightCharts.createChart(volumeContainer, {
-        width: volumeContainer.clientWidth,
-        height: 100,
-        layout: { background: { type: 'solid', color: '#1e222d' }, textColor: '#e6e6e6' },
-        grid: { vertLines: { color: 'rgba(255, 255, 255, 0.1)' }, horzLines: { color: 'rgba(255, 255, 255, 0.1)' } },
-        rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.1)', visible: false },
-        timeScale: { borderColor: 'rgba(255, 255, 255, 0.1)', timeVisible: true, secondsVisible: false },
-    });
-
-    volumeSeries = volumeChart.addHistogramSeries({ color: '#7e6bff', priceFormat: { type: 'volume' } });
-
-    chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
-        volumeChart.timeScale().setVisibleLogicalRange(chart.timeScale().getVisibleLogicalRange());
-    });
-    volumeChart.timeScale().subscribeVisibleLogicalRangeChange(() => {
-        chart.timeScale().setVisibleLogicalRange(volumeChart.timeScale().getVisibleLogicalRange());
-    });
-
-    if (currentUser) {
-        initWebSocket();
-        updateChart();
-    }
-}
-
-function initWebSocket() {
-    if (ws) {
-        ws.close();
-        ws = null;
-    }
-    const symbol = cryptoIdMap[selectedCrypto];
-    const interval = currentTimeframe === '1m' ? '60' : currentTimeframe === '5m' ? '300' : currentTimeframe === '15m' ? '900' : currentTimeframe === '1h' ? '3600' : currentTimeframe === '4h' ? '14400' : '86400';
-    ws = new WebSocket(`wss://streamer.cryptocompare.com/v2?api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
-    ws.onopen = () => {
-        console.log(`WebSocket opened for ${selectedMarket}`);
-        ws.send(JSON.stringify({
-            action: 'SubAdd',
-            subs: [`2~Binance~${symbol}~USDT~${interval}`]
-        }));
-    };
-    ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        if (message.TYPE === '2' && message.FROMSYMBOL === symbol && message.TOSYMBOL === 'USDT' && message.CLOSE) {
-            const candlestick = {
-                time: Math.floor(message.TS),
-                open: parseFloat(message.OPEN),
-                high: parseFloat(message.HIGH),
-                low: parseFloat(message.LOW),
-                close: parseFloat(message.CLOSE),
-                volume: parseFloat(message.VOLUME)
-            };
-            candlestickSeries.update(candlestick);
-            volumeSeries.update({
-                time: candlestick.time,
-                value: candlestick.volume,
-                color: candlestick.close >= candlestick.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 108, 0.3)'
-            });
-            previousPrices[selectedCrypto] = cryptoPrices[selectedCrypto] || candlestick.close;
-            cryptoPrices[selectedCrypto] = candlestick.close;
-            priceChanges[selectedCrypto] = candlestick.close - previousPrices[selectedCrypto];
-            cryptoPriceHistory[selectedCrypto].push({ time: Math.floor(now / 1000), value: candlestick.close });
-            if (cryptoPriceHistory[selectedCrypto].length > 100) {
-                cryptoPriceHistory[selectedCrypto].shift();
-            }
-            updateUI();
-        }
-    };
-    ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-    ws.onclose = () => {
-        console.log('WebSocket closed, attempting to reconnect...');
-        setTimeout(initWebSocket, 5000);
-    };
-}
-
-async function fetchChartData(timeframe) {
-    try {
-        const symbol = cryptoIdMap[selectedCrypto];
-        const interval = timeframe === '1m' ? 'histominute' : timeframe === '5m' ? 'histominute' : timeframe === '15m' ? 'histominute' : timeframe === '1h' ? 'histohour' : timeframe === '4h' ? 'histohour' : 'histoday';
-        const aggregate = timeframe === '1m' ? 1 : timeframe === '5m' ? 5 : timeframe === '15m' ? 15 : timeframe === '1h' ? 1 : timeframe === '4h' ? 4 : 1;
-        const limit = 1000;
-        let allData = [];
-        let toTs = Math.floor(Date.now() / 1000);
-        const launchTs = cryptoLaunchTimes[selectedCrypto] || 1230940800;
-
-        while (toTs > launchTs) {
-            const response = await fetch(`https://min-api.cryptocompare.com/data/v2/${interval}?fsym=${symbol}&tsym=USDT&limit=${limit}&aggregate=${aggregate}&toTs=${toTs}&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
-            if (!response.ok) {
-                console.warn(`CryptoCompare chart API error: ${response.status} ${response.statusText}`);
-                break;
-            }
-            const data = await response.json();
-            if (data.Response !== 'Success' || !data.Data || data.Data.length === 0) {
-                console.log('No more historical data available from CryptoCompare');
-                break;
-            }
-            const candles = data.Data.Data.map(item => ({
-                time: item.time,
-                open: parseFloat(item.open),
-                high: parseFloat(item.high),
-                low: parseFloat(item.low),
-                close: parseFloat(item.close),
-                volume: parseFloat(item.volumeto)
-            }));
-            allData = [...candles, ...allData];
-            toTs = data.Data.TimeFrom - 1;
-            if (data.Data.Data.length < limit) break;
-        }
-
-        if (allData.length === 0) {
-            console.log(`Fetching chart data for ${selectedCrypto} from CoinGecko`);
-            const cgId = coingeckoIdMap[selectedCrypto];
-            const days = timeframe === '1m' || timeframe === '5m' || timeframe === '15m' ? 1 : timeframe === '1h' || timeframe === '4h' ? 7 : 30;
-            const cgResponse = await fetch(`https://api.coingecko.com/api/v3/coins/${cgId}/market_chart?vs_currency=usd&days=${days}`);
-            if (!cgResponse.ok) {
-                console.warn(`CoinGecko chart API error: ${cgResponse.status} ${cgResponse.statusText}`);
-                return [];
-            }
-            const cgData = await cgResponse.json();
-            allData = cgData.prices.map(([time, price]) => ({
-                time: Math.floor(time / 1000),
-                open: price,
-                high: price,
-                low: price,
-                close: price,
-                volume: cgData.total_volumes.find(v => v[0] === time)?.[1] || 0
-            }));
-        }
-
-        const uniqueData = Array.from(new Map(allData.map(item => [item.time, item])).values()).sort((a, b) => a.time - b.time);
-        return uniqueData;
-    } catch (error) {
-        console.error('Error fetching chart data:', error.message);
-        return [];
-    }
-}
-
-async function updateChart() {
-    if (!candlestickSeries || !volumeSeries || !currentUser) {
-        console.log('Chart update skipped: missing series or user');
-        return;
-    }
-    const data = await fetchChartData(currentTimeframe);
-    if (data.length === 0) {
-        console.warn('No chart data available, using dummy data');
-        const now = Math.floor(Date.now() / 1000);
-        data.push({
-            time: now - 3600,
-            open: cryptoPrices[selectedCrypto] || 100,
-            high: (cryptoPrices[selectedCrypto] || 100) * 1.01,
-            low: (cryptoPrices[selectedCrypto] || 100) * 0.99,
-            close: cryptoPrices[selectedCrypto] || 100,
-            volume: 50000
+    if (!chart) {
+        chart = LightweightCharts.createChart(chartContainer, {
+            width: chartContainer.offsetWidth,
+            height: 400,
+            layout: { background: { type: 'solid', color: '#1a1a1a' }, textColor: '#e6e6e6' },
+            grid: { vertLines: { color: 'rgba(255, 255, 255, 0.1)' }, horzLines: { color: 'rgba(255, 255, 255, 0.1)' } },
+            timeScale: { timeVisible: true, secondsVisible: false },
         });
+        candlestickSeries = chart.addCandlestickSeries();
+        volumeSeries = chart.addHistogramSeries({ color: '#7e6bff', priceFormat: { type: 'volume' }, priceScaleId: '' });
     }
-    candlestickSeries.setData(data);
-    volumeSeries.setData(data.map(d => ({
+
+    const data = cryptoPriceHistory[selectedCrypto] || [];
+    const candlestickData = data.map(d => ({
         time: d.time,
-        value: d.volume,
-        color: d.close >= d.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 108, 0.3)'
-    })));
-    chart.timeScale().fitContent();
+        open: d.value,
+        high: d.value * 1.01,
+        low: d.value * 0.99,
+        close: d.value
+    }));
+    const volumeData = data.map(d => ({
+        time: d.time,
+        value: d.value * 1000,
+        color: d.value >= (previousPrices[selectedCrypto] || d.value) ? 'rgba(67, 233, 123, 0.3)' : 'rgba(255, 99, 132, 0.3)'
+    }));
 
-    const statsHigh = document.getElementById('stats-high');
-    const statsLow = document.getElementById('stats-low');
-    const statsVolume = document.getElementById('stats-volume');
-    const statsMarketCap = document.getElementById('stats-market-cap');
-    if (statsHigh && data.length) statsHigh.textContent = formatPrice(Math.max(...data.map(d => d.high)));
-    if (statsLow && data.length) statsLow.textContent = formatPrice(Math.min(...data.map(d => d.low)));
-    if (statsVolume && data.length) statsVolume.textContent = `${formatPrice(data.reduce((sum, d) => sum + d.volume, 0))} USDT`;
-    if (statsMarketCap) statsMarketCap.textContent = `${formatPrice(cryptoPrices[selectedCrypto] * 1000000)} USDT`;
-}
-
-function setTradeMode(mode) {
-    tradeMode = mode;
-    const tabs = document.querySelectorAll('.tab');
-    const tradeBtn = document.getElementById('trade-btn');
-    if (tabs && tradeBtn) {
-        tabs.forEach(tab => tab.classList.remove('active'));
-        document.querySelector(`.tab czar[onclick="setTradeMode('${mode}')"]`).classList.add('active');
-        tradeBtn.textContent = mode === 'buy' ? 'Купить' : 'Продать';
-        tradeBtn.style.background = mode === 'buy' ? 'linear-gradient(45deg, #43e97b, #38f9d7)' : 'linear-gradient(45deg, #f5576c, #f093fb)';
-    }
-}
-
-function setTimeframe(timeframe) {
-    currentTimeframe = timeframe;
-    const timeframeButtons = document.querySelectorAll('.timeframe-btn');
-    if (timeframeButtons) {
-        timeframeButtons.forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`.timeframe-btn[onclick="setTimeframe('${timeframe}')"]`).classList.add('active');
-        if (currentUser) {
-            initWebSocket();
-            updateChart();
-        }
-    }
+    candlestickSeries.setData(candlestickData);
+    volumeSeries.setData(volumeData);
 }
 
 function updateOrderBook() {
     if (!currentUser) return;
-    const bids = document.getElementById('order-book-bids');
-    const asks = document.getElementById('order-book-asks');
-    if (!bids || !asks) return;
+    const orderBook = document.getElementById('order-book');
+    if (!orderBook) return;
 
-    bids.innerHTML = '';
-    asks.innerHTML = '';
+    orderBook.innerHTML = `
+        <div class="order-book-header">Order Book</div>
+        <div class="order-book-section">
+            <div class="order-book-title">Bids</div>
+            ${generateOrderRows(true)}
+        </div>
+        <div class="order-book-section">
+            <div class="order-book-title">Asks</div>
+            ${generateOrderRows(false)}
+        </div>
+    `;
+}
 
-    const price = cryptoPrices[selectedCrypto];
-    if (!price || price <= 0) return;
-    for (let i = 1; i <= 5; i++) {
-        const bidPrice = price * (1 - i * 0.002);
-        const askPrice = price * (1 + i * 0.002);
-        const amount = Math.random() * 10;
-
-        bids.innerHTML += `
-            <tr class="buy">
-                <td>${formatPrice(bidPrice)}</td>
-                <td>${formatPrice(amount)}</td>
-            </tr>
-        `;
-        asks.innerHTML += `
-            <tr class="sell">
-                <td>${formatPrice(askPrice)}</td>
-                <td>${formatPrice(amount)}</td>
-            </tr>
+function generateOrderRows(isBid) {
+    const price = cryptoPrices[selectedCrypto] || 0;
+    let rows = '';
+    for (let i = 0; i < 5; i++) {
+        const priceOffset = isBid ? -i * 0.01 : i * 0.01;
+        const adjustedPrice = price * (1 + priceOffset);
+        rows += `
+            <div class="order-row">
+                <span class="${isBid ? 'bid-price' : 'ask-price'}">${formatPrice(adjustedPrice)}</span>
+                <span>${(Math.random() * 10).toFixed(2)}</span>
+                <span>${formatPrice(adjustedPrice * (Math.random() * 10))}</span>
+            </div>
         `;
     }
+    return rows;
 }
 
 function updateTradeHistory() {
     if (!currentUser) return;
-    const tradeHistoryItems = document.getElementById('trade-history-items');
-    if (!tradeHistoryItems) return;
+    const tradeHistory = document.getElementById('trade-history');
+    if (!tradeHistory) return;
 
-    tradeHistoryItems.innerHTML = '';
-    const trades = transactions.filter(t => t.crypto === selectedCrypto).slice(-5);
-    trades.forEach(trade => {
-        tradeHistoryItems.innerHTML += `
-            <div class="trade-history-item">
-                <span class="time">${new Date(trade.date).toLocaleTimeString()}</span>
-                <span class="price ${trade.type === 'buy' ? 'positive' : 'negative'}">
-                    ${formatPrice(trade.price)}
-                </span>
-                <span>${formatPrice(trade.amount)}</span>
-            </div>
-        `;
-    });
-}
-
-function executeTrade() {
-    if (!currentUser) {
-        console.log('executeTrade: User not authenticated, opening login modal');
-        openModal('login-modal');
-        return;
-    }
-
-    const amount = parseFloat(document.getElementById('trade-amount')?.value);
-    const price = parseFloat(document.getElementById('trade-price')?.value);
-    if (!amount || amount <= 0 || !price || price <= 0) {
-        alert('Введите корректные данные');
-        return;
-    }
-
-    const total = amount * price;
-    if (tradeMode === 'buy' && total > balance) {
-        alert('Недостаточно средств');
-        return;
-    }
-
-    if (tradeMode === 'sell' && (!portfolio[selectedCrypto] || portfolio[selectedCrypto] < amount)) {
-        alert('Недостаточно криптовалюты');
-        return;
-    }
-
-    if (tradeMode === 'buy') {
-        balance -= total;
-        portfolio[selectedCrypto] = (portfolio[selectedCrypto] || 0) + amount;
-    } else {
-        balance += total;
-        portfolio[selectedCrypto] -= amount;
-        if (portfolio[selectedCrypto] <= 0) delete portfolio[selectedCrypto];
-    }
-
-    transactions.push({
-        date: new Date().toISOString(),
-        type: tradeMode,
-        crypto: selectedCrypto,
-        amount,
-        price,
-        total,
-        status: 'success'
-    });
-
-    balance = 0; // Reset balance to 0 after trade
-    saveUserData();
-    updateUI();
-    const tradeAmount = document.getElementById('trade-amount');
-    const cryptoAmount = document.getElementById('crypto-amount');
-    if (tradeAmount) tradeAmount.value = '';
-    if (cryptoAmount) cryptoAmount.value = total.toFixed(2);
+    tradeHistory.innerHTML = `
+        <div class="trade-history-header">Trade History</div>
+        ${transactions
+            .filter(t => t.crypto === selectedCrypto)
+            .map(t => `
+                <div class="trade-row">
+                    <span>${new Date(t.date).toLocaleTimeString()}</span>
+                    <span class="${t.type === 'buy' ? 'buy' : 'sell'}">${t.type}</span>
+                    <span>${t.amount.toFixed(2)}</span>
+                    <span>${formatPrice(t.price)}</span>
+                    <span>${formatPrice(t.total)}</span>
+                </div>
+            `).join('')}
+    `;
 }
 
 function updatePortfolio() {
-    const portfolioGrid = document.getElementById('portfolio-grid');
-    if (!portfolioGrid) return;
+    const portfolioList = document.getElementById('portfolio-list');
+    if (!portfolioList) return;
 
-    portfolioGrid.innerHTML = '';
-    if (Object.keys(portfolio).length === 0) {
-        portfolioGrid.innerHTML = '<div class="no-portfolio-message">Ваш портфель пуст.</div>';
-        return;
-    }
-    Object.entries(portfolio).forEach(([crypto, amount]) => {
-        const value = amount * cryptoPrices[crypto];
+    portfolioList.innerHTML = '';
+    Object.keys(portfolio).forEach(crypto => {
+        const amount = portfolio[crypto];
+        const currentPrice = cryptoPrices[crypto] || 0;
+        const totalValue = amount * currentPrice;
+        const colors = colorMap[crypto] || colorMap.default;
         const item = document.createElement('div');
         item.className = 'portfolio-item';
         item.innerHTML = `
-            <div class="crypto-icon" style="background: linear-gradient(45deg, #${colorMap[crypto]?.start || colorMap.default.start}, #${colorMap[crypto]?.end || colorMap.default.end})">
-                ${cryptoSymbols[crypto] || crypto}
-            </div>
-            <h3>${crypto}</h3>
-            <div class="portfolio-amount">${formatPrice(amount)} ${crypto}</div>
-            <div class="portfolio-value">${formatPrice(value)}</div>
+            <span class="crypto-icon" style="background: linear-gradient(45deg, #${colors.start}, #${colors.end});">${cryptoSymbols[crypto] || crypto}</span>
+            <span>${crypto}</span>
+            <span>${amount.toFixed(4)}</span>
+            <span>${formatPrice(currentPrice)}</span>
+            <span>${formatPrice(totalValue)}</span>
         `;
-        portfolioGrid.appendChild(item);
+        portfolioList.appendChild(item);
     });
 }
 
 function updateBalance() {
-    const walletBalance = document.getElementById('wallet-balance-page');
-    if (walletBalance) walletBalance.textContent = '$0.00'; // Always display $0.00
+    const balanceElement = document.getElementById('balance');
+    if (balanceElement) {
+        balanceElement.textContent = formatPrice(balance);
+    }
 }
 
 function updateTransactionHistory() {
-    // Skip updating transaction history to preserve static content in history.html
-}
+    const transactionList = document.getElementById('transaction-list');
+    if (!transactionList) return;
 
-function depositFunds() {
-    if (!currentUser) {
-        console.log('depositFunds: User not authenticated, opening login modal');
-        openModal('login-modal');
-        return;
-    }
-
-    const amount = parseFloat(document.getElementById('deposit-amount-page')?.value);
-    const crypto = document.getElementById('deposit-crypto')?.value;
-    if (!amount || amount <= 0 || !crypto || !cryptoPrices[crypto] || cryptoPrices[crypto] <= 0) {
-        alert('Введите корректные данные или дождитесь загрузки цен');
-        return;
-    }
-
-    // Instead of updating balance, keep it at 0 and only update portfolio
-    portfolio[crypto] = (portfolio[crypto] || 0) + amount;
-    transactions.push({
-        date: new Date().toISOString(),
-        type: 'deposit',
-        crypto,
-        amount,
-        price: cryptoPrices[crypto],
-        total: amount * cryptoPrices[crypto],
-        status: 'success'
+    transactionList.innerHTML = '';
+    transactions.forEach(t => {
+        const colors = colorMap[t.crypto] || colorMap.default;
+        const row = document.createElement('div');
+        row.className = 'transaction-row';
+        row.innerHTML = `
+            <span>${new Date(t.date).toLocaleString()}</span>
+            <span class="${t.type}">${t.type}</span>
+            <span class="crypto-icon" style="background: linear-gradient(45deg, #${colors.start}, #${colors.end});">${cryptoSymbols[t.crypto] || t.crypto}</span>
+            <span>${t.amount.toFixed(2)}</span>
+            <span>${formatPrice(t.price)}</span>
+            <span>${formatPrice(t.total)}</span>
+            <span class="${t.status}">${t.status}</span>
+            <span class="${t.pl >= 0 ? 'positive' : 'negative'}">${t.pl !== null ? (t.pl >= 0 ? '+' : '') + formatPrice(t.pl) : '-'}</span>
+        `;
+        transactionList.appendChild(row);
     });
-
-    saveUserData();
-    updateUI();
-    const depositAmount = document.getElementById('deposit-amount-page');
-    if (depositAmount) depositAmount.value = '';
-    alert('Deposit recorded, but wallet balance remains $0.00 as per requirement.');
-}
-
-function updateWalletAddress() {
-    const network = document.getElementById('deposit-network')?.value;
-    const walletAddress = document.getElementById('wallet-address');
-    if (!walletAddress || !network) return;
-    const chars = '0123456789abcdef';
-    let address = network === 'BTC' ? '1' : network === 'ETH' ? '0x' : '';
-    const length = network === 'BTC' ? 33 : 40;
-    for (let i = 0; i < length; i++) {
-        address += chars[Math.floor(Math.random() * chars.length)];
-    }
-    walletAddress.textContent = address;
 }
 
 function toggleSupportChat() {
-    const chat = document.getElementById('support-chat');
-    if (chat) chat.classList.toggle('active');
+    const supportChat = document.getElementById('support-chat');
+    if (supportChat) {
+        supportChat.classList.toggle('active');
+    }
 }
 
 function sendMessage() {
-    const input = document.getElementById('chat-input');
+    const chatInput = document.getElementById('chat-input');
     const chatBody = document.getElementById('chat-body');
-    if (!input || !chatBody) return;
+    if (!chatInput || !chatBody) return;
 
-    const message = input.value.trim();
-    if (!message) return;
+    const message = chatInput.value.trim();
+    if (message) {
+        const userMessage = document.createElement('div');
+        userMessage.className = 'chat-message user';
+        userMessage.textContent = message;
+        chatBody.appendChild(userMessage);
+        chatInput.value = '';
 
-    chatBody.innerHTML += `
-        <div class="chat-message user">${message}</div>
-    `;
-    input.value = '';
-
-    setTimeout(() => {
-        chatBody.innerHTML += `
-            <div class="chat-message support">Спасибо за ваше сообщение! Наша команда ответит вам в ближайшее время.</div>
-        `;
-        chatBody.scrollTop = chatBody.scrollHeight;
-    }, 1000);
-
-    chatBody.scrollTop = chatBody.scrollHeight;
+        setTimeout(() => {
+            const supportMessage = document.createElement('div');
+            supportMessage.className = 'chat-message support';
+            supportMessage.textContent = 'Thank you for your message! Our support team will respond shortly.';
+            chatBody.appendChild(supportMessage);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }, 1000);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, checking for currentUser:', localStorage.getItem('currentUser'));
+    currentUser = localStorage.getItem('currentUser');
+    loadUserData();
+    fetchCryptoPrices();
+    setInterval(fetchCryptoPrices, 60000);
 
-    closeAllModals();
-
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = savedUser;
-        console.log('User authenticated on load:', currentUser);
-        loadUserData();
-    } else {
-        console.log('No authenticated user found');
-        openModal('login-modal');
-    }
-
-    const profileBtn = document.getElementById('profile-btn');
-    if (profileBtn) {
-        profileBtn.addEventListener('click', () => {
-            const dropdown = document.getElementById('dropdown-menu');
-            if (dropdown) dropdown.classList.toggle('active');
+    const marketSelect = document.getElementById('market-select');
+    if (marketSelect) {
+        Object.keys(cryptoPrices).forEach(crypto => {
+            const option = document.createElement('option');
+            option.value = `${crypto}/USDT`;
+            option.textContent = `${crypto}/USDT`;
+            marketSelect.appendChild(option);
+        });
+        marketSelect.value = selectedMarket;
+        marketSelect.addEventListener('change', () => {
+            selectCrypto(marketSelect.value.split('/')[0]);
         });
     }
-
-    const savedFavorites = localStorage.getItem('favoritePairs');
-    if (savedFavorites) {
-        favoritePairs = new Set(JSON.parse(savedFavorites));
-    }
-
-    fetchCryptoPrices();
-    initChart();
-    setInterval(fetchCryptoPrices, 30000); // Update prices every 30 seconds
 
     const pairSearch = document.getElementById('pair-search');
     if (pairSearch) {
         pairSearch.addEventListener('input', renderCryptoList);
     }
 
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            console.log('Navigating to page:', link.getAttribute('data-page'), 'currentUser:', currentUser);
-            const pageId = link.getAttribute('data-page');
-            document.querySelectorAll('.main-content').forEach(page => page.classList.remove('active'));
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) targetPage.classList.add('active');
-            if (currentUser) {
-                closeAllModals();
-            }
-            updateUI();
+    const timeframeSelect = document.getElementById('timeframe-select');
+    if (timeframeSelect) {
+        timeframeSelect.addEventListener('change', () => {
+            currentTimeframe = timeframeSelect.value;
+            updateChart();
         });
-    });
+    }
 
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal(modal.id);
-            }
+    const buyTab = document.getElementById('buy-tab');
+    const sellTab = document.getElementById('sell-tab');
+    if (buyTab && sellTab) {
+        buyTab.addEventListener('click', () => {
+            tradeMode = 'buy';
+            buyTab.classList.add('active');
+            sellTab.classList.remove('active');
         });
+        sellTab.addEventListener('click', () => {
+            tradeMode = 'sell';
+            sellTab.classList.add('active');
+            buyTab.classList.remove('active');
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        if (chart && document.getElementById('chart')) {
+            chart.resize(document.getElementById('chart').offsetWidth, 400);
+        }
     });
 });
