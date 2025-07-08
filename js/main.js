@@ -229,8 +229,8 @@ function updateUI() {
         const profileBtn = document.getElementById('profile-btn');
         if (profileBtn) profileBtn.textContent = currentUser;
         // Update user info on kyc page
-        const userUsername = document.getElementById('user-username');
-        const userInfo = document.getElementById('user-info');
+        const userUsername = document.querySelector('.user-info h2');
+        const userInfo = document.querySelector('.user-info p');
         if (userUsername) userUsername.textContent = currentUser;
         if (userInfo) userInfo.textContent = `Имя аккаунта: @${currentUser} 👤 | Email: ${currentUser.toLowerCase()}@example.com`;
     } else {
@@ -291,17 +291,55 @@ function updateKycPage() {
     // Handle sidebar navigation
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     sidebarItems.forEach(item => {
-        item.addEventListener('click', () => {
-            sidebarItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            const section = item.getAttribute('data-section');
-            console.log('Selected sidebar section:', section);
-            // Future implementation: switch content based on section
-            if (section !== 'kyc') {
-                alert('Эта секция еще не реализована');
-            }
-        });
+        // Remove any existing event listeners to prevent duplicates
+        item.removeEventListener('click', handleSidebarClick);
+        // Add new event listener
+        item.addEventListener('click', handleSidebarClick);
     });
+
+    // Handle back arrow navigation
+    const backArrow = document.querySelector('.back-arrow');
+    if (backArrow) {
+        backArrow.addEventListener('click', () => {
+            window.location.href = '../index.html';
+        });
+    }
+
+    // Apply restrictRegion to specific buttons and links
+    const reverifyLink = document.querySelector('.verification-card a');
+    if (reverifyLink) {
+        reverifyLink.addEventListener('click', restrictRegion);
+    }
+
+    const verifyButton = document.querySelector('.verify-button');
+    if (verifyButton) {
+        verifyButton.addEventListener('click', restrictRegion);
+    }
+
+    const viewButtons = document.querySelectorAll('.view-button');
+    viewButtons.forEach(button => {
+        button.addEventListener('click', restrictRegion);
+    });
+
+    const configButton = document.querySelector('.config-button');
+    if (configButton) {
+        configButton.addEventListener('click', restrictRegion);
+    }
+}
+
+function handleSidebarClick(event) {
+    const item = event.currentTarget;
+    const section = item.getAttribute('data-section');
+    if (section === 'kyc') {
+        // Keep the KYC section active
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        console.log('Selected sidebar section: kyc');
+        // Content is already displayed for kyc, no action needed
+    } else {
+        // Restrict other sections
+        restrictRegion(event);
+    }
 }
 
 function restrictRegion(event) {
@@ -766,6 +804,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     fetchCryptoPrices();
     setInterval(fetchCryptoPrices, 60000);
+
+    // Add data-section attributes to sidebar items if not present
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach((item, index) => {
+        if (!item.getAttribute('data-section')) {
+            const sectionNames = ['overview', 'security', 'kyc', 'settings', 'messages', 'interactive', 'rewards', 'vouchers', 'sub-account', 'api'];
+            item.setAttribute('data-section', sectionNames[index] || `section-${index}`);
+        }
+    });
 
     const marketSelect = document.getElementById('market-select');
     if (marketSelect) {
