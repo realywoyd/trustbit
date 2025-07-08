@@ -134,6 +134,7 @@
             margin-right: 15px;
             cursor: pointer;
             transition: color 0.3s;
+            text-decoration: none;
         }
 
         .back-arrow:hover {
@@ -477,6 +478,15 @@
             color: #7e6bff;
         }
 
+        .region-message {
+            display: none;
+            text-align: center;
+            color: #f5576c;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 40px;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -496,43 +506,43 @@
 </head>
 <body>
     <div class="sidebar">
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="account">
             <div class="icon user">👤</div>
             <span>Обзор аккаунта</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="security">
             <div class="icon security">🔒</div>
             <span>Безопасность</span>
         </div>
-        <div class="sidebar-item active">
+        <div class="sidebar-item active" data-section="verification">
             <div class="icon verified">✓</div>
             <span>Верификация личности</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="settings">
             <div class="icon settings">⚙️</div>
             <span>Настройки</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="messages">
             <div class="icon messages">💬</div>
             <span>Сообщения</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="interactive">
             <div class="icon interactive">📱</div>
             <span>Интерактивные сообщения</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="rewards">
             <div class="icon rewards">🎁</div>
             <span>Центр наград</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="vouchers">
             <div class="icon vouchers">🎫</div>
             <span>Центр ваучеров</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="sub-account">
             <div class="icon sub-account">👥</div>
             <span>Суб-аккаунт</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" data-section="api">
             <div class="icon api">⚡</div>
             <span>Управление API</span>
         </div>
@@ -540,52 +550,56 @@
 
     <div class="main-content">
         <div class="header">
-            <span class="back-arrow">←</span>
+            <a href="index.html" class="back-arrow">←</a>
             <h1 class="page-title">KYC</h1>
         </div>
 
-        <div class="user-profile">
-            <div class="user-header">
-                <div class="user-avatar">U</div>
-                <div class="user-info">
-                    <h2>User_🔒</h2>
-                    <p>Имя аккаунта: @user4016 👤 | Email: ivan******st@gmail.com</p>
-                </div>
-            </div>
-
-            <div class="status-card verified">
-                <div class="status-header">
-                    <div class="status-title">Верификация личности</div>
-                    <div class="status-badge verified">Верификация личности выполнена</div>
-                    <button class="view-button">Посмотреть</button>
-                </div>
-            </div>
-
-            <div class="status-card vip">
-                <div class="status-header">
-                    <div class="status-title">VIP-уровень</div>
-                    <div class="status-badge vip">Обычный пользователь</div>
-                    <button class="view-button">Посмотреть</button>
-                </div>
-            </div>
-
-            <div class="status-card security">
-                <div class="status-header">
-                    <div class="status-title">Двухфакторная аутентификация (2FA)</div>
-                    <div class="status-badge enabled">Включено</div>
-                    <button class="view-button">Посмотреть</button>
-                </div>
-            </div>
-
-            <div class="status-card">
-                <div class="status-header">
-                    <div class="status-title">Общие настройки</div>
-                    <button class="config-button">Настроить</button>
-                </div>
-            </div>
+        <div class="region-message" id="regionMessage">
+            Недоступно в вашем регионе.
         </div>
 
-        <div class="verification-section">
+        <div class="verification-section" id="verificationSection">
+            <div class="user-profile">
+                <div class="user-header">
+                    <div class="user-avatar">U</div>
+                    <div class="user-info">
+                        <h2>User_🔒</h2>
+                        <p>Имя аккаунта: @user4016 👤 | Email: ivan******st@gmail.com</p>
+                    </div>
+                </div>
+
+                <div class="status-card verified">
+                    <div class="status-header">
+                        <div class="status-title">Верификация личности</div>
+                        <div class="status-badge verified">Верификация личности выполнена</div>
+                        <button class="view-button">Посмотреть</button>
+                    </div>
+                </div>
+
+                <div class="status-card vip">
+                    <div class="status-header">
+                        <div class="status-title">VIP-уровень</div>
+                        <div class="status-badge vip">Обычный пользователь</div>
+                        <button class="view-button">Посмотреть</button>
+                    </div>
+                </div>
+
+                <div class="status-card security">
+                    <div class="status-header">
+                        <div class="status-title">Двухфакторная аутентификация (2FA)</div>
+                        <div class="status-badge enabled">Включено</div>
+                        <button class="view-button">Посмотреть</button>
+                    </div>
+                </div>
+
+                <div class="status-card">
+                    <div class="status-header">
+                        <div class="status-title">Общие настройки</div>
+                        <button class="config-button">Настроить</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="verification-cards">
                 <div class="verification-card">
                     <h3>Первичная верификация</h3>
@@ -653,5 +667,32 @@
             <a href="mailto:vip@coinex.com">vip@coinex.com</a> 📧</p>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            const verificationSection = document.getElementById('verificationSection');
+            const regionMessage = document.getElementById('regionMessage');
+
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active class from all items
+                    sidebarItems.forEach(i => i.classList.remove('active'));
+
+                    // Add active class to clicked item
+                    item.classList.add('active');
+
+                    // Check if the clicked item is for verification
+                    if (item.dataset.section === 'verification') {
+                        verificationSection.style.display = 'block';
+                        regionMessage.style.display = 'none';
+                    } else {
+                        verificationSection.style.display = 'none';
+                        regionMessage.style.display = 'block';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
