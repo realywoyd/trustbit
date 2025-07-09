@@ -1,3 +1,4 @@
+```javascript
 let balance = 0;
 let portfolio = {};
 let transactions = [];
@@ -17,7 +18,7 @@ let previousPrices = { ...cryptoPrices };
 let selectedMarket = 'BTC/USDT';
 let selectedCrypto = 'BTC';
 let tradeMode = 'buy';
-let currentTimeframe = '15m';
+let currentTimeframe = '5m';
 let favoritePairs = new Set();
 let currentUser = null;
 let chart = null;
@@ -169,6 +170,30 @@ const defaultTransactions = [
     }
 ];
 
+// Mock data for chart testing
+const mockChartData = {
+    BTC: Array.from({ length: 50 }, (_, i) => {
+        const time = Math.floor(Date.now() / 1000) - (50 - i) * 300;
+        const value = 100000 + Math.sin(i / 5) * 5000 + Math.random() * 1000;
+        return { time, value };
+    }),
+    ETH: Array.from({ length: 50 }, (_, i) => {
+        const time = Math.floor(Date.now() / 1000) - (50 - i) * 300;
+        const value = 2500 + Math.sin(i / 5) * 200 + Math.random() * 50;
+        return { time, value };
+    }),
+    ADA: Array.from({ length: 50 }, (_, i) => {
+        const time = Math.floor(Date.now() / 1000) - (50 - i) * 300;
+        const value = 0.5 + Math.sin(i / 5) * 0.05 + Math.random() * 0.01;
+        return { time, value };
+    })
+};
+
+// Initialize cryptoPriceHistory with mock data for supported pairs
+cryptoPriceHistory.BTC = mockChartData.BTC;
+cryptoPriceHistory.ETH = mockChartData.ETH;
+cryptoPriceHistory.ADA = mockChartData.ADA;
+
 function formatPrice(value) {
     if (typeof value !== 'number' || isNaN(value) || value <= 0) return '$0.000000';
     const fractionDigits = value < 1 ? 6 : value < 100 ? 4 : 2;
@@ -217,32 +242,50 @@ function loadUserData() {
     }
 }
 
-function updateUI() {
-    console.log('Updating UI, currentUser:', currentUser);
+function checkAuthStatus() {
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const mainContent = document.getElementById('trading') || document.getElementById('wallet');
+    const loginPrompt = document.getElementById('login-prompt');
     const profileDropdown = document.getElementById('profile-dropdown');
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
-    if (currentUser) {
-        if (profileDropdown) profileDropdown.style.display = 'block';
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (registerBtn) registerBtn.style.display = 'none';
-        const profileBtn = document.getElementById('profile-btn');
-        if (profileBtn) profileBtn.textContent = currentUser;
-        // Update user info on kyc page
-        const userUsername = document.querySelector('.user-info h2');
-        const userInfo = document.querySelector('.user-info p');
-        if (userUsername) userUsername.textContent = currentUser;
-        if (userInfo) userInfo.textContent = `Имя аккаунта: @${currentUser} 👤 | Email: ${currentUser.toLowerCase()}@example.com`;
-    } else {
-        if (profileDropdown) profileDropdown.style.display = 'none';
-        if (loginBtn) loginBtn.style.display = 'block';
-        if (registerBtn) registerBtn.style.display = 'block';
-        // Redirect to login if trying to access kyc page while not authenticated
-        if (window.location.pathname.includes('kyc.html')) {
-            openModal('login-modal');
-            window.location.href = '../index.html';
+
+    console.log('checkAuthStatus called. isAuthenticated:', isAuthenticated, 'currentUser:', currentUser);
+
+    if (mainContent && loginPrompt) {
+        if (isAuthenticated && currentUser) {
+            console.log('User is authenticated. Showing main content.');
+            mainContent.style.display = 'block';
+            loginPrompt.style.display = 'none';
+            if (profileDropdown && loginBtn && registerBtn) {
+                console.log('Showing profile dropdown, hiding login/register buttons.');
+                profileDropdown.style.display = 'block';
+                loginBtn.style.display = 'none';
+                registerBtn.style.display = 'none';
+            } else {
+                console.error('Error: profileDropdown, loginBtn, or registerBtn not found.');
+            }
+        } else {
+            console.log('User is not authenticated. Showing login prompt.');
+            mainContent.style.display = 'none';
+            loginPrompt.style.display = 'block';
+            if (profileDropdown && loginBtn && registerBtn) {
+                console.log('Hiding profile dropdown, showing login/register buttons.');
+                profileDropdown.style.display = 'none';
+                loginBtn.style.display = 'block';
+                registerBtn.style.display = 'block';
+            } else {
+                console.error('Error: profileDropdown, loginBtn, or registerBtn not found.');
+            }
         }
+    } else {
+        console.error('Error: mainContent or loginPrompt not found.');
     }
+}
+
+function updateUI() {
+    console.log('Updating UI, currentUser:', currentUser);
+    checkAuthStatus();
 
     const path = window.location.pathname;
     let page;
@@ -263,24 +306,14 @@ function updateUI() {
         }
     });
 
-    // Update main content visibility
-    document.querySelectorAll('.main-content').forEach(content => {
-        content.classList.remove('active');
-        if (content.id === page) {
-            content.classList.add('active');
-        }
-    });
-
     if (page === 'portfolio') updatePortfolio();
     if (page === 'wallet') updateBalance();
     if (page === 'history') updateTransactionHistory();
-    if (page === 'trading') {
+    if (page === 'trading' && currentUser) {
         renderCryptoList();
-        if (currentUser) {
-            updateChart();
-            updateOrderBook();
-            updateTradeHistory();
-        }
+        updateChart();
+        updateOrderBook();
+        updateTradeHistory();
     }
     if (page === 'kyc' && currentUser) {
         updateKycPage();
@@ -288,58 +321,18 @@ function updateUI() {
 }
 
 function updateKycPage() {
-    // Handle sidebar navigation
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     sidebarItems.forEach(item => {
-        // Remove any existing event listeners to prevent duplicates
-        item.removeEventListener('click', handleSidebarClick);
-        // Add new event listener
-        item.addEventListener('click', handleSidebarClick);
-    });
-
-    // Handle back arrow navigation
-    const backArrow = document.querySelector('.back-arrow');
-    if (backArrow) {
-        backArrow.addEventListener('click', () => {
-            window.location.href = '../index.html';
+        item.addEventListener('click', () => {
+            sidebarItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            const section = item.getAttribute('data-section');
+            console.log('Selected sidebar section:', section);
+            if (section !== 'kyc') {
+                alert('Эта секция еще не реализована');
+            }
         });
-    }
-
-    // Apply restrictRegion to specific buttons and links
-    const reverifyLink = document.querySelector('.verification-card a');
-    if (reverifyLink) {
-        reverifyLink.addEventListener('click', restrictRegion);
-    }
-
-    const verifyButton = document.querySelector('.verify-button');
-    if (verifyButton) {
-        verifyButton.addEventListener('click', restrictRegion);
-    }
-
-    const viewButtons = document.querySelectorAll('.view-button');
-    viewButtons.forEach(button => {
-        button.addEventListener('click', restrictRegion);
     });
-
-    const configButton = document.querySelector('.config-button');
-    if (configButton) {
-        configButton.addEventListener('click', restrictRegion);
-    }
-}
-
-function handleSidebarClick(event) {
-    const item = event.currentTarget;
-    const section = item.getAttribute('data-section');
-    if (section === 'kyc') {
-        // Keep the KYC section active
-        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        console.log('Selected sidebar section: kyc');
-        // Content is already displayed for kyc, no action needed
-    } else {
-        // Restrict other sections
-        restrictRegion(event);
-    }
 }
 
 function restrictRegion(event) {
@@ -355,7 +348,7 @@ function openModal(modalId) {
     }
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'flex';
+        modal.classList.add('active');
         console.log('Modal opened:', modalId);
     } else {
         console.error('Modal not found:', modalId);
@@ -367,7 +360,7 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     const error = document.getElementById(`${modalId}-error`);
     if (modal) {
-        modal.style.display = 'none';
+        modal.classList.remove('active');
         console.log('Modal closed:', modalId);
     } else {
         console.error('Modal not found:', modalId);
@@ -398,9 +391,11 @@ function login() {
     if (user && JSON.parse(user).password === hashPassword(password)) {
         currentUser = username;
         localStorage.setItem('currentUser', currentUser);
+        localStorage.setItem('isAuthenticated', 'true');
         console.log('User logged in:', currentUser);
         closeAllModals();
         loadUserData();
+        checkAuthStatus();
     } else {
         if (error) {
             error.textContent = 'Неверное имя пользователя или пароль';
@@ -422,12 +417,20 @@ function logout() {
     }
     currentUser = null;
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('isAuthenticated');
     balance = 0;
     portfolio = {};
     transactions = [];
     favoritePairs = new Set();
     updateUI();
+    checkAuthStatus();
     window.location.href = '../index.html';
+}
+
+function toggleDropdown() {
+    console.log('Toggling dropdown menu.');
+    const dropdown = document.getElementById('dropdown-menu');
+    dropdown.classList.toggle('active');
 }
 
 function renderCryptoList() {
@@ -492,6 +495,7 @@ function toggleFavorite(pair, event) {
         favoritePairs.add(pair);
     }
     localStorage.setItem('favoritePairs', JSON.stringify([...favoritePairs]));
+    saveUserData();
     renderCryptoList();
 }
 
@@ -626,9 +630,17 @@ function selectCrypto(crypto) {
 }
 
 function updateChart() {
-    if (!currentUser) return;
-    const chartContainer = document.getElementById('chart');
-    if (!chartContainer) return;
+    if (!currentUser) {
+        console.log('updateChart: User not authenticated');
+        return;
+    }
+
+    const chartContainer = document.getElementById('trading-chart');
+    const volumeContainer = document.getElementById('volume-chart');
+    if (!chartContainer || !volumeContainer) {
+        console.error('Chart containers not found');
+        return;
+    }
 
     if (!chart) {
         chart = LightweightCharts.createChart(chartContainer, {
@@ -639,10 +651,29 @@ function updateChart() {
             timeScale: { timeVisible: true, secondsVisible: false },
         });
         candlestickSeries = chart.addCandlestickSeries();
-        volumeSeries = chart.addHistogramSeries({ color: '#7e6bff', priceFormat: { type: 'volume' }, priceScaleId: '' });
+        volumeSeries = chart.addHistogramSeries({ 
+            color: '#7e6bff', 
+            priceFormat: { type: 'volume' }, 
+            priceScaleId: '',
+            base: 0
+        });
+        volumeSeries.priceScale().applyOptions({
+            scaleMargins: { top: 0.8, bottom: 0 }
+        });
     }
 
-    const data = cryptoPriceHistory[selectedCrypto] || [];
+    let data = cryptoPriceHistory[selectedCrypto] || [];
+    if (data.length === 0) {
+        data = mockChartData[selectedCrypto] || [];
+        console.warn(`No price history for ${selectedCrypto}, using mock data`);
+    }
+
+    if (data.length === 0) {
+        console.error(`No data available for ${selectedCrypto}`);
+        chartContainer.innerHTML = '<div style="color: #e6e6e6; text-align: center; padding: 20px;">No chart data available</div>';
+        return;
+    }
+
     const candlestickData = data.map(d => ({
         time: d.time,
         open: d.value,
@@ -658,62 +689,69 @@ function updateChart() {
 
     candlestickSeries.setData(candlestickData);
     volumeSeries.setData(volumeData);
+
+    chart.resize(chartContainer.offsetWidth, 400);
 }
 
 function updateOrderBook() {
     if (!currentUser) return;
-    const orderBook = document.getElementById('order-book');
-    if (!orderBook) return;
+    const bidsContainer = document.getElementById('order-book-bids');
+    const asksContainer = document.getElementById('order-book-asks');
+    if (!bidsContainer || !asksContainer) return;
 
-    orderBook.innerHTML = `
-        <div class="order-book-header">Order Book</div>
-        <div class="order-book-section">
-            <div class="order-book-title">Bids</div>
-            ${generateOrderRows(true)}
-        </div>
-        <div class="order-book-section">
-            <div class="order-book-title">Asks</div>
-            ${generateOrderRows(false)}
-        </div>
-    `;
-}
-
-function generateOrderRows(isBid) {
     const price = cryptoPrices[selectedCrypto] || 0;
-    let rows = '';
+    let bidsHTML = '';
+    let asksHTML = '';
+
     for (let i = 0; i < 5; i++) {
-        const priceOffset = isBid ? -i * 0.01 : i * 0.01;
-        const adjustedPrice = price * (1 + priceOffset);
-        rows += `
-            <div class="order-row">
-                <span class="${isBid ? 'bid-price' : 'ask-price'}">${formatPrice(adjustedPrice)}</span>
-                <span>${(Math.random() * 10).toFixed(2)}</span>
-                <span>${formatPrice(adjustedPrice * (Math.random() * 10))}</span>
-            </div>
+        const bidPrice = price * (1 - i * 0.01);
+        const askPrice = price * (1 + i * 0.01);
+        const amount = (Math.random() * 10).toFixed(2);
+        bidsHTML += `
+            <tr>
+                <td class="bid-price">${formatPrice(bidPrice)}</td>
+                <td>${amount}</td>
+            </tr>
+        `;
+        asksHTML += `
+            <tr>
+                <td class="ask-price">${formatPrice(askPrice)}</td>
+                <td>${amount}</td>
+            </tr>
         `;
     }
-    return rows;
+
+    bidsContainer.innerHTML = bidsHTML;
+    asksContainer.innerHTML = asksHTML;
 }
 
 function updateTradeHistory() {
     if (!currentUser) return;
-    const tradeHistory = document.getElementById('trade-history');
-    if (!tradeHistory) return;
+    const tradeHistoryItems = document.getElementById('trade-history-items');
+    if (!tradeHistoryItems) return;
 
-    tradeHistory.innerHTML = `
-        <div class="trade-history-header">Trade History</div>
-        ${transactions
-            .filter(t => t.crypto === selectedCrypto)
-            .map(t => `
-                <div class="trade-row">
-                    <span>${new Date(t.date).toLocaleTimeString()}</span>
-                    <span class="${t.type === 'buy' ? 'buy' : 'sell'}">${t.type}</span>
-                    <span>${t.amount.toFixed(2)}</span>
-                    <span>${formatPrice(t.price)}</span>
-                    <span>${formatPrice(t.total)}</span>
-                </div>
-            `).join('')}
-    `;
+    tradeHistoryItems.innerHTML = '';
+    const filteredTransactions = transactions
+        .filter(t => t.crypto === selectedCrypto)
+        .slice(0, 5); // Limit to 5 recent transactions
+
+    if (filteredTransactions.length === 0) {
+        tradeHistoryItems.innerHTML = '<div class="no-data-message">No trade history available.</div>';
+        return;
+    }
+
+    filteredTransactions.forEach(t => {
+        const row = document.createElement('div');
+        row.className = 'trade-row';
+        row.innerHTML = `
+            <span>${new Date(t.date).toLocaleTimeString()}</span>
+            <span class="${t.type === 'buy' ? 'buy' : 'sell'}">${t.type}</span>
+            <span>${t.amount.toFixed(2)}</span>
+            <span>${formatPrice(t.price)}</span>
+            <span>${formatPrice(t.total)}</span>
+        `;
+        tradeHistoryItems.appendChild(row);
+    });
 }
 
 function updatePortfolio() {
@@ -799,66 +837,127 @@ function sendMessage() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    currentUser = localStorage.getItem('currentUser');
-    loadUserData();
-    fetchCryptoPrices();
-    setInterval(fetchCryptoPrices, 60000);
-
-    // Add data-section attributes to sidebar items if not present
-    const sidebarItems = document.querySelectorAll('.sidebar-item');
-    sidebarItems.forEach((item, index) => {
-        if (!item.getAttribute('data-section')) {
-            const sectionNames = ['overview', 'security', 'kyc', 'settings', 'messages', 'interactive', 'rewards', 'vouchers', 'sub-account', 'api'];
-            item.setAttribute('data-section', sectionNames[index] || `section-${index}`);
+function setTimeframe(timeframe) {
+    if (!currentUser) {
+        openModal('login-modal');
+        return;
+    }
+    currentTimeframe = timeframe;
+    const buttons = document.querySelectorAll('.timeframe-btn');
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent === timeframe) {
+            btn.classList.add('active');
         }
     });
+    updateChart();
+}
 
-    const marketSelect = document.getElementById('market-select');
-    if (marketSelect) {
-        Object.keys(cryptoPrices).forEach(crypto => {
-            const option = document.createElement('option');
-            option.value = `${crypto}/USDT`;
-            option.textContent = `${crypto}/USDT`;
-            marketSelect.appendChild(option);
-        });
-        marketSelect.value = selectedMarket;
-        marketSelect.addEventListener('change', () => {
-            selectCrypto(marketSelect.value.split('/')[0]);
-        });
+function setTradeMode(mode) {
+    if (!currentUser) {
+        openModal('login-modal');
+        return;
     }
+    tradeMode = mode;
+    const tabs = document.querySelectorAll('.buy-sell-form .tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.textContent.toLowerCase() === mode) {
+            tab.classList.add('active');
+        }
+    });
+    const tradeBtn = document.getElementById('trade-btn');
+    if (tradeBtn) {
+        tradeBtn.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+    }
+}
+
+function executeTrade() {
+    if (!currentUser) {
+        openModal('login-modal');
+        return;
+    }
+    const price = parseFloat(document.getElementById('trade-price')?.value);
+    const amount = parseFloat(document.getElementById('trade-amount')?.value);
+    const total = price * amount;
+
+    if (isNaN(price) || isNaN(amount) || price <= 0 || amount <= 0) {
+        alert('Please enter valid price and amount');
+        return;
+    }
+
+    const transaction = {
+        date: new Date().toISOString(),
+        type: tradeMode,
+        crypto: selectedCrypto,
+        amount: amount,
+        price: price,
+        total: total,
+        status: 'success',
+        pl: null
+    };
+
+    transactions.push(transaction);
+    portfolio[selectedCrypto] = (portfolio[selectedCrypto] || 0) + (tradeMode === 'buy' ? amount : -amount);
+    saveUserData();
+    updateTradeHistory();
+    updatePortfolio();
+    alert(`${tradeMode.charAt(0).toUpperCase() + tradeMode.slice(1)} order executed: ${amount} ${selectedCrypto} at ${formatPrice(price)}`);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    currentUser = localStorage.getItem('currentUser');
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    if (currentUser && isAuthenticated) {
+        loadUserData();
+    } else {
+        currentUser = null;
+        localStorage.removeItem('isAuthenticated');
+    }
+
+    fetchCryptoPrices();
+    setInterval(fetchCryptoPrices, 60000);
 
     const pairSearch = document.getElementById('pair-search');
     if (pairSearch) {
         pairSearch.addEventListener('input', renderCryptoList);
     }
 
-    const timeframeSelect = document.getElementById('timeframe-select');
-    if (timeframeSelect) {
-        timeframeSelect.addEventListener('change', () => {
-            currentTimeframe = timeframeSelect.value;
-            updateChart();
-        });
-    }
+    const timeframeButtons = document.querySelectorAll('.timeframe-btn');
+    timeframeButtons.forEach(btn => {
+        btn.addEventListener('click', () => setTimeframe(btn.textContent));
+    });
 
-    const buyTab = document.getElementById('buy-tab');
-    const sellTab = document.getElementById('sell-tab');
-    if (buyTab && sellTab) {
-        buyTab.addEventListener('click', () => {
-            tradeMode = 'buy';
-            buyTab.classList.add('active');
-            sellTab.classList.remove('active');
-        });
-        sellTab.addEventListener('click', () => {
-            tradeMode = 'sell';
-            sellTab.classList.add('active');
-            buyTab.classList.remove('active');
-        });
-    }
+    const tabs = document.querySelectorAll('.buy-sell-form .tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => setTradeMode(tab.textContent.toLowerCase()));
+    });
 
     window.addEventListener('resize', () => {
-        if (chart && document.getElementById('chart')) {
-            chart.resize(document.getElementById('chart').offsetWidth, 400);
+        if (chart && document.getElementById('trading-chart')) {
+            chart.resize(document.getElementById('trading-chart').offsetWidth, 400);
         }
     });
+
+    // Initialize trade price input with current price
+    const tradePriceInput = document.getElementById('trade-price');
+    if (tradePriceInput && cryptoPrices[selectedCrypto]) {
+        tradePriceInput.value = cryptoPrices[selectedCrypto].toFixed(2);
+    }
+
+    // Update total when price or amount changes
+    const tradeAmountInput = document.getElementById('trade-amount');
+    const cryptoAmountInput = document.getElementById('crypto-amount');
+    if (tradePriceInput && tradeAmountInput && cryptoAmountInput) {
+        const updateTotal = () => {
+            const price = parseFloat(tradePriceInput.value) || 0;
+            const amount = parseFloat(tradeAmountInput.value) || 0;
+            cryptoAmountInput.value = (price * amount).toFixed(2);
+        };
+        tradePriceInput.addEventListener('input', updateTotal);
+        tradeAmountInput.addEventListener('input', updateTotal);
+    }
+
+    checkAuthStatus();
 });
+```
