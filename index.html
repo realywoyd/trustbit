@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -126,36 +126,43 @@
     <footer class="custom-footer">
         <div class="footer-section">
             <h3>Trust Bit</h3>
-            <a href="#">About Us</a>
-            <a href="#">Team</a>
-            <a href="#">Support</a>
+            <a href="#" onclick="restrictAccess(event)">About Us</a>
+            <a href="#" onclick="restrictAccess(event)">Team</a>
+            <a href="#" onclick="restrictAccess(event)">Support</a>
         </div>
         <div class="footer-section">
             <h3>Features</h3>
-            <a href="#">Technical Data</a>
-            <a href="#">Security</a>
-            <a href="#">Performance</a>
+            <a href="#" onclick="restrictAccess(event)">Technical Data</a>
+            <a href="#" onclick="restrictAccess(event)">Security</a>
+            <a href="#" onclick="restrictAccess(event)">Performance</a>
         </div>
         <div class="footer-section">
             <h3>Market Tools</h3>
-            <a href="#">Analytics</a>
-            <a href="#">Indicators</a>
-            <a href="#">Trading Signals</a>
+            <a href="#" onclick="restrictAccess(event)">Analytics</a>
+            <a href="#" onclick="restrictAccess(event)">Indicators</a>
+            <a href="#" onclick="restrictAccess(event)">Trading Signals</a>
         </div>
         <div class="footer-section">
             <h3>Legal Information</h3>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Use</a>
-            <a href="#">Licenses</a>
+            <a href="#" onclick="restrictAccess(event)">Privacy Policy</a>
+            <a href="#" onclick="restrictAccess(event)">Terms of Use</a>
+            <a href="#" onclick="restrictAccess(event)">Licenses</a>
         </div>
         <div class="footer-section">
             <h3>Trading Pairs</h3>
-            <a href="#">BTC/USD</a>
-            <a href="#">ETH/USDT</a>
-            <a href="#">ADA/USDT</a>
+            <a href="#" onclick="restrictAccess(event)">BTC/USD</a>
+            <a href="#" onclick="restrictAccess(event)">ETH/USDT</a>
+            <a href="#" onclick="restrictAccess(event)">ADA/USDT</a>
         </div>
     </footer>
 
+    <script>
+        // Restrict access to footer links
+        function restrictAccess(event) {
+            event.preventDefault();
+            alert('Not available in your region.');
+        }
+    </script>
     <script src="js/main.js"></script>
 </body>
 </html>
