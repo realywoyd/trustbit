@@ -3,177 +3,1198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>History - Trust Bit</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+    <title>Trust Bit - Wallet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .status.success {
-            background: none; /* Убираем фон для Completed */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .status.loss {
-            color: #f5576c; /* Красный цвет для Loss */
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0a1f 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #7e6bff;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a, .nav-link {
+            color: #e6e6e6;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.8;
+            transition: opacity 0.3s, color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav a:hover, .nav a.active, .nav-link:hover, .nav-link.active {
+            opacity: 1;
+            color: #7e6bff;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-btn {
+            background: transparent;
+            border: none;
+            color: #e6e6e6;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .profile-btn::after {
+            content: '▼';
+            font-size: 10px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #2e1a47;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            min-width: 150px;
+            z-index: 100;
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 15px;
+            color: #e6e6e6;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .dropdown-menu a:hover {
+            background: rgba(126, 107, 255, 0.2);
+        }
+
+        .login-btn, .register-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .login-btn {
+            background: transparent;
+            color: #e6e6e6;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .register-btn {
+            background: #7e6bff;
+            color: #fff;
+        }
+
+        .login-btn:hover, .register-btn:hover {
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: none;
+            padding: 40px;
+            flex: 1;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        .wallet-section {
+            text-align: left;
+        }
+
+        .wallet-section h2 {
+            margin-bottom: 20px;
+            color: #7e6bff;
+            font-size: 28px;
+        }
+
+        .balance {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #43e97b;
+        }
+
+        .deposit-form {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(45deg, #7e6bff 0%, #5a4bff 100%);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .input-group select, .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+            font-size: 14px;
+        }
+
+        .input-group select:hover, .input-group input:hover {
+            border-color: #7e6bff;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .crypto-address {
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #7e6bff;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #5a4bff;
+        }
+
+        .network-info {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .network-info h4 {
+            color: #f59e0b;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .network-info ul {
+            list-style: none;
+            font-size: 14px;
+        }
+
+        .network-info li {
+            margin-bottom: 5px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #7e6bff 0%, #5a4bff 100%);
+            color: #fff;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(126, 107, 255, 0.3);
+        }
+
+        .transaction-history {
+            margin-top: 40px;
+        }
+
+        .transaction-history h3 {
+            font-size: 24px;
+            color: #7e6bff;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #e6e6e6;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+            font-size: 14px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .filter-group select:hover {
+            border-color: #7e6bff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #7e6bff;
+            box-shadow: 0 0 5px rgba(126, 107, 255, 0.3);
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .transactions-table th, .transactions-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .transactions-table th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: rgba(67, 233, 123, 0.2);
+            color: #43e97b;
+        }
+
+        .status.pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #f59e0b;
+        }
+
+        .support-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #7e6bff, #5a4bff);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .support-button:hover {
+            transform: scale(1.1);
+        }
+
+        .support-chat {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .support-chat.active {
+            display: flex;
+        }
+
+        .chat-header {
+            background: rgba(126, 107, 255, 0.2);
+            padding: 10px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            font-size: 16px;
+            color: #7e6bff;
+        }
+
+        .chat-close {
+            background: none;
+            border: none;
+            color: #e6e6e6;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .chat-body {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 80%;
+        }
+
+        .chat-message.user {
+            background: #7e6bff;
+            color: #fff;
+            margin-left: auto;
+        }
+
+        .chat-message.support {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+
+        .chat-input button {
+            background: #7e6bff;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background: #5a4bff;
+        }
+
+        .custom-footer {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 200px;
+            text-align: left;
+        }
+
+        .footer-section h3 {
+            font-size: 16px;
+            color: #7e6bff;
+            margin-bottom: 15px;
+        }
+
+        .footer-section a {
+            display: block;
+            color: #e6e6e6;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .footer-section a:hover {
+            opacity: 1;
+            color: #7e6bff;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #e6e6e6;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #7e6bff;
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #7e6bff;
+        }
+
+        .modal-content .input-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-content .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+            font-size: 14px;
+        }
+
+        .modal-content .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .modal-content .btn-primary {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        #register-error, #login-error {
+            color: #f5576c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .main-content {
+                padding: 20px;
+            }
+            .support-chat {
+                width: 90%;
+                right: 5%;
+            }
+            .custom-footer {
+                flex-direction: column;
+                padding: 20px;
+            }
+            .footer-section {
+                margin-bottom: 20px;
+            }
+            .modal-content {
+                max-width: 90%;
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="logo">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
-                <path d="M12 8H20V12H16V24H12V12H8V8H12Z" fill="white"/>
-                <defs>
-                    <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#7e6bff"/>
-                        <stop offset="1" stop-color="#5a4bff"/>
-                    </linearGradient>
-                </defs>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.83-12.55-5.28 5.28-2.83-2.83-1.41 1.41 4.24 4.24 6.69-6.69-1.41-1.41z"/>
             </svg>
-            Trust Bit
+            <span>Trust Bit</span>
         </div>
         <nav class="nav">
-            <a href="../index.html">Home</a>
+            <a href="index.html">Home</a>
             <a href="trading.html">Trade</a>
-            <a href="wallet.html">Wallet</a>
+            <a href="wallet.html" class="active">Wallet</a>
             <a href="portfolio.html">Portfolio</a>
-            <a href="history.html" class="active">History</a>
+            <a href="history.html">History</a>
         </nav>
         <div class="user-controls">
             <div class="profile-dropdown" id="profile-dropdown" style="display: none;">
-                <button class="profile-btn" id="profile-btn">Profile</button>
+                <button class="profile-btn" onclick="toggleDropdown()">Profile</button>
                 <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="#">Settings</a>
+                    <a href="wallet.html">Wallet</a>
                     <a href="#" onclick="logout()">Logout</a>
                 </div>
             </div>
-            <button class="login-btn" id="login-btn" onclick="openModal('login-modal')">Login</button>
-            <button class="register-btn" id="register-btn" onclick="openModal('register-modal')">Register</button>
+            <button class="login-btn" id="login-btn" onclick="showLoginModal()">Login</button>
+            <button class="register-btn" id="register-btn" onclick="showRegisterModal()">Register</button>
         </div>
     </header>
 
-    <!-- Login Modal -->
+    <main class="main-content active">
+        <div class="wallet-section">
+            <h2>Your Wallet</h2>
+            <div class="balance">0.00 USD</div>
+            <div class="deposit-form">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('deposit')">Deposit</div>
+                    <div class="tab" onclick="switchTab('withdraw')">Withdraw</div>
+                </div>
+                <div id="deposit-tab">
+                    <div class="input-group">
+                        <label for="crypto-select">Select Cryptocurrency</label>
+                        <select id="crypto-select" onchange="updateNetworks('deposit')">
+                            <option value="BTC">Bitcoin (BTC)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                            <option value="USDT">Tether (USDT)</option>
+                            <option value="BNB">Binance Coin (BNB)</option>
+                            <option value="ADA">Cardano (ADA)</option>
+                            <option value="TRX">TRON (TRX)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="deposit-network">Select Network</label>
+                        <select id="deposit-network" onchange="updateWalletAddress('deposit')">
+                            <option value="Bitcoin Network">Bitcoin Network</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Deposit Address</label>
+                        <div class="crypto-address" id="wallet-address">
+                            bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
+                            <button class="copy-btn" onclick="copyAddress()">Copy</button>
+                        </div>
+                    </div>
+                    <div class="network-info" id="network-info">
+                        <h4>⚠️ Important Information</h4>
+                        <ul>
+                            <li>Send only Bitcoin to this address</li>
+                            <li>Minimum deposit: 0.001 BTC</li>
+                            <li>Requires 3 confirmations</li>
+                            <li>Processing time: 10-60 minutes</li>
+                        </ul>
+                    </div>
+                    <div class="input-group">
+                        <label for="deposit-amount">Deposit Amount</label>
+                        <input type="number" id="deposit-amount" placeholder="0.00000000 BTC" step="0.00000001">
+                    </div>
+                    <button class="btn btn-primary" onclick="depositFunds()">Deposit</button>
+                </div>
+                <div id="withdraw-tab" style="display: none;">
+                    <div class="input-group">
+                        <label for="withdraw-crypto">Select Cryptocurrency</label>
+                        <select id="withdraw-crypto" onchange="updateNetworks('withdraw')">
+                            <option value="BTC">Bitcoin (BTC)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                            <option value="USDT">Tether (USDT)</option>
+                            <option value="BNB">Binance Coin (BNB)</option>
+                            <option value="ADA">Cardano (ADA)</option>
+                            <option value="TRX">TRON (TRX)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="withdraw-network">Select Network</label>
+                        <select id="withdraw-network">
+                            <option value="Bitcoin Network">Bitcoin Network</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="withdraw-address">Recipient Address</label>
+                        <input type="text" id="withdraw-address" placeholder="Enter recipient address">
+                    </div>
+                    <div class="input-group">
+                        <label for="withdraw-amount">Withdraw Amount</label>
+                        <input type="number" id="withdraw-amount" placeholder="0.00000000 BTC" step="0.00000001">
+                    </div>
+                    <button class="btn btn-primary" onclick="withdrawFunds()">Withdraw</button>
+                </div>
+            </div>
+            <div class="transaction-history">
+                <div class="filter-group">
+                    <label for="transaction-filter">Filter Transactions</label>
+                    <select id="transaction-filter" onchange="filterTransactions()">
+                        <option value="all">All</option>
+                        <option value="deposit">Deposit</option>
+                        <option value="withdraw">Withdraw</option>
+                    </select>
+                </div>
+                <h3>Transaction History</h3>
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Coin</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-list">
+                        <tr>
+                            <td>Deposit</td>
+                            <td>USDT</td>
+                            <td>+223.52900000</td>
+                            <td>03.06.2023 11:23:45</td>
+                            <td><span class="status success">Confirmed</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
     <div id="login-modal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('login-modal')">×</span>
+            <span class="modal-close" onclick="closeModal('login-modal')">×</span>
             <h2>Login</h2>
-            <input type="text" id="login-username" placeholder="Username" required>
-            <input type="password" id="login-password" placeholder="Password" required>
-            <p id="login-error" class="error">Invalid username or password</p>
-            <button onclick="login()">Login</button>
+            <div class="input-group">
+                <input type="text" id="login-username" placeholder="Enter username" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="login-password" placeholder="Enter password" required>
+            </div>
+            <button class="btn btn-primary" onclick="login()">Login</button>
+            <div id="login-error"></div>
         </div>
     </div>
 
-    <!-- Register Modal -->
     <div id="register-modal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('register-modal')">×</span>
+            <span class="modal-close" onclick="closeModal('register-modal')">×</span>
             <h2>Register</h2>
-            <input type="text" id="register-username" placeholder="Username" required>
-            <input type="password" id="register-password" placeholder="Password" required>
-            <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
-            <p id="register-error" class="error">Please check your input</p>
-            <button onclick="register()">Register</button>
+            <div class="input-group">
+                <input type="text" id="register-username" placeholder="Enter username" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="register-password" placeholder="Enter password" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="register-confirm" placeholder="Confirm password" required>
+            </div>
+            <button class="btn btn-primary" onclick="register()">Register</button>
+            <div id="register-error"></div>
         </div>
     </div>
 
-    <div id="history" class="main-content active">
-        <div class="card">
-            <h2>Transaction History</h2>
-            <table class="transactions-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Cryptocurrency</th>
-                        <th>Amount</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>P&L</th>
-                    </tr>
-                </thead>
-                <tbody id="transactions-tbody">
-                    <tr>
-                        <td>02.06.2023</td>
-                        <td>Deposit</td>
-                        <td>USDT</td>
-                        <td>223,529</td>
-                        <td>$1.00</td>
-                        <td>$223,529</td>
-                        <td class="status success">Completed</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>03.06.2023</td>
-                        <td>Buy</td>
-                        <td>LUNA</td>
-                        <td>174,352</td>
-                        <td>$1.282</td>
-                        <td>$223,529</td>
-                        <td class="status success">Completed</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>05.06.2023</td>
-                        <td>Sell</td>
-                        <td>LUNA</td>
-                        <td>174,352</td>
-                        <td>$0.000</td>
-                        <td>$0</td>
-                        <td class="status loss">Loss</td>
-                        <td>-$223,529</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <button class="support-button" title="Support" onclick="toggleSupportChat()">💬</button>
     <div class="support-chat" id="support-chat">
         <div class="chat-header">
             <h3>Trust Bit Support</h3>
-            <button class="chat-close" onclick="toggleSupportChat()">✕</button>
+            <button class="chat-close" onclick="toggleSupportChat()">×</button>
         </div>
         <div class="chat-body" id="chat-body">
             <div class="chat-message support">Welcome! How can I assist you?</div>
         </div>
         <div class="chat-input">
-            <input type="text" id="chat-input" placeholder="Enter message...">
+            <input type="text" id="chat-input" placeholder="Type your message...">
             <button onclick="sendMessage()">Send</button>
         </div>
     </div>
 
-    <div class="custom-footer">
+    <button class="support-button" onclick="toggleSupportChat()">?</button>
+
+    <footer class="custom-footer">
         <div class="footer-section">
             <h3>Trust Bit</h3>
-            <a href="#">About Us</a>
-            <a href="#">Team</a>
-            <a href="#">Support</a>
+            <a href="#" onclick="restrictAccess()">About Us</a>
+            <a href="#" onclick="restrictAccess()">Team</a>
+            <a href="#" onclick="restrictAccess()">Support</a>
         </div>
         <div class="footer-section">
             <h3>Features</h3>
-            <a href="#">Technical Data</a>
-            <a href="#">Security</a>
-            <a href="#">Performance</a>
+            <a href="#" onclick="restrictAccess()">Technical Data</a>
+            <a href="#" onclick="restrictAccess()">Security</a>
+            <a href="#" onclick="restrictAccess()">Performance</a>
         </div>
         <div class="footer-section">
             <h3>Market Tools</h3>
-            <a href="#">Analytics</a>
-            <a href="#">Indicators</a>
-            <a href="#">Trading Signals</a>
+            <a href="#" onclick="restrictAccess()">Analytics</a>
+            <a href="#" onclick="restrictAccess()">Indicators</a>
+            <a href="#" onclick="restrictAccess()">Trading Signals</a>
         </div>
         <div class="footer-section">
             <h3>Legal Information</h3>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Use</a>
-            <a href="#">Licenses</a>
+            <a href="#" onclick="restrictAccess()">Privacy Policy</a>
+            <a href="#" onclick="restrictAccess()">Terms of Use</a>
+            <a href="#" onclick="restrictAccess()">Licenses</a>
         </div>
         <div class="footer-section">
             <h3>Trading Pairs</h3>
-            <a href="#">BTC/USD</a>
-            <a href="#">ETH/USDT</a>
-            <a href="#">ADA/USDT</a>
+            <a href="#" onclick="restrictAccess()">BTC/USD</a>
+            <a href="#" onclick="restrictAccess()">ETH/USDT</a>
+            <a href="#" onclick="restrictAccess()">ADA/USDT</a>
         </div>
-    </div>
+    </footer>
 
-    <script src="../js/main.js"></script>
+    <script>
+        // Mock wallet addresses
+        const walletAddresses = {
+            'BTC': {
+                'Bitcoin Network': ['bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh']
+            },
+            'ETH': {
+                'Ethereum (ERC-20)': ['0x742d35Cc6634C0532925a3b8D9F95e96aE3e9b87']
+            },
+            'USDT': {
+                'Ethereum (ERC-20)': ['0x742d35Cc6634C0532925a3b8D9F95e96aE3e9b87'],
+                'TRON (TRC-20)': ['TLPk8W1B6VxT9ZP7tLFTXzJrHHcPjQJkJb'],
+                'Binance Smart Chain': ['0x742d35Cc6634C0532925a3b8D9F95e96aE3e9b87']
+            },
+            'BNB': {
+                'Binance Smart Chain': ['0x742d35Cc6634C0532925a3b8D9F95e96aE3e9b87']
+            },
+            'ADA': {
+                'Cardano Network': ['addr1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh8y2mcgdy']
+            },
+            'TRX': {
+                'TRON Network': ['TLPk8W1B6VxT9ZP7tLFTXzJrHHcPjQJkJb']
+            }
+        };
+
+        // Network information
+        const networkInfo = {
+            'Bitcoin Network': {
+                minDeposit: '0.001 BTC',
+                confirmations: 3,
+                time: '10-60 minutes',
+                fee: '0.0005 BTC'
+            },
+            'Ethereum (ERC-20)': {
+                minDeposit: '0.01 ETH',
+                confirmations: 12,
+                time: '5-15 minutes',
+                fee: '0.005 ETH'
+            },
+            'TRON (TRC-20)': {
+                minDeposit: '10 USDT',
+                confirmations: 1,
+                time: '1-5 minutes',
+                fee: '1 USDT'
+            },
+            'Binance Smart Chain': {
+                minDeposit: '0.01 BNB or 10 USDT',
+                confirmations: 15,
+                time: '1-10 minutes',
+                fee: '0.001 BNB'
+            },
+            'Cardano Network': {
+                minDeposit: '10 ADA',
+                confirmations: 10,
+                time: '5-20 minutes',
+                fee: '0.2 ADA'
+            },
+            'TRON Network': {
+                minDeposit: '100 TRX',
+                confirmations: 1,
+                time: '1-5 minutes',
+                fee: '1 TRX'
+            }
+        };
+
+        // Available networks for each coin
+        const coinNetworks = {
+            'BTC': ['Bitcoin Network'],
+            'ETH': ['Ethereum (ERC-20)', 'Binance Smart Chain'],
+            'USDT': ['Ethereum (ERC-20)', 'TRON (TRC-20)', 'Binance Smart Chain'],
+            'BNB': ['Binance Smart Chain'],
+            'ADA': ['Cardano Network'],
+            'TRX': ['TRON Network']
+        };
+
+        // Mock transaction history
+        let transactions = [
+            { type: 'deposit', coin: 'USDT', amount: 223.529, date: '03.06.2023 11:23:45', status: 'Confirmed' }
+        ];
+
+        // Restrict access to footer links
+        function restrictAccess() {
+            alert('Not available in your region.');
+        }
+
+        // Check login status
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            document.getElementById('login-btn').style.display = isLoggedIn ? 'none' : 'block';
+            document.getElementById('register-btn').style.display = isLoggedIn ? 'none' : 'block';
+            document.getElementById('profile-dropdown').style.display = isLoggedIn ? 'block' : 'none';
+        }
+
+        // Toggle profile dropdown
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('active');
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            checkLoginStatus();
+            alert('Logged out successfully.');
+        }
+
+        // Switch between tabs
+        function switchTab(tab) {
+            document.getElementById('deposit-tab').style.display = tab === 'deposit' ? 'block' : 'none';
+            document.getElementById('withdraw-tab').style.display = tab === 'withdraw' ? 'block' : 'none';
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+            if (tab === 'deposit') updateNetworks('deposit');
+            else updateNetworks('withdraw');
+        }
+
+        // Update network options
+        function updateNetworks(tab) {
+            const coinSelect = document.getElementById(tab === 'deposit' ? 'crypto-select' : 'withdraw-crypto');
+            const networkSelect = document.getElementById(tab === 'deposit' ? 'deposit-network' : 'withdraw-network');
+            const selectedCoin = coinSelect.value;
+
+            networkSelect.innerHTML = '';
+            coinNetworks[selectedCoin].forEach(network => {
+                const option = document.createElement('option');
+                option.value = network;
+                option.textContent = network;
+                networkSelect.appendChild(option);
+            });
+
+            updateWalletAddress(tab);
+        }
+
+        // Update wallet address and network info
+        function updateWalletAddress(tab) {
+            const coinSelect = document.getElementById(tab === 'deposit' ? 'crypto-select' : 'withdraw-crypto');
+            const networkSelect = document.getElementById(tab === 'deposit' ? 'deposit-network' : 'withdraw-network');
+            const selectedCoin = coinSelect.value;
+            const selectedNetwork = networkSelect.value;
+            const walletAddressDiv = document.getElementById('wallet-address');
+            const networkInfoDiv = document.getElementById('network-info');
+
+            if (tab === 'deposit') {
+                const addresses = walletAddresses[selectedCoin][selectedNetwork] || ['Address not available'];
+                walletAddressDiv.innerHTML = `${addresses[0]}<button class="copy-btn" onclick="copyAddress()">Copy</button>`;
+
+                const info = networkInfo[selectedNetwork] || {};
+                networkInfoDiv.innerHTML = `
+                    <h4>⚠️ Important Information</h4>
+                    <ul>
+                        <li>Send only ${selectedCoin} to this address</li>
+                        <li>Minimum deposit: ${info.minDeposit || 'N/A'}</li>
+                        <li>Requires ${info.confirmations || 'N/A'} confirmations</li>
+                        <li>Processing time: ${info.time || 'N/A'}</li>
+                    </ul>
+                `;
+                document.getElementById('deposit-amount').placeholder = `0.00000000 ${selectedCoin}`;
+            } else {
+                document.getElementById('withdraw-amount').placeholder = `0.00000000 ${selectedCoin}`;
+            }
+        }
+
+        // Copy address to clipboard
+        function copyAddress() {
+            const address = document.getElementById('wallet-address').textContent.replace('Copy', '').trim();
+            navigator.clipboard.writeText(address).then(() => {
+                alert('Address copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy address.');
+            });
+        }
+
+        // Deposit funds (mock)
+        function depositFunds() {
+            const coin = document.getElementById('crypto-select').value;
+            const network = document.getElementById('deposit-network').value;
+            const amount = document.getElementById('deposit-amount').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+            transactions.push({
+                type: 'deposit',
+                coin: coin,
+                amount: parseFloat(amount),
+                date: new Date().toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                status: 'Pending'
+            });
+            alert(`Deposit request submitted: ${amount} ${coin} on ${network}. Note: This is a demo, no real transaction is processed.`);
+            document.getElementById('deposit-amount').value = '';
+            filterTransactions();
+        }
+
+        // Withdraw funds (mock)
+        function withdrawFunds() {
+            const coin = document.getElementById('withdraw-crypto').value;
+            const network = document.getElementById('withdraw-network').value;
+            const amount = document.getElementById('withdraw-amount').value;
+            const address = document.getElementById('withdraw-address').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+            if (!address) {
+                alert('Please enter a recipient address.');
+                return;
+            }
+            transactions.push({
+                type: 'withdraw',
+                coin: coin,
+                amount: parseFloat(amount),
+                date: new Date().toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                status: 'Pending'
+            });
+            alert(`Withdrawal request submitted: ${amount} ${coin} to ${address} on ${network}. Note: This is a demo, no real transaction is processed.`);
+            document.getElementById('withdraw-amount').value = '';
+            document.getElementById('withdraw-address').value = '';
+            filterTransactions();
+        }
+
+        // Filter transactions
+        function filterTransactions() {
+            const filter = document.getElementById('transaction-filter').value;
+            const transactionList = document.getElementById('transaction-list');
+            transactionList.innerHTML = '';
+            transactions.filter(tx => filter === 'all' || tx.type === filter).forEach(tx => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</td>
+                    <td>${tx.coin}</td>
+                    <td>${tx.type === 'deposit' ? '+' : '-'}${tx.amount.toFixed(8)}</td>
+                    <td>${tx.date}</td>
+                    <td><span class="status ${tx.status.toLowerCase()}">${tx.status}</span></td>
+                `;
+                transactionList.appendChild(row);
+            });
+        }
+
+        // Modal functions
+        function showLoginModal() {
+            document.getElementById('login-modal').classList.add('active');
+        }
+
+        function showRegisterModal() {
+            document.getElementById('register-modal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Login (mock)
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            if (!username || !password) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Please fill in all fields.';
+                return;
+            }
+            localStorage.setItem('isLoggedIn', 'true');
+            checkLoginStatus();
+            closeModal('login-modal');
+            alert('Logged in successfully.');
+        }
+
+        // Register (mock)
+        function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            const errorDiv = document.getElementById('register-error');
+            if (!username || !password || !confirm) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Please fill in all fields.';
+                return;
+            }
+            if (password !== confirm) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Passwords do not match.';
+                return;
+            }
+            localStorage.setItem('isLoggedIn', 'true');
+            checkLoginStatus();
+            closeModal('register-modal');
+            alert('Registered successfully.');
+        }
+
+        // Support chat functions
+        function toggleSupportChat() {
+            const chat = document.getElementById('support-chat');
+            chat.classList.toggle('active');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            const chatBody = document.getElementById('chat-body');
+            const userMessage = document.createElement('div');
+            userMessage.className = 'chat-message user';
+            userMessage.textContent = message;
+            chatBody.appendChild(userMessage);
+            input.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+            setTimeout(() => {
+                const supportMessage = document.createElement('div');
+                supportMessage.className = 'chat-message support';
+                supportMessage.textContent = 'Thank you for your message! Our team will respond soon.';
+                chatBody.appendChild(supportMessage);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 1000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+            updateNetworks('deposit');
+            filterTransactions();
+        });
+    </script>
 </body>
 </html>
