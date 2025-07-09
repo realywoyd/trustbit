@@ -84,8 +84,8 @@
     <div id="history" class="main-content active">
         <div class="card">
             <h2>Transaction History</h2>
-            <p id="login-prompt">Please log in to view your transaction history.</p>
-            <table id="transactions-table" class="transactions-table">
+            <p id="login-prompt" style="display: none;">Please log in to view your transaction history.</p>
+            <table id="transactions-table" class="transactions-table" style="display: none;">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -100,7 +100,7 @@
                 </thead>
                 <tbody id="transactions-tbody">
                     <tr>
-                        <td>03.06.2023 11:53:45</td>
+                        <td>03.06.2023 11:23:45</td>
                         <td>Deposit</td>
                         <td>USDT</td>
                         <td>223,529</td>
@@ -191,21 +191,57 @@
 
         // Check authentication status and toggle transaction table visibility
         function checkAuthStatus() {
-            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
             const transactionsTable = document.getElementById('transactions-table');
             const loginPrompt = document.getElementById('login-prompt');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            const loginBtn = document.getElementById('login-btn');
+            const registerBtn = document.getElementById('register-btn');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
-            if (isAuthenticated) {
-                transactionsTable.style.display = 'table';
-                loginPrompt.style.display = 'none';
-            } else {
-                transactionsTable.style.display = 'none';
-                loginPrompt.style.display = 'block';
+            if (transactionsTable && loginPrompt) {
+                if (isAuthenticated) {
+                    transactionsTable.style.display = 'table';
+                    loginPrompt.style.display = 'none';
+                    if (profileDropdown && loginBtn && registerBtn) {
+                        profileDropdown.style.display = 'block';
+                        loginBtn.style.display = 'none';
+                        registerBtn.style.display = 'none';
+                    }
+                } else {
+                    transactionsTable.style.display = 'none';
+                    loginPrompt.style.display = 'block';
+                    if (profileDropdown && loginBtn && registerBtn) {
+                        profileDropdown.style.display = 'none';
+                        loginBtn.style.display = 'inline-block';
+                        registerBtn.style.display = 'inline-block';
+                    }
+                }
             }
         }
 
         // Run check on page load
         document.addEventListener('DOMContentLoaded', checkAuthStatus);
+
+        // Mock login function for testing (remove if main.js provides login)
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const loginError = document.getElementById('login-error');
+            
+            if (username && password) {
+                localStorage.setItem('isAuthenticated', 'true');
+                document.getElementById('login-modal').style.display = 'none';
+                checkAuthStatus();
+            } else {
+                loginError.style.display = 'block';
+            }
+        }
+
+        // Mock logout function for testing (remove if main.js provides logout)
+        function logout() {
+            localStorage.removeItem('isAuthenticated');
+            checkAuthStatus();
+        }
     </script>
     <script src="../js/main.js"></script>
 </body>
