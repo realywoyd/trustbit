@@ -6,26 +6,6 @@
     <title>Trust Bit - Trade</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.min.js"></script>
-    <style>
-        .chart-container {
-            width: 100%;
-            height: 400px;
-            margin-bottom: 20px;
-            background: #1a1a1a;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        #trading-chart, #volume-chart {
-            width: 100%;
-            height: 100%;
-        }
-        .no-data-message {
-            color: #e6e6e6;
-            text-align: center;
-            padding: 20px;
-            font-size: 16px;
-        }
-    </style>
 </head>
 <body>
     <header class="header">
@@ -73,7 +53,7 @@
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal('register-modal')">×</span>
             <h2>Register</h2>
-            <div class="input-group">
+            <div class="input-groups">
                 <input type="text" id="register-username" placeholder="Username">
             </div>
             <div class="input-group">
@@ -215,7 +195,7 @@
             <h3>Trust Bit Support</h3>
             <button class="chat-close" onclick="toggleSupportChat()">✕</button>
         </div>
-        <div class="chat-body" id="chat-body">
+        <div class="chat-body" id="chart-body">
             <div class="chat-message support">Welcome! How can I assist you?</div>
         </div>
         <div class="chat-input">
@@ -257,77 +237,6 @@
         </div>
     </footer>
 
-    <script>
-        // Mock data for chart testing
-        const mockChartData = {
-            BTC: Array.from({ length: 50 }, (_, i) => {
-                const time = Math.floor(Date.now() / 1000) - (50 - i) * 300;
-                const value = 100000 + Math.sin(i / 5) * 5000 + Math.random() * 1000;
-                return { time, open: value, high: value * 1.01, low: value * 0.99, close: value };
-            }),
-            ETH: Array.from({ length: 50 }, (_, i) => {
-                const time = Math.floor(Date.now() / 1000) - (50 - i) * 300;
-                const value = 2500 + Math.sin(i / 5) * 200 + Math.random() * 50;
-                return { time, open: value, high: value * 1.01, low: value * 0.99, close: value };
-            }),
-            ADA: Array.from({ length: 50 }, (_, i) => {
-                const time = Math.floor(Date.now() / 1000) - (50 - i) * 300;
-                const value = 0.5 + Math.sin(i / 5) * 0.05 + Math.random() * 0.01;
-                return { time, open: value, high: value * 1.01, low: value * 0.99, close: value };
-            })
-        };
-
-        // Initialize chart
-        document.addEventListener('DOMContentLoaded', () => {
-            const chartContainer = document.getElementById('trading-chart');
-            const volumeContainer = document.getElementById('volume-chart');
-            if (!chartContainer || !volumeContainer) {
-                console.error('Chart containers not found');
-                return;
-            }
-
-            const chart = LightweightCharts.createChart(chartContainer, {
-                width: chartContainer.offsetWidth,
-                height: 400,
-                layout: { background: { type: 'solid', color: '#1a1a1a' }, textColor: '#e6e6e6' },
-                grid: { vertLines: { color: 'rgba(255, 255, 255, 0.1)' }, horzLines: { color: 'rgba(255, 255, 255, 0.1)' } },
-                timeScale: { timeVisible: true, secondsVisible: false }
-            });
-
-            const candlestickSeries = chart.addCandlestickSeries();
-            const volumeSeries = chart.addHistogramSeries({
-                color: '#7e6bff',
-                priceFormat: { type: 'volume' },
-                priceScaleId: '',
-                base: 0
-            });
-            volumeSeries.priceScale().applyOptions({
-                scaleMargins: { top: 0.8, bottom: 0 }
-            });
-
-            // Set initial data for BTC
-            const selectedCrypto = 'BTC';
-            const candlestickData = mockChartData[selectedCrypto] || [];
-            const volumeData = candlestickData.map(d => ({
-                time: d.time,
-                value: d.close * 1000,
-                color: d.close >= d.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(255, 99, 132, 0.3)'
-            }));
-
-            if (candlestickData.length === 0) {
-                chartContainer.innerHTML = '<div class="no-data-message">No chart data available</div>';
-                return;
-            }
-
-            candlestickSeries.setData(candlestickData);
-            volumeSeries.setData(volumeData);
-
-            // Resize chart on window resize
-            window.addEventListener('resize', () => {
-                chart.resize(chartContainer.offsetWidth, 400);
-            });
-        });
-    </script>
     <script src="../js/main.js"></script>
 </body>
 </html>
