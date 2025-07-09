@@ -144,16 +144,6 @@
             opacity: 0.9;
         }
 
-        .main-content {
-            display: none;
-            padding: 40px;
-            flex: 1;
-        }
-
-        .main-content.active {
-            display: block;
-        }
-
         .wallet-section {
             text-align: left;
         }
@@ -621,6 +611,17 @@
             display: none;
         }
 
+        #login-prompt {
+            text-align: center;
+            color: #e6e6e6;
+            font-size: 18px;
+            margin: 40px 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -630,7 +631,7 @@
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            .main-content {
+            #main-content {
                 padding: 20px;
             }
             .support-chat {
@@ -680,7 +681,9 @@
         </div>
     </header>
 
-    <main class="main-content active">
+    <div id="login-prompt" style="display: block;">Please log in to view your wallet.</div>
+
+    <main id="main-content" style="display: none;">
         <div class="wallet-section">
             <h2>Your Wallet</h2>
             <div class="balance">0.00 USD</div>
@@ -803,7 +806,7 @@
                 <input type="password" id="login-password" placeholder="Enter password" required>
             </div>
             <button class="btn btn-primary" onclick="login()">Login</button>
-            <div id="login-error"></div>
+            <div id="login-error" style="display: none;">Please fill in all fields.</div>
         </div>
     </div>
 
@@ -821,7 +824,7 @@
                 <input type="password" id="register-confirm" placeholder="Confirm password" required>
             </div>
             <button class="btn btn-primary" onclick="register()">Register</button>
-            <div id="register-error"></div>
+            <div id="register-error" style="display: none;">Please fill in all fields.</div>
         </div>
     </div>
 
@@ -956,32 +959,70 @@
 
         // Restrict access to footer links
         function restrictAccess() {
+            console.log('Footer link clicked. Showing alert.');
             alert('Not available in your region.');
         }
 
-        // Check login status
-        function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            document.getElementById('login-btn').style.display = isLoggedIn ? 'none' : 'block';
-            document.getElementById('register-btn').style.display = isLoggedIn ? 'none' : 'block';
-            document.getElementById('profile-dropdown').style.display = isLoggedIn ? 'block' : 'none';
+        // Check authentication status
+        function checkAuthStatus() {
+            const mainContent = document.getElementById('main-content');
+            const loginPrompt = document.getElementById('login-prompt');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            const loginBtn = document.getElementById('login-btn');
+            const registerBtn = document.getElementById('register-btn');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
+            console.log('checkAuthStatus called. isAuthenticated:', isAuthenticated, 'localStorage.isAuthenticated:', localStorage.getItem('isAuthenticated'));
+
+            if (mainContent && loginPrompt) {
+                if (isAuthenticated) {
+                    console.log('User is authenticated. Showing main content.');
+                    mainContent.style.display = 'block';
+                    loginPrompt.style.display = 'none';
+                    if (profileDropdown && loginBtn && registerBtn) {
+                        console.log('Showing profile dropdown, hiding login/register buttons.');
+                        profileDropdown.style.display = 'block';
+                        loginBtn.style.display = 'none';
+                        registerBtn.style.display = 'none';
+                    } else {
+                        console.error('Error: profileDropdown, loginBtn, or registerBtn not found.');
+                    }
+                } else {
+                    console.log('User is not authenticated. Showing login prompt.');
+                    mainContent.style.display = 'none';
+                    loginPrompt.style.display = 'block';
+                    if (profileDropdown && loginBtn && registerBtn) {
+                        console.log('Hiding profile dropdown, showing login/register buttons.');
+                        profileDropdown.style.display = 'none';
+                        loginBtn.style.display = 'inline-block';
+                        registerBtn.style.display = 'inline-block';
+                    } else {
+                        console.error('Error: profileDropdown, loginBtn, or registerBtn not found.');
+                    }
+                }
+            } else {
+                console.error('Error: mainContent or loginPrompt not found.');
+            }
         }
 
         // Toggle profile dropdown
         function toggleDropdown() {
+            console.log('Toggling dropdown menu.');
             const dropdown = document.getElementById('dropdown-menu');
             dropdown.classList.toggle('active');
         }
 
         // Logout
         function logout() {
-            localStorage.removeItem('isLoggedIn');
-            checkLoginStatus();
+            console.log('Logout called.');
+            localStorage.removeItem('isAuthenticated');
+            checkAuthStatus();
             alert('Logged out successfully.');
         }
 
         // Switch between tabs
         function switchTab(tab) {
+            console.log('Switching to tab:', tab);
             document.getElementById('deposit-tab').style.display = tab === 'deposit' ? 'block' : 'none';
             document.getElementById('withdraw-tab').style.display = tab === 'withdraw' ? 'block' : 'none';
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -992,6 +1033,7 @@
 
         // Update network options
         function updateNetworks(tab) {
+            console.log('Updating networks for tab:', tab);
             const coinSelect = document.getElementById(tab === 'deposit' ? 'crypto-select' : 'withdraw-crypto');
             const networkSelect = document.getElementById(tab === 'deposit' ? 'deposit-network' : 'withdraw-network');
             const selectedCoin = coinSelect.value;
@@ -1009,6 +1051,7 @@
 
         // Update wallet address and network info
         function updateWalletAddress(tab) {
+            console.log('Updating wallet address for tab:', tab);
             const coinSelect = document.getElementById(tab === 'deposit' ? 'crypto-select' : 'withdraw-crypto');
             const networkSelect = document.getElementById(tab === 'deposit' ? 'deposit-network' : 'withdraw-network');
             const selectedCoin = coinSelect.value;
@@ -1038,6 +1081,7 @@
 
         // Copy address to clipboard
         function copyAddress() {
+            console.log('Copying address to clipboard.');
             const address = document.getElementById('wallet-address').textContent.replace('Copy', '').trim();
             navigator.clipboard.writeText(address).then(() => {
                 alert('Address copied to clipboard!');
@@ -1048,6 +1092,7 @@
 
         // Deposit funds (mock)
         function depositFunds() {
+            console.log('Depositing funds.');
             const coin = document.getElementById('crypto-select').value;
             const network = document.getElementById('deposit-network').value;
             const amount = document.getElementById('deposit-amount').value;
@@ -1069,6 +1114,7 @@
 
         // Withdraw funds (mock)
         function withdrawFunds() {
+            console.log('Withdrawing funds.');
             const coin = document.getElementById('withdraw-crypto').value;
             const network = document.getElementById('withdraw-network').value;
             const amount = document.getElementById('withdraw-amount').value;
@@ -1096,6 +1142,7 @@
 
         // Filter transactions
         function filterTransactions() {
+            console.log('Filtering transactions.');
             const filter = document.getElementById('transaction-filter').value;
             const transactionList = document.getElementById('transaction-list');
             transactionList.innerHTML = '';
@@ -1114,15 +1161,20 @@
 
         // Modal functions
         function showLoginModal() {
+            console.log('Showing login modal.');
             document.getElementById('login-modal').classList.add('active');
         }
 
         function showRegisterModal() {
+            console.log('Showing register modal.');
             document.getElementById('register-modal').classList.add('active');
         }
 
         function closeModal(modalId) {
+            console.log('Closing modal:', modalId);
             document.getElementById(modalId).classList.remove('active');
+            const error = document.getElementById(modalId === 'login-modal' ? 'login-error' : 'register-error');
+            if (error) error.style.display = 'none';
         }
 
         // Login (mock)
@@ -1130,13 +1182,15 @@
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
             const errorDiv = document.getElementById('login-error');
+            console.log('Login attempt for username:', username);
             if (!username || !password) {
+                console.log('Login failed: empty fields.');
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = 'Please fill in all fields.';
                 return;
             }
-            localStorage.setItem('isLoggedIn', 'true');
-            checkLoginStatus();
+            localStorage.setItem('isAuthenticated', 'true');
+            checkAuthStatus();
             closeModal('login-modal');
             alert('Logged in successfully.');
         }
@@ -1147,29 +1201,34 @@
             const password = document.getElementById('register-password').value;
             const confirm = document.getElementById('register-confirm').value;
             const errorDiv = document.getElementById('register-error');
+            console.log('Register attempt for username:', username);
             if (!username || !password || !confirm) {
+                console.log('Register failed: empty fields.');
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = 'Please fill in all fields.';
                 return;
             }
             if (password !== confirm) {
+                console.log('Register failed: passwords do not match.');
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = 'Passwords do not match.';
                 return;
             }
-            localStorage.setItem('isLoggedIn', 'true');
-            checkLoginStatus();
+            localStorage.setItem('isAuthenticated', 'true');
+            checkAuthStatus();
             closeModal('register-modal');
             alert('Registered successfully.');
         }
 
         // Support chat functions
         function toggleSupportChat() {
+            console.log('Toggling support chat.');
             const chat = document.getElementById('support-chat');
             chat.classList.toggle('active');
         }
 
         function sendMessage() {
+            console.log('Sending chat message.');
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             if (!message) return;
@@ -1191,7 +1250,8 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            checkLoginStatus();
+            console.log('Page loaded. Running checkAuthStatus.');
+            checkAuthStatus();
             updateNetworks('deposit');
             filterTransactions();
         });
