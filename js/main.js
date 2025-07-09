@@ -20,7 +20,8 @@ let tradeMode = 'buy';
 let currentTimeframe = '15m';
 let favoritePairs = new Set();
 let currentUser = null;
-let chart = null;
+let tradingChart = null;
+let volumeChart = null;
 let candlestickSeries = null;
 let volumeSeries = null;
 let ws = null;
@@ -71,7 +72,7 @@ const cryptoSymbols = {
     XLM: 'XLM', VET: 'VET', ATOM: 'ATOM', FIL: 'FIL', ALGO: 'ALGO', NEAR: 'NEAR', ICP: 'ICP', APT: 'APT', ARB: 'ARB', OP: 'OP',
     INJ: 'INJ', SUI: 'SUI', XTZ: 'XTZ', EOS: 'EOS', HBAR: 'HBAR', XMR: 'XMR', KSM: 'KSM', AAVE: 'AAVE', MKR: 'MKR', GRT: 'GRT',
     RUNE: 'RUNE', FTM: 'FTM', SAND: 'SAND', MANA: 'MANA', AXS: 'AXS', CHZ: 'CHZ', CRV: 'CRV', COMP: 'COMP', SNX: 'SNX', '1INCH': '1INCH',
-    LDO: 'LDO', RNDR: 'RNDR', STX: 'STX', IMX: 'IMX', FLOW: 'FLOW', GALA: 'GALA', APE: 'APE', EGLD: 'EGLD', KAVA: 'KAVA', ZEC: 'ZEC',
+04:14 PM CEST on Wednesday, July 09, 2025    LDO: 'LDO', RNDR: 'RNDR', STX: 'STX', IMX: 'IMX', FLOW: 'FLOW', GALA: 'GALA', APE: 'APE', EGLD: 'EGLD', KAVA: 'KAVA', ZEC: 'ZEC',
     DASH: 'DASH', NEO: 'NEO', IOTA: 'IOTA', QTUM: 'QTUM', WAVES: 'WAVES', ZIL: 'ZIL', ENJ: 'ENJ', BAT: 'BAT', LRC: 'LRC', ANKR: 'ANKR',
     RVN: 'RVN', HOT: 'HOT', OMG: 'OMG', LUNA: 'LUNA'
 };
@@ -108,31 +109,16 @@ const colorMap = {
     XLM: { start: '000000', end: '333333' }, VET: { start: '15bffd', end: '4ddbff' },
     ATOM: { start: '2e3148', end: '4a5d78' }, FIL: { start: '0090ff', end: '4dc3ff' },
     ALGO: { start: '000000', end: '333333' }, NEAR: { start: '00e3ae', end: '4dffcd' },
-    ICP: { start: 'd81f26', end: 'ff4d4d' }, APT: { start: '17e6b9', end: '4dffd4' },
-    ARB: { start: '2a3b5a', end: '5a7aa8' }, OP: { start: 'ff0420', end: 'ff4d4d' },
-    INJ: { start: '1e4dd8', end: '4d8bff' }, SUI: { start: '1a8cff', end: '4db3ff' },
-    XTZ: { start: '2c7dfe', end: '5aa8ff' }, EOS: { start: '000000', end: '333333' },
-    HBAR: { start: '000000', end: '333333' }, XMR: { start: 'ff6600', end: 'ff9933' },
-    KSM: { start: '000000', end: '333333' }, AAVE: { start: 'b6509e', end: 'e68bc5' },
-    MKR: { start: '1aab9b', end: '4dd4b3' }, GRT: { start: '6747ed', end: '8b6bff' },
-    RUNE: { start: '00d18b', end: '4dffa8' }, FTM: { start: '1969ff', end: '4d8bff' },
-    SAND: { start: '00aeef', end: '4ddbff' }, MANA: { start: 'ff2a44', end: 'ff6b7a' },
-    AXS: { start: '0085d2', end: '4db3ff' }, CHZ: { start: 'e30013', end: 'ff4d4d' },
-    CRV: { start: '4066e0', end: '6b8bff' }, COMP: { start: '00d395', end: '4dffa8' },
-    SNX: { start: '00d1ff', end: '4dffff' }, '1INCH': { start: '1f3b5b', end: '4d7aa8' },
-    LDO: { start: '00a3ff', end: '4ddbff' }, RNDR: { start: 'ff3c3c', end: 'ff7a7a' },
-    STX: { start: '5548de', end: '7a6bff' }, IMX: { start: '00c4b4', end: '4dffcd' },
-    FLOW: { start: '00ef8b', end: '4dffa8' }, GALA: { start: '000000', end: '333333' },
-    APE: { start: '0033cc', end: '4d7aff' }, EGLD: { start: '0d0221', end: '333366' },
-    KAVA: { start: 'ff4338', end: 'ff7a7a' }, ZEC: { start: 'f4b728', end: 'ffd966' },
-    DASH: { start: '008ce7', end: '4db3ff' }, NEO: { start: '58bf00', end: '8bff4d' },
-    IOTA: { start: '000000', end: '333333' }, QTUM: { start: '2e9dfd', end: '6bb8ff' },
-    WAVES: { start: '0153ff', end: '4d8bff' }, ZIL: { start: '49a49b', end: '7ad4b3' },
-    ENJ: { start: '624de4', end: '8b6bff' }, BAT: { start: 'ff5000', end: 'ff8c4d' },
-    LRC: { start: '2ab6f6', end: '6bd4ff' }, ANKR: { start: '1e4dd8', end: '4d8bff' },
-    RVN: { start: '3848a0', end: '6b7aa8' }, HOT: { start: 'ff3c3c', end: 'ff7a7a' },
-    OMG: { start: '1a1a1a', end: '4d4d4d' }, LUNA: { start: '2a2a72', end: '5c5cff' },
-    default: { start: '7e6bff', end: '5a4bff' }
+    ICP: { start: 'd81f Hawkins: 1620604800, APT: 1665705600, ARB: 1679443200, OP: 1653955200,
+    INJ: 1603065600, SUI: 1680480000, XTZ: 1506816000, EOS: 1498780800, HBAR: 1568678400,
+    XMR: 1397347200, KSM: 1568764800, AAVE: 1601510400, MKR: 1419811200, GRT: 1608163200,
+    RUNE: 1560816000, FTM: 1540339200, SAND: 1598918400, MANA: 1505779200, AXS: 1604966400,
+    CHZ: 1536624000, CRV: 1597449600, COMP: 1592179200, SNX: 1520812800, '1INCH': 1608768000,
+    LDO: 1608768000, RNDR: 1592179200, STX: 1572566400, IMX: 1617148800, FLOW: 1610409600,
+    GALA: 1598918400, APE: 1647302400, EGLD: 1598832000, KAVA: 1572566400, ZEC: 1477612800,
+    DASH: 1392422400, NEO: 1470009600, IOTA: 1496275200, QTUM: 1487116800, WAVES: 1462233600,
+    ZIL: 1516406400, ENJ: 1509494400, BAT: 1496275200, LRC: 1502755200, ANKR: 1551312000,
+    RVN: 1546214400, HOT: 1525132800, OMG: 1496275200, LUNA: 1653609600
 };
 
 // Default transactions from history.html
@@ -273,7 +259,8 @@ function updateUI() {
 
     if (page === 'portfolio') updatePortfolio();
     if (page === 'wallet') updateBalance();
-    if (page === 'history') updateTransactionHistory();
+    if (page === 'history') updateTransaction مقایسه
+System: History();
     if (page === 'trading') {
         renderCryptoList();
         if (currentUser) {
@@ -587,95 +574,174 @@ function selectCrypto(crypto) {
     renderCryptoList();
 }
 
-function updateChart() {
-    if (!currentUser) return;
-    const chartContainer = document.getElementById('chart');
-    if (!chartContainer) return;
+function setTimeframe(timeframe) {
+    currentTimeframe = timeframe;
+    const timeframeButtons = document.querySelectorAll('.timeframe-btn');
+    timeframeButtons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick') === `setTimeframe('${timeframe}')`) {
+            btn.classList.add('active');
+        }
+    });
+    updateChart();
+}
 
-    if (!chart) {
-        chart = LightweightCharts.createChart(chartContainer, {
-            width: chartContainer.offsetWidth,
+async function updateChart() {
+    if (!currentUser) return;
+    const tradingChartContainer = document.getElementById('trading-chart');
+    const volumeChartContainer = document.getElementById('volume-chart');
+    if (!tradingChartContainer || !volumeChartContainer) return;
+
+    // Initialize trading chart
+    if (!tradingChart) {
+        tradingChart = LightweightCharts.createChart(tradingChartContainer, {
+            width: tradingChartContainer.offsetWidth,
             height: 400,
             layout: { background: { type: 'solid', color: '#1a1a1a' }, textColor: '#e6e6e6' },
             grid: { vertLines: { color: 'rgba(255, 255, 255, 0.1)' }, horzLines: { color: 'rgba(255, 255, 255, 0.1)' } },
             timeScale: { timeVisible: true, secondsVisible: false },
         });
-        candlestickSeries = chart.addCandlestickSeries();
-        volumeSeries = chart.addHistogramSeries({ color: '#7e6bff', priceFormat: { type: 'volume' }, priceScaleId: '' });
+        candlestickSeries = tradingChart.addCandlestickSeries({
+            upColor: '#43e97b',
+            downColor: '#ff5733',
+            borderVisible: false,
+            wickUpColor: '#43e97b',
+            wickDownColor: '#ff5733',
+        });
     }
 
-    const data = cryptoPriceHistory[selectedCrypto] || [];
-    const candlestickData = data.map(d => ({
-        time: d.time,
-        open: d.value,
-        high: d.value * 1.01,
-        low: d.value * 0.99,
-        close: d.value
-    }));
-    const volumeData = data.map(d => ({
-        time: d.time,
-        value: d.value * 1000,
-        color: d.value >= (previousPrices[selectedCrypto] || d.value) ? 'rgba(67, 233, 123, 0.3)' : 'rgba(255, 99, 132, 0.3)'
-    }));
+    // Initialize volume chart
+    if (!volumeChart) {
+        volumeChart = LightweightCharts.createChart(volumeChartContainer, {
+            width: volumeChartContainer.offsetWidth,
+            height: 100,
+            layout: { background: { type: 'solid', color: '#1a1a1a' }, textColor: '#e6e6e6' },
+            grid: { vertLines: { color: 'rgba(255, 255, 255, 0.1)' }, horzLines: { color: 'rgba(255, 255, 255, 0.1)' } },
+            timeScale: { timeVisible: true, secondsVisible: false },
+        });
+        volumeSeries = volumeChart.addHistogramSeries({
+            color: '#7e6bff',
+            priceFormat: { type: 'volume' },
+            priceScaleId: '',
+            scaleMargins: { top: 0.1, bottom: 0.1 },
+        });
+    }
 
-    candlestickSeries.setData(candlestickData);
-    volumeSeries.setData(volumeData);
+    // Fetch historical data based on timeframe
+    const timeframeSeconds = {
+        '1m': 60,
+        '5m': 300,
+        '15m': 900,
+        '1h': 3600,
+        '4h': 14400,
+        '1d': 86400
+    };
+    const interval = timeframeSeconds[currentTimeframe] || 900;
+    const now = Date.now() / 1000;
+    const from = now - (100 * interval); // Fetch last 100 periods
+    const symbol = cryptoIdMap[selectedCrypto];
+
+    try {
+        const response = await fetch(`https://min-api.cryptocompare.com/data/v2/histominute?fsym=${symbol}&tsym=USD&limit=100&aggregate=${interval / 60}&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
+        if (!response.ok) {
+            console.warn(`Failed to fetch historical data for ${symbol}: ${response.status} ${response.statusText}`);
+            return;
+        }
+        const data = await response.json();
+        const historicalData = data.Data.Data.filter(d => d.close > 0).map(d => ({
+            time: d.time,
+            open: d.open,
+            high: d.high,
+            low: d.low,
+            close: d.close,
+            volume: d.volumeto
+        }));
+
+        const candlestickData = historicalData.map(d => ({
+            time: d.time,
+            open: d.open,
+            high: d.high,
+            low: d.low,
+            close: d.close
+        }));
+
+        const volumeData = historicalData.map(d => ({
+            time: d.time,
+            value: d.volume,
+            color: d.close >= d.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(255, 99, 132, 0.3)'
+        }));
+
+        candlestickSeries.setData(candlestickData);
+        volumeSeries.setData(volumeData);
+
+        // Synchronize time scales
+        tradingChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+            volumeChart.timeScale().setVisibleLogicalRange(range);
+        });
+        volumeChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+            tradingChart.timeScale().setVisibleLogicalRange(range);
+        });
+    } catch (error) {
+        console.error('Error fetching chart data:', error);
+    }
+
+    // Resize charts on window resize
+    window.addEventListener('resize', () => {
+        if (tradingChart && tradingChartContainer) {
+            tradingChart.resize(tradingChartContainer.offsetWidth, 400);
+        }
+        if (volumeChart && volumeChartContainer) {
+            volumeChart.resize(volumeChartContainer.offsetWidth, 100);
+        }
+    });
 }
 
 function updateOrderBook() {
     if (!currentUser) return;
-    const orderBook = document.getElementById('order-book');
-    if (!orderBook) return;
+    const bidsContainer = document.getElementById('order-book-bids');
+    const asksContainer = document.getElementById('order-book-asks');
+    if (!bidsContainer || !asksContainer) return;
 
-    orderBook.innerHTML = `
-        <div class="order-book-header">Order Book</div>
-        <div class="order-book-section">
-            <div class="order-book-title">Bids</div>
-            ${generateOrderRows(true)}
-        </div>
-        <div class="order-book-section">
-            <div class="order-book-title">Asks</div>
-            ${generateOrderRows(false)}
-        </div>
-    `;
-}
-
-function generateOrderRows(isBid) {
     const price = cryptoPrices[selectedCrypto] || 0;
-    let rows = '';
+    let bidRows = '';
+    let askRows = '';
     for (let i = 0; i < 5; i++) {
-        const priceOffset = isBid ? -i * 0.01 : i * 0.01;
-        const adjustedPrice = price * (1 + priceOffset);
-        rows += `
-            <div class="order-row">
-                <span class="${isBid ? 'bid-price' : 'ask-price'}">${formatPrice(adjustedPrice)}</span>
-                <span>${(Math.random() * 10).toFixed(2)}</span>
-                <span>${formatPrice(adjustedPrice * (Math.random() * 10))}</span>
-            </div>
+        const bidPrice = price * (1 - i * 0.01);
+        const askPrice = price * (1 + i * 0.01);
+        const amount = (Math.random() * 10).toFixed(2);
+        bidRows += `
+            <tr>
+                <td class="bid-price">${formatPrice(bidPrice)}</td>
+                <td>${amount}</td>
+            </tr>
+        `;
+        askRows += `
+            <tr>
+                <td class="ask-price">${formatPrice(askPrice)}</td>
+                <td>${amount}</td>
+            </tr>
         `;
     }
-    return rows;
+    bidsContainer.innerHTML = bidRows;
+    asksContainer.innerHTML = askRows;
 }
 
 function updateTradeHistory() {
     if (!currentUser) return;
-    const tradeHistory = document.getElementById('trade-history');
-    if (!tradeHistory) return;
+    const tradeHistoryItems = document.getElementById('trade-history-items');
+    if (!tradeHistoryItems) return;
 
-    tradeHistory.innerHTML = `
-        <div class="trade-history-header">Trade History</div>
-        ${transactions
-            .filter(t => t.crypto === selectedCrypto)
-            .map(t => `
-                <div class="trade-row">
-                    <span>${new Date(t.date).toLocaleTimeString()}</span>
-                    <span class="${t.type === 'buy' ? 'buy' : 'sell'}">${t.type}</span>
-                    <span>${t.amount.toFixed(2)}</span>
-                    <span>${formatPrice(t.price)}</span>
-                    <span>${formatPrice(t.total)}</span>
-                </div>
-            `).join('')}
-    `;
+    tradeHistoryItems.innerHTML = transactions
+        .filter(t => t.crypto === selectedCrypto)
+        .map(t => `
+            <div class="trade-row">
+                <span>${new Date(t.date).toLocaleTimeString()}</span>
+                <span class="${t.type === 'buy' ? 'buy' : 'sell'}">${t.type}</span>
+                <span>${t.amount.toFixed(2)}</span>
+                <span>${formatPrice(t.price)}</span>
+                <span>${formatPrice(t.total)}</span>
+            </div>
+        `).join('');
 }
 
 function updatePortfolio() {
@@ -761,6 +827,46 @@ function sendMessage() {
     }
 }
 
+function setTradeMode(mode) {
+    tradeMode = mode;
+    const buyTab = document.querySelector('.tabs .tab[onclick="setTradeMode(\'buy\')"]');
+    const sellTab = document.querySelector('.tabs .tab[onclick="setTradeMode(\'sell\')"]');
+    const tradeBtn = document.getElementById('trade-btn');
+    if (buyTab && sellTab && tradeBtn) {
+        buyTab.classList.toggle('active', mode === 'buy');
+        sellTab.classList.toggle('active', mode === 'sell');
+        tradeBtn.textContent = mode === 'buy' ? 'Buy' : 'Sell';
+    }
+}
+
+function executeTrade() {
+    const price = parseFloat(document.getElementById('trade-price')?.value) || 0;
+    const amount = parseFloat(document.getElementById('trade-amount')?.value) || 0;
+    const total = price * amount;
+    if (!currentUser) {
+        openModal('login-modal');
+        return;
+    }
+    if (price <= 0 || amount <= 0) {
+        alert('Please enter valid price and amount');
+        return;
+    }
+
+    const transaction = {
+        date: new Date().toISOString(),
+        type: tradeMode,
+        crypto: selectedCrypto,
+        amount,
+        price,
+        total,
+        status: 'success',
+        pl: null
+    };
+    transactions.push(transaction);
+    saveUserData();
+    updateTradeHistory();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     currentUser = localStorage.getItem('currentUser');
     loadUserData();
@@ -786,32 +892,12 @@ document.addEventListener('DOMContentLoaded', () => {
         pairSearch.addEventListener('input', renderCryptoList);
     }
 
-    const timeframeSelect = document.getElementById('timeframe-select');
-    if (timeframeSelect) {
-        timeframeSelect.addEventListener('change', () => {
-            currentTimeframe = timeframeSelect.value;
-            updateChart();
-        });
-    }
-
-    const buyTab = document.getElementById('buy-tab');
-    const sellTab = document.getElementById('sell-tab');
-    if (buyTab && sellTab) {
-        buyTab.addEventListener('click', () => {
-            tradeMode = 'buy';
-            buyTab.classList.add('active');
-            sellTab.classList.remove('active');
-        });
-        sellTab.addEventListener('click', () => {
-            tradeMode = 'sell';
-            sellTab.classList.add('active');
-            buyTab.classList.remove('active');
-        });
-    }
-
     window.addEventListener('resize', () => {
-        if (chart && document.getElementById('chart')) {
-            chart.resize(document.getElementById('chart').offsetWidth, 400);
+        if (tradingChart && document.getElementById('trading chart')) {
+            tradingChart.resize(document.getElementById('trading-chart').offsetWidth, 400);
+        }
+        if (volumeChart && document.getElementById('volume-chart')) {
+            volumeChart.resize(document.getElementById('volume-chart').offsetWidth, 100);
         }
     });
 });
