@@ -1,3 +1,8 @@
+const { createClient } = supabase;
+const supabaseUrl = 'https://vihxlcvqjobqeyhkeine.supabase.co'; // Replace with your Supabase Project URL
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4'; // Replace with your anon public key
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 let balance = 0;
 let portfolio = {};
 let transactions = [];
@@ -180,39 +185,43 @@ function formatPrice(value) {
     }).format(value);
 }
 
-function hashPassword(password) {
-    let hash = 0;
-    for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
+async function saveUserData() {
+    if (currentUser) {
+        const { data, error } = await supabase
+            .from('users')
+            .upsert({
+                username: currentUser,
+                balance: 0,
+                portfolio: portfolio,
+                transactions: transactions,
+                favoritePairs: [...favoritePairs],
+                password: password
+            }, { onConflict: 'username' });
+        if (error) console.error('Error saving user data:', error);
+        else console.log('User data saved for:', currentUser);
     }
-    return hash.toString();
 }
 
-function saveUserData() {
+async function loadUserData() {
     if (currentUser) {
-        localStorage.setItem(`user_${currentUser}`, JSON.stringify({ balance: 0, portfolio, transactions, favoritePairs: [...favoritePairs] }));
-        console.log('User data saved for:', currentUser);
-    }
-}
-
-function loadUserData() {
-    if (currentUser) {
-        const data = localStorage.getItem(`user_${currentUser}`);
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', currentUser)
+            .single();
         if (data) {
-            const parsed = JSON.parse(data);
             balance = 0; // Enforce zero balance
-            portfolio = parsed.portfolio || {};
-            transactions = parsed.transactions || [...defaultTransactions]; // Ensure default transactions
-            favoritePairs = new Set(parsed.favoritePairs || []);
+            portfolio = data.portfolio || {};
+            transactions = data.transactions || [...defaultTransactions];
+            favoritePairs = new Set(data.favoritePairs || []);
             console.log('User data loaded for:', currentUser);
         } else {
             balance = 0;
             portfolio = {};
-            transactions = [...defaultTransactions]; // Initialize with default transactions
+            transactions = [...defaultTransactions];
             favoritePairs = new Set();
         }
+        if (error) console.error('Error loading user data:', error);
         updateUI();
     }
 }
@@ -343,7 +352,7 @@ function closeAllModals() {
     closeModal('login-modal');
 }
 
-function login() {
+async function login() {
     const username = document.getElementById('login-username')?.value;
     const password = document.getElementById('login-password')?.value;
     const error = document.getElementById('login-error');
@@ -356,8 +365,21 @@ function login() {
         return;
     }
 
-    const user = localStorage.getItem(`user_${username}`);
-    if (user && JSON.parse(user).password === hashPassword(password)) {
+    const { data, error: dbError } = await supabase
+        .from('users')
+        .select('password')
+        .eq('username', username)
+        .single();
+
+    if (dbError || !data) {
+        if (error) {
+            error.textContent = 'Пользователь не найден';
+            error.style.display = 'block';
+        }
+        return;
+    }
+
+    if (data.password === password) {
         currentUser = username;
         localStorage.setItem('currentUser', currentUser);
         console.log('User logged in:', currentUser);
@@ -371,9 +393,40 @@ function login() {
     }
 }
 
-function register() {
-    alert('Недоступно в Вашем регионе');
-    return;
+async function register() {
+    const username = document.getElementById('register-username')?.value;
+    const password = document.getElementById('register-password')?.value;
+    const error = document.getElementById('register-error');
+
+    if (!username || !password) {
+        if (error) {
+            error.textContent = 'Введите имя пользователя и пароль';
+            error.style.display = 'block';
+        }
+        return;
+    }
+
+    const { data, error: dbError } = await supabase
+        .from('users')
+        .insert({
+            username: username,
+            password: password,
+            balance: 0,
+            portfolio: {},
+            transactions: [],
+            favoritePairs: []
+        });
+
+    if (dbError) {
+        if (error) {
+            error.textContent = 'Ошибка при регистрации: ' + dbError.message;
+            error.style.display = 'block';
+        }
+        return;
+    }
+
+    alert('Регистрация успешна! Теперь вы можете войти.');
+    closeModal('register-modal');
 }
 
 function logout() {
@@ -453,7 +506,7 @@ function toggleFavorite(pair, event) {
     } else {
         favoritePairs.add(pair);
     }
-    localStorage.setItem('favoritePairs', JSON.stringify([...favoritePairs]));
+    saveUserData();
     renderCryptoList();
 }
 
