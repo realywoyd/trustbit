@@ -43,15 +43,15 @@
             <span class="modal-close" onclick="closeModal('login-modal')">×</span>
             <h2>Login</h2>
             <div class="input-group">
-                <label for="login-username">Username</label>
-                <input type="text" id="login-username" placeholder="Enter username">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="Enter email">
             </div>
             <div class="input-group">
                 <label for="login-password">Password</label>
                 <input type="password" id="login-password" placeholder="Enter password">
             </div>
-            <p id="login-error">Invalid username or password</p>
-            <button class="btn btn-primary" onclick="login()">Login</button>
+            <p id="login-error">Invalid email or password</p>
+            <button class="btn btn-primary" id="login-submit">Login</button>
         </div>
     </div>
 
@@ -72,7 +72,7 @@
                 <input type="email" id="register-email" placeholder="Enter email">
             </div>
             <p id="register-error">Please check your input</p>
-            <button class="btn btn-primary" onclick="restrictRegion(event)">Register</button>
+            <button class="btn btn-primary" id="register-submit" onclick="restrictRegion(event)">Register</button>
         </div>
     </div>
 
@@ -163,6 +163,8 @@
             alert('Not available in your region.');
         }
     </script>
-    <script src="js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
