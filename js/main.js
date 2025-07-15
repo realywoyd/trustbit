@@ -45,7 +45,7 @@ const cryptoIdMap = {
     LINK: 'LINK', DOT: 'DOT', MATIC: 'MATIC', BCH: 'BCH',
     UNI: 'UNI', XLM: 'XLM', VET: 'VET', ATOM: 'ATOM', FIL: 'FIL',
     ALGO: 'ALGO', NEAR: 'NEAR', ICP: 'ICP', APT: 'APT',
-    ARB: 'ARB', OP: 'OP', INJ: 'INJ', SUI: 'S FabricsUI',
+    ARB: 'ARB', OP: 'OP', INJ: 'INJ', SUI: 'SUI',
     XTZ: 'XTZ', EOS: 'EOS', HBAR: 'HBAR', XMR: 'XMR',
     KSM: 'KSM', AAVE: 'AAVE', MKR: 'MKR', GRT: 'GRT', RUNE: 'RUNE',
     FTM: 'FTM', SAND: 'SAND', MANA: 'MANA', AXS: 'AXS',
@@ -53,7 +53,7 @@ const cryptoIdMap = {
     LDO: 'LDO', RNDR: 'RNDR', STX: 'STX', IMX: 'IMX', FLOW: 'FLOW',
     GALA: 'GALA', APE: 'APE', EGLD: 'EGLD', KAVA: 'KAVA', ZEC: 'ZEC',
     DASH: 'DASH', NEO: 'NEO', IOTA: 'IOTA', QTUM: 'QTUM', WAVES: 'WAVES',
-		   ZIL: 'ZIL', ENJ: 'ENJ', BAT: 'BAT', LRC: 'LRC', ANKR: 'ANKR',
+    ZIL: 'ZIL', ENJ: 'ENJ', BAT: 'BAT', LRC: 'LRC', ANKR: 'ANKR',
     RVN: 'RVN', HOT: 'HOT', OMG: 'OMG', LUNA: 'LUNA'
 };
 
@@ -326,8 +326,8 @@ function restrictRegion(event) {
 
 function openModal(modalId) {
     console.log('Attempting to open modal:', modalId, 'currentUser:', currentUser);
-    if (modalId === 'register-modal' && currentUser) {
-        console.log('Blocked register-modal opening: User is already authenticated');
+    if (modalId === 'register-modal') {
+        restrictRegion(new Event('click'));
         return;
     }
     const modal = document.getElementById(modalId);
@@ -392,52 +392,8 @@ async function login() {
 }
 
 async function register() {
-    const email = document.getElementById('register-username')?.value;
-    const password = document.getElementById('register-password')?.value;
-    const error = document.getElementById('register-error');
-
-    if (!email || !password) {
-        if (error) {
-            error.textContent = 'Введите email и пароль';
-            error.style.display = 'block';
-        }
-        return;
-    }
-
-    const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password
-    });
-
-    if (authError) {
-        if (error) {
-            error.textContent = 'Ошибка при регистрации: ' + authError.message;
-            error.style.display = 'block';
-        }
-        return;
-    }
-
-    // Initialize user data
-    const { error: dbError } = await supabase
-        .from('users')
-        .insert({
-            id: data.user.id,
-            balance: 0,
-            portfolio: {},
-            transactions: [],
-            favoritePairs: []
-        });
-
-    if (dbError) {
-        if (error) {
-            error.textContent = 'Ошибка при создании профиля: ' + dbError.message;
-            error.style.display = 'block';
-        }
-        return;
-    }
-
-    alert('Регистрация успешна! Теперь вы можете войти.');
-    closeModal('register-modal');
+    // This function should not be called due to restrictRegion
+    restrictRegion(new Event('click'));
 }
 
 async function logout() {
@@ -1028,6 +984,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             sellTab.classList.add('active');
             buyTab.classList.remove('active');
         });
+    }
+
+    // Add event listeners for login and register buttons
+    const loginBtn = document.getElementById('login-btn');
+    const registerBtn = document.getElementById('register-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => openModal('login-modal'));
+    }
+    if (registerBtn) {
+        registerBtn.addEventListener('click', restrictRegion);
+    }
+
+    // Add event listeners for modal submit buttons
+    const loginSubmit = document.getElementById('login-submit');
+    const registerSubmit = document.getElementById('register-submit');
+    if (loginSubmit) {
+        loginSubmit.addEventListener('click', login);
+    }
+    if (registerSubmit) {
+        registerSubmit.addEventListener('click', restrictRegion);
     }
 
     window.addEventListener('resize', () => {
