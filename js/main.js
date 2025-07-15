@@ -1,11 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
-
-console.log('main.js loaded at', new Date().toISOString());
-
-const supabaseUrl = 'https://vihxlcvqjobqeyhkeine.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 let balance = 0;
 let portfolio = {};
 let transactions = [];
@@ -187,30 +179,20 @@ function formatPrice(value) {
     }).format(value);
 }
 
-async function saveUserData() {
-    if (!currentUser) {
-        console.warn('saveUserData: No currentUser, skipping save');
-        return;
-    }
-    try {
+function saveUserData() {
+    if (currentUser) {
         localStorage.setItem(`user_${currentUser}`, JSON.stringify({
-            balance: balance,
+            balance,
             portfolio,
             transactions,
             favoritePairs: [...favoritePairs]
         }));
-        console.log('User data saved to localStorage for:', currentUser);
-    } catch (error) {
-        console.error('Error saving user data to localStorage:', error);
+        console.log('User data saved for:', currentUser);
     }
 }
 
-async function loadUserData() {
-    if (!currentUser) {
-        console.warn('loadUserData: No currentUser, skipping load');
-        return;
-    }
-    try {
+function loadUserData() {
+    if (currentUser) {
         const data = localStorage.getItem(`user_${currentUser}`);
         if (data) {
             const parsed = JSON.parse(data);
@@ -218,17 +200,15 @@ async function loadUserData() {
             portfolio = parsed.portfolio || {};
             transactions = parsed.transactions || [...defaultTransactions];
             favoritePairs = new Set(parsed.favoritePairs || []);
-            console.log('User data loaded from localStorage for:', currentUser);
+            console.log('User data loaded for:', currentUser);
         } else {
             balance = 0;
             portfolio = {};
             transactions = [...defaultTransactions];
             favoritePairs = new Set();
-            console.log('No user data found in localStorage, initialized defaults for:', currentUser);
+            console.log('Initialized default user data for:', currentUser);
         }
         updateUI();
-    } catch (error) {
-        console.error('Error loading user data from localStorage:', error);
     }
 }
 
@@ -237,14 +217,6 @@ function updateUI() {
     const profileDropdown = document.getElementById('profile-dropdown');
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
-    
-    if (!profileDropdown || !loginBtn || !registerBtn) {
-        console.error('UI elements missing:', {
-            profileDropdown: !!profileDropdown,
-            loginBtn: !!loginBtn,
-            registerBtn: !!registerBtn
-        });
-    }
 
     if (currentUser) {
         if (profileDropdown) profileDropdown.style.display = 'block';
@@ -259,7 +231,7 @@ function updateUI() {
     } else {
         if (profileDropdown) profileDropdown.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'block';
-        if (registerBtn) registerBtn.style.display = 'block';
+        if (registerBtn) registerBtn.style.display = 'none'; // Hide register button
         if (window.location.pathname.includes('kyc.html')) {
             console.log('Redirecting to index.html from kyc.html due to no currentUser');
             openModal('login-modal');
@@ -310,9 +282,6 @@ function updateUI() {
 
 function updateKycPage() {
     const sidebarItems = document.querySelectorAll('.sidebar-item');
-    if (sidebarItems.length === 0) {
-        console.warn('No sidebar items found for kyc page');
-    }
     sidebarItems.forEach(item => {
         item.addEventListener('click', () => {
             sidebarItems.forEach(i => i.classList.remove('active'));
@@ -334,33 +303,37 @@ function restrictRegion(event) {
 
 function openModal(modalId) {
     console.log('openModal called with:', modalId, 'currentUser:', currentUser);
-    const modal = document.getElementById(modalId);
-    if (!modal) {
-        console.error('Modal not found:', modalId);
+    if (modalId === 'register-modal') {
+        console.log('Blocked register-modal opening: Registration is disabled');
+        alert('Регистрация недоступна');
         return;
     }
-    modal.style.display = 'flex';
-    console.log('Modal opened:', modalId);
-    const error = document.getElementById(`${modalId}-error`);
-    if (error) error.style.display = 'none';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        console.log('Modal opened:', modalId);
+        const error = document.getElementById(`${modalId}-error`);
+        if (error) error.style.display = 'none';
+    } else {
+        console.error('Modal not found:', modalId);
+    }
 }
 
 function closeModal(modalId) {
     console.log('closeModal called with:', modalId, 'currentUser:', currentUser);
     const modal = document.getElementById(modalId);
-    if (!modal) {
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('Modal closed:', modalId);
+        const error = document.getElementById(`${modalId}-error`);
+        if (error) error.style.display = 'none';
+    } else {
         console.error('Modal not found:', modalId);
-        return;
     }
-    modal.style.display = 'none';
-    console.log('Modal closed:', modalId);
-    const error = document.getElementById(`${modalId}-error`);
-    if (error) error.style.display = 'none';
 }
 
 function closeAllModals() {
     console.log('closeAllModals called, currentUser:', currentUser);
-    closeModal('register-modal');
     closeModal('login-modal');
 }
 
@@ -379,105 +352,35 @@ async function login() {
         return;
     }
 
-    try {
-        console.log('Querying Supabase for user:', username);
-        const { data, error: dbError } = await supabase
-            .from('users')
-            .select('username, password')
-            .eq('username', username)
-            .single();
-
-        if (dbError || !data) {
-            if (error) {
-                error.textContent = 'Пользователь не найден';
-                error.style.display = 'block';
-            }
-            console.error('Login error: User not found', dbError?.message);
-            return;
-        }
-
-        if (data.password !== password) {
-            if (error) {
-                error.textContent = 'Неверный пароль';
-                error.style.display = 'block';
-            }
-            console.error('Login error: Incorrect password');
-            return;
-        }
-
+    const validUsername = 'anna_186';
+    const validPassword = '!QwertY123';
+    if (username === validUsername && password === validPassword) {
         currentUser = username;
-        localStorage.setItem('currentUser', username);
+        localStorage.setItem('currentUser', currentUser);
+        // Initialize user data if not exists
+        if (!localStorage.getItem(`user_${currentUser}`)) {
+            localStorage.setItem(`user_${currentUser}`, JSON.stringify({
+                balance: 0,
+                portfolio: {},
+                transactions: [...defaultTransactions],
+                favoritePairs: []
+            }));
+        }
         console.log('User logged in:', currentUser);
         closeAllModals();
         await loadUserData();
-    } catch (error) {
-        console.error('Unexpected login error:', error);
+    } else {
         if (error) {
-            error.textContent = 'Произошла ошибка при входе';
+            error.textContent = 'Неверное имя пользователя или пароль';
             error.style.display = 'block';
         }
+        console.error('Login failed: Invalid credentials');
     }
 }
 
-async function register() {
-    console.log('register function called at', new Date().toISOString());
-    const username = document.getElementById('register-username')?.value;
-    const password = document.getElementById('register-password')?.value;
-    const email = document.getElementById('register-email')?.value;
-    const error = document.getElementById('register-error');
-
-    if (!username || !password || !email) {
-        if (error) {
-            error.textContent = 'Заполните все поля';
-            error.style.display = 'block';
-        }
-        console.error('Register failed: Missing fields');
-        return;
-    }
-
-    try {
-        console.log('Checking if username exists:', username);
-        const { data: existingUser, error: checkError } = await supabase
-            .from('users')
-            .select('username')
-            .eq('username', username)
-            .single();
-
-        if (existingUser) {
-            if (error) {
-                error.textContent = 'Пользователь с таким именем уже существует';
-                error.style.display = 'block';
-            }
-            console.error('Register error: Username already exists');
-            return;
-        }
-
-        console.log('Inserting new user:', username);
-        const { error: insertError } = await supabase
-            .from('users')
-            .insert([{ username, password, email }]);
-
-        if (insertError) {
-            if (error) {
-                error.textContent = 'Ошибка при регистрации';
-                error.style.display = 'block';
-            }
-            console.error('Register error:', insertError.message);
-            return;
-        }
-
-        currentUser = username;
-        localStorage.setItem('currentUser', username);
-        console.log('User registered and logged in:', currentUser);
-        closeAllModals();
-        await loadUserData();
-    } catch (error) {
-        console.error('Unexpected register error:', error);
-        if (error) {
-            error.textContent = 'Произошла ошибка при регистрации';
-            error.style.display = 'block';
-        }
-    }
+function register() {
+    console.log('register function called, but registration is disabled');
+    alert('Регистрация недоступна');
 }
 
 async function logout() {
@@ -783,7 +686,7 @@ function initWebSocket() {
                 priceChanges[selectedCrypto] = candlestick.close - previousPrices[selectedCrypto];
                 cryptoPriceHistory[selectedCrypto].push({ time: Math.floor(Date.now() / 1000), value: candlestick.close });
                 if (cryptoPriceHistory[selectedCrypto].length > 100) {
-                    cryptoPriceHistory[selectedCrypto].shift();
+                    cryptoPriceHistory[cryptoPriceHistory].shift();
                 }
                 updateUI();
             }
@@ -1046,25 +949,17 @@ function sendMessage() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded triggered at', new Date().toISOString());
     try {
         currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            console.log('Verifying currentUser in Supabase:', currentUser);
-            const { data, error } = await supabase
-                .from('users')
-                .select('username')
-                .eq('username', currentUser)
-                .single();
-            if (error || !data) {
-                console.log('User not found in Supabase, clearing currentUser');
-                currentUser = null;
-                localStorage.removeItem('currentUser');
-            }
+        if (currentUser && currentUser !== 'anna_186') {
+            console.log('Invalid stored user, clearing:', currentUser);
+            currentUser = null;
+            localStorage.removeItem('currentUser');
         }
-        await loadUserData();
-        await fetchCryptoPrices();
+        loadUserData();
+        fetchCryptoPrices();
         initChart();
         setInterval(fetchCryptoPrices, 60000);
 
@@ -1149,8 +1044,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (registerBtn) {
             registerBtn.addEventListener('click', () => {
-                console.log('Register button clicked');
-                openModal('register-modal');
+                console.log('Register button clicked, but registration is disabled');
+                register();
             });
         } else {
             console.error('register-btn not found in DOM');
@@ -1167,12 +1062,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (registerSubmit) {
             registerSubmit.addEventListener('click', () => {
-                console.log('Register submit button clicked');
+                console.log('Register submit button clicked, but registration is disabled');
                 register();
             });
         } else {
             console.error('register-submit not found in DOM');
         }
+
+        window.addEventListener('resize', () => {
+            if (chart && document.getElementById('trading-chart')) {
+                chart.resize(document.getElementById('trading-chart').offsetWidth, 400);
+            }
+            if (volumeSeries && document.getElementById('volume-chart')) {
+                const volumeChart = volumeSeries.chart();
+                volumeChart.resize(document.getElementById('volume-chart').offsetWidth, 100);
+            }
+        });
     } catch (error) {
         console.error('Error during DOMContentLoaded:', error);
     }
