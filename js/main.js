@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
+console.log('main.js loaded successfully'); // Диагностика загрузки скрипта
+
 const supabaseUrl = 'https://vihxlcvqjobqeyhkeine.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4';
 const supabase = createClient(supabaseUrl, supabaseKey, {
@@ -933,6 +935,7 @@ function sendMessage() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOMContentLoaded triggered'); // Диагностика
     const { data: { user } } = await supabase.auth.getUser();
     currentUser = user;
     if (user) {
@@ -989,20 +992,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
     if (loginBtn) {
-        loginBtn.addEventListener('click', () => openModal('login-modal'));
+        console.log('Adding event listener to login-btn'); // Диагностика
+        loginBtn.addEventListener('click', () => {
+            console.log('Login button clicked'); // Диагностика
+            openModal('login-modal');
+        });
+    } else {
+        console.error('login-btn not found'); // Диагностика
     }
     if (registerBtn) {
-        registerBtn.addEventListener('click', restrictRegion);
+        console.log('Adding event listener to register-btn'); // Диагностика
+        registerBtn.addEventListener('click', (event) => {
+            console.log('Register button clicked'); // Диагностика
+            restrictRegion(event);
+        });
+    } else {
+        console.error('register-btn not found'); // Диагностика
     }
 
     // Add event listeners for modal submit buttons
     const loginSubmit = document.getElementById('login-submit');
     const registerSubmit = document.getElementById('register-submit');
     if (loginSubmit) {
+        console.log('Adding event listener to login-submit'); // Диагностика
         loginSubmit.addEventListener('click', login);
+    } else {
+        console.error('login-submit not found'); // Диагностика
     }
     if (registerSubmit) {
+        console.log('Adding event listener to register-submit'); // Диагностика
         registerSubmit.addEventListener('click', restrictRegion);
+    } else {
+        console.error('register-submit not found'); // Диагностика
     }
 
     window.addEventListener('resize', () => {
