@@ -26,36 +26,36 @@
         </nav>
 
         <div class="user-controls">
-            <div class="profile-dropdown" id="profile-dropdown">
+            <div class="profile-dropdown" id="profile-dropdown" style="display: none;">
                 <button class="profile-btn" id="profile-btn" onclick="window.location.href='html/kyc.html'">Profile</button>
                 <div class="dropdown-menu" id="dropdown-menu">
                     <a href="html/kyc.html" data-page="kyc">Profile</a>
                     <a href="#" onclick="logout()">Logout</a>
                 </div>
             </div>
-            <button class="login-btn" id="login-btn">Login</button>
-            <button class="register-btn" id="register-btn">Register</button>
+            <button class="login-btn" id="login-btn" data-action="open-login">Login</button>
+            <button class="register-btn" id="register-btn" data-action="open-register">Register</button>
         </div>
     </header>
 
-    <div class="modal" id="login-modal">
+    <div class="modal" id="login-modal" data-modal="login">
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal('login-modal')">×</span>
             <h2>Login</h2>
             <div class="input-group">
-                <label for="login-email">Email</label>
-                <input type="email" id="login-email" placeholder="Enter email">
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" placeholder="Enter username">
             </div>
             <div class="input-group">
                 <label for="login-password">Password</label>
                 <input type="password" id="login-password" placeholder="Enter password">
             </div>
-            <p id="login-error">Invalid email or password</p>
-            <button class="btn btn-primary" id="login-submit">Login</button>
+            <p id="login-error" style="display: none;">Invalid username or password</p>
+            <button class="btn btn-primary" id="login-submit" data-action="submit-login">Login</button>
         </div>
     </div>
 
-    <div class="modal" id="register-modal">
+    <div class="modal" id="register-modal" data-modal="register">
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal('register-modal')">×</span>
             <h2>Register</h2>
@@ -71,8 +71,8 @@
                 <label for="register-email">Email</label>
                 <input type="email" id="register-email" placeholder="Enter email">
             </div>
-            <p id="register-error">Please check your input</p>
-            <button class="btn btn-primary" id="register-submit">Register</button>
+            <p id="register-error" style="display: none;">Please check your input</p>
+            <button class="btn btn-primary" id="register-submit" data-action="submit-register">Register</button>
         </div>
     </div>
 
@@ -157,7 +157,6 @@
     </footer>
 
     <script>
-        // Restrict access to footer links
         function restrictAccess(event) {
             event.preventDefault();
             alert('Not available in your region.');
