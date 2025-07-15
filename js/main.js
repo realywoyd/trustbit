@@ -196,41 +196,49 @@ function formatPrice(value) {
 
 async function saveUserData() {
     if (currentUser) {
-        const { error } = await supabase
-            .from('users')
-            .upsert({
-                id: currentUser.id,
-                balance: 0,
-                portfolio: portfolio,
-                transactions: transactions,
-                favoritePairs: [...favoritePairs]
-            }, { onConflict: 'id' });
-        if (error) console.error('Error saving user data:', error);
-        else console.log('User data saved for:', currentUser.email);
+        try {
+            const { error } = await supabase
+                .from('users')
+                .upsert({
+                    id: currentUser.id,
+                    balance: 0,
+                    portfolio: portfolio,
+                    transactions: transactions,
+                    favoritePairs: [...favoritePairs]
+                }, { onConflict: 'id' });
+            if (error) console.error('Error saving user data:', error);
+            else console.log('User data saved for:', currentUser.email);
+        } catch (error) {
+            console.error('Unexpected error saving user data:', error);
+        }
     }
 }
 
 async function loadUserData() {
     if (currentUser) {
-        const { data, error } = await supabase
-            .from('users')
-            .select('balance, portfolio, transactions, favoritePairs')
-            .eq('id', currentUser.id)
-            .single();
-        if (data) {
-            balance = 0; // Enforce zero balance
-            portfolio = data.portfolio || {};
-            transactions = data.transactions || [...defaultTransactions];
-            favoritePairs = new Set(data.favoritePairs || []);
-            console.log('User data loaded for:', currentUser.email);
-        } else {
-            balance = 0;
-            portfolio = {};
-            transactions = [...defaultTransactions];
-            favoritePairs = new Set();
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('balance, portfolio, transactions, favoritePairs')
+                .eq('id', currentUser.id)
+                .single();
+            if (data) {
+                balance = 0; // Enforce zero balance
+                portfolio = data.portfolio || {};
+                transactions = data.transactions || [...defaultTransactions];
+                favoritePairs = new Set(data.favoritePairs || []);
+                console.log('User data loaded for:', currentUser.email);
+            } else {
+                balance = 0;
+                portfolio = {};
+                transactions = [...defaultTransactions];
+                favoritePairs = new Set();
+            }
+            if (error) console.error('Error loading user data:', error);
+            updateUI();
+        } catch (error) {
+            console.error('Unexpected error loading user data:', error);
         }
-        if (error) console.error('Error loading user data:', error);
-        updateUI();
     }
 }
 
@@ -323,11 +331,12 @@ function updateKycPage() {
 
 function restrictRegion(event) {
     event.preventDefault();
+    console.log('restrictRegion called'); // Диагностика
     alert('Недоступно в Вашем регионе');
 }
 
 function openModal(modalId) {
-    console.log('Attempting to open modal:', modalId, 'currentUser:', currentUser);
+    console.log('Attempting to open modal:', modalId, 'currentUser:', currentUser); // Диагностика
     if (modalId === 'register-modal') {
         restrictRegion(new Event('click'));
         return;
@@ -342,7 +351,7 @@ function openModal(modalId) {
 }
 
 function closeModal(modalId) {
-    console.log('Closing modal:', modalId, 'currentUser:', currentUser);
+    console.log('Closing modal:', modalId, 'currentUser:', currentUser); // Диагностика
     const modal = document.getElementById(modalId);
     const error = document.getElementById(`${modalId}-error`);
     if (modal) {
@@ -355,12 +364,13 @@ function closeModal(modalId) {
 }
 
 function closeAllModals() {
-    console.log('Closing all modals, currentUser:', currentUser);
+    console.log('Closing all modals, currentUser:', currentUser); // Диагностика
     closeModal('register-modal');
     closeModal('login-modal');
 }
 
 async function login() {
+    console.log('login function called'); // Диагностика
     const email = document.getElementById('login-email')?.value;
     const password = document.getElementById('login-password')?.value;
     const error = document.getElementById('login-error');
@@ -370,48 +380,63 @@ async function login() {
             error.textContent = 'Введите email и пароль';
             error.style.display = 'block';
         }
+        console.error('Login failed: Email or password missing');
         return;
     }
 
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-    });
+    try {
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
 
-    if (authError || !data.user) {
+        if (authError || !data.user) {
+            if (error) {
+                error.textContent = authError?.message || 'Пользователь не найден';
+                error.style.display = 'block';
+            }
+            console.error('Login error:', authError?.message || 'User not found');
+            return;
+        }
+
+        currentUser = data.user;
+        localStorage.setItem('currentUser', JSON.stringify({ id: data.user.id, email: data.user.email }));
+        console.log('User logged in:', currentUser.email);
+        closeAllModals();
+        await loadUserData();
+    } catch (error) {
+        console.error('Unexpected login error:', error);
         if (error) {
-            error.textContent = authError?.message || 'Пользователь не найден';
+            error.textContent = 'Произошла ошибка при входе';
             error.style.display = 'block';
         }
-        return;
     }
-
-    currentUser = data.user;
-    localStorage.setItem('currentUser', JSON.stringify({ id: data.user.id, email: data.user.email }));
-    console.log('User logged in:', currentUser.email);
-    closeAllModals();
-    await loadUserData();
 }
 
 async function register() {
+    console.log('register function called'); // Диагностика
     restrictRegion(new Event('click'));
 }
 
 async function logout() {
-    console.log('Logging out, currentUser:', currentUser);
+    console.log('Logging out, currentUser:', currentUser); // Диагностика
     if (ws) {
         ws.close();
         ws = null;
     }
-    await supabase.auth.signOut();
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    balance = 0;
-    portfolio = {};
-    transactions = [];
-    favoritePairs = new Set();
-    updateUI();
-    window.location.href = '../index.html';
+    try {
+        await supabase.auth.signOut();
+        currentUser = null;
+        localStorage.removeItem('currentUser');
+        balance = 0;
+        portfolio = {};
+        transactions = [];
+        favoritePairs = new Set();
+        updateUI();
+        window.location.href = '../index.html';
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
 }
 
 function renderCryptoList() {
@@ -492,26 +517,26 @@ async function fetchCryptoPrices() {
     const cachedData = localStorage.getItem(cacheKey);
     const now = Date.now();
 
-    if (cachedData) {
-        const { timestamp, prices } = JSON.parse(cachedData);
-        if (now - timestamp < cacheTTL && Object.values(prices).some(p => p > 0)) {
-            Object.assign(cryptoPrices, prices);
-            Object.keys(cryptoPrices).forEach(crypto => {
-                previousPrices[crypto] = cryptoPrices[crypto] || previousPrices[crypto];
-                priceChanges[crypto] = cryptoPrices[crypto] && previousPrices[crypto] ? cryptoPrices[crypto] - previousPrices[crypto] : 0;
-                cryptoPriceHistory[crypto].push({ time: Math.floor(now / 1000), value: cryptoPrices[crypto] });
-                if (cryptoPriceHistory[crypto].length > 100) {
-                    cryptoPriceHistory[crypto].shift();
-                }
-            });
-            isFetchingPrices = false;
-            updateUI();
-            console.log('Loaded prices from cache');
-            return;
-        }
-    }
-
     try {
+        if (cachedData) {
+            const { timestamp, prices } = JSON.parse(cachedData);
+            if (now - timestamp < cacheTTL && Object.values(prices).some(p => p > 0)) {
+                Object.assign(cryptoPrices, prices);
+                Object.keys(cryptoPrices).forEach(crypto => {
+                    previousPrices[crypto] = cryptoPrices[crypto] || previousPrices[crypto];
+                    priceChanges[crypto] = cryptoPrices[crypto] && previousPrices[crypto] ? cryptoPrices[crypto] - previousPrices[crypto] : 0;
+                    cryptoPriceHistory[crypto].push({ time: Math.floor(now / 1000), value: cryptoPrices[crypto] });
+                    if (cryptoPriceHistory[crypto].length > 100) {
+                        cryptoPriceHistory[crypto].shift();
+                    }
+                });
+                isFetchingPrices = false;
+                updateUI();
+                console.log('Loaded prices from cache');
+                return;
+            }
+        }
+
         const symbols = Object.keys(cryptoIdMap);
         const batchSize = 30;
         const batches = [];
@@ -522,13 +547,17 @@ async function fetchCryptoPrices() {
         const cryptoComparePrices = {};
         for (const batch of batches) {
             const batchSymbols = batch.join(',');
-            const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${batchSymbols}&tsyms=USD&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
-            if (!response.ok) {
-                console.warn(`CryptoCompare API error for batch ${batchSymbols}: ${response.status} ${response.statusText}`);
-                continue;
+            try {
+                const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${batchSymbols}&tsyms=USD&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
+                if (!response.ok) {
+                    console.warn(`CryptoCompare API error for batch ${batchSymbols}: ${response.status} ${response.statusText}`);
+                    continue;
+                }
+                const data = await response.json();
+                Object.assign(cryptoComparePrices, data);
+            } catch (error) {
+                console.warn(`Error fetching CryptoCompare prices for batch ${batchSymbols}:`, error);
             }
-            const data = await response.json();
-            Object.assign(cryptoComparePrices, data);
         }
 
         const missingCoins = [];
@@ -557,32 +586,35 @@ async function fetchCryptoPrices() {
 
             for (const batch of cgBatches) {
                 const coingeckoIds = batch.map(c => coingeckoIdMap[c]).join(',');
-                const coingeckoResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoIds}&vs_currencies=usd`);
-                if (!coingeckoResponse.ok) {
-                    console.warn(`CoinGecko API error for batch ${coingeckoIds}: ${coingeckoResponse.status} ${coingeckoResponse.statusText}`);
-                    continue;
-                }
-                const coingeckoData = await coingeckoResponse.json();
-                batch.forEach(crypto => {
-                    const price = coingeckoData[coingeckoIdMap[crypto]]?.usd || 0;
-                    if (price > 0) {
-                        previousPrices[crypto] = cryptoPrices[crypto] || price;
-                        cryptoPrices[crypto] = price;
-                        priceChanges[crypto] = price - previousPrices[crypto];
-                        cryptoPriceHistory[crypto].push({ time: Math.floor(now / 1000), value: price });
-                        if (cryptoPriceHistory[crypto].length > 100) {
-                            cryptoPriceHistory[crypto].shift();
-                        }
+                try {
+                    const coingeckoResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoIds}&vs_currencies=usd`);
+                    if (!coingeckoResponse.ok) {
+                        console.warn(`CoinGecko API error for batch ${coingeckoIds}: ${coingeckoResponse.status} ${coingeckoResponse.statusText}`);
+                        continue;
                     }
-                });
+                    const coingeckoData = await coingeckoResponse.json();
+                    batch.forEach(crypto => {
+                        const price = coingeckoData[coingeckoIdMap[crypto]]?.usd || 0;
+                        if (price > 0) {
+                            previousPrices[crypto] = cryptoPrices[crypto] || price;
+                            cryptoPrices[crypto] = price;
+                            priceChanges[crypto] = price - previousPrices[crypto];
+                            cryptoPriceHistory[crypto].push({ time: Math.floor(now / 1000), value: price });
+                            if (cryptoPriceHistory[crypto].length > 100) {
+                                cryptoPriceHistory[crypto].shift();
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.warn(`Error fetching CoinGecko prices for batch ${coingeckoIds}:`, error);
+                }
             }
         }
 
         localStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, prices: cryptoPrices }));
         console.log('Crypto prices fetched and cached:', cryptoPrices);
     } catch (error) {
-        console.error('Error fetching crypto prices:', error);
-        const cryptoItems = document.getElementById('crypto-items');
+        console.error('Unexpected error fetching crypto prices:', error);
         if (cryptoItems) {
             cryptoItems.innerHTML = '<div class="no-data-message">Failed to load prices. Please try again later.</div>';
         }
@@ -671,30 +703,34 @@ function initWebSocket() {
         }));
     };
     ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        if (message.TYPE === '2' && message.FROMSYMBOL === symbol && message.TOSYMBOL === 'USDT' && message.CLOSE) {
-            const candlestick = {
-                time: Math.floor(message.TS),
-                open: parseFloat(message.OPEN),
-                high: parseFloat(message.HIGH),
-                low: parseFloat(message.LOW),
-                close: parseFloat(message.CLOSE),
-                volume: parseFloat(message.VOLUME)
-            };
-            candlestickSeries.update(candlestick);
-            volumeSeries.update({
-                time: candlestick.time,
-                value: candlestick.volume,
-                color: candlestick.close >= candlestick.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 108, 0.3)'
-            });
-            previousPrices[selectedCrypto] = cryptoPrices[selectedCrypto] || candlestick.close;
-            cryptoPrices[selectedCrypto] = candlestick.close;
-            priceChanges[selectedCrypto] = candlestick.close - previousPrices[selectedCrypto];
-            cryptoPriceHistory[selectedCrypto].push({ time: Math.floor(Date.now() / 1000), value: candlestick.close });
-            if (cryptoPriceHistory[crypto].length > 100) {
-                cryptoPriceHistory[crypto].shift();
+        try {
+            const message = JSON.parse(event.data);
+            if (message.TYPE === '2' && message.FROMSYMBOL === symbol && message.TOSYMBOL === 'USDT' && message.CLOSE) {
+                const candlestick = {
+                    time: Math.floor(message.TS),
+                    open: parseFloat(message.OPEN),
+                    high: parseFloat(message.HIGH),
+                    low: parseFloat(message.LOW),
+                    close: parseFloat(message.CLOSE),
+                    volume: parseFloat(message.VOLUME)
+                };
+                candlestickSeries.update(candlestick);
+                volumeSeries.update({
+                    time: candlestick.time,
+                    value: candlestick.volume,
+                    color: candlestick.close >= candlestick.open ? 'rgba(67, 233, 123, 0.3)' : 'rgba(245, 87, 108, 0.3)'
+                });
+                previousPrices[selectedCrypto] = cryptoPrices[selectedCrypto] || candlestick.close;
+                cryptoPrices[selectedCrypto] = candlestick.close;
+                priceChanges[selectedCrypto] = candlestick.close - previousPrices[selectedCrypto];
+                cryptoPriceHistory[selectedCrypto].push({ time: Math.floor(Date.now() / 1000), value: candlestick.close });
+                if (cryptoPriceHistory[crypto].length > 100) {
+                    cryptoPriceHistory[crypto].shift();
+                }
+                updateUI();
             }
-            updateUI();
+        } catch (error) {
+            console.error('WebSocket message error:', error);
         }
     };
     ws.onerror = (error) => {
@@ -717,53 +753,63 @@ async function fetchChartData(timeframe) {
         const launchTs = cryptoLaunchTimes[selectedCrypto] || 1230940800;
 
         while (toTs > launchTs) {
-            const response = await fetch(`https://min-api.cryptocompare.com/data/v2/${interval}?fsym=${symbol}&tsym=USDT&limit=${limit}&aggregate=${aggregate}&toTs=${toTs}&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
-            if (!response.ok) {
-                console.warn(`CryptoCompare chart API error: ${response.status} ${response.statusText}`);
+            try {
+                const response = await fetch(`https://min-api.cryptocompare.com/data/v2/${interval}?fsym=${symbol}&tsym=USDT&limit=${limit}&aggregate=${aggregate}&toTs=${toTs}&api_key=cf13104fc6185223c007641dec6e62a504b54ebacee65c51f757012da0ac5e4a`);
+                if (!response.ok) {
+                    console.warn(`CryptoCompare chart API error: ${response.status} ${response.statusText}`);
+                    break;
+                }
+                const data = await response.json();
+                if (data.Response !== 'Success' || !data.Data || data.Data.length === 0) {
+                    console.log('No more historical data available from CryptoCompare');
+                    break;
+                }
+                const candles = data.Data.Data.map(item => ({
+                    time: item.time,
+                    open: parseFloat(item.open),
+                    high: parseFloat(item.high),
+                    low: parseFloat(item.low),
+                    close: parseFloat(item.close),
+                    volume: parseFloat(item.volumeto)
+                }));
+                allData = [...candles, ...allData];
+                toTs = data.Data.TimeFrom - 1;
+                if (data.Data.Data.length < limit) break;
+            } catch (error) {
+                console.warn(`Error fetching chart data from CryptoCompare for ${symbol}:`, error);
                 break;
             }
-            const data = await response.json();
-            if (data.Response !== 'Success' || !data.Data || data.Data.length === 0) {
-                console.log('No more historical data available from CryptoCompare');
-                break;
-            }
-            const candles = data.Data.Data.map(item => ({
-                time: item.time,
-                open: parseFloat(item.open),
-                high: parseFloat(item.high),
-                low: parseFloat(item.low),
-                close: parseFloat(item.close),
-                volume: parseFloat(item.volumeto)
-            }));
-            allData = [...candles, ...allData];
-            toTs = data.Data.TimeFrom - 1;
-            if (data.Data.Data.length < limit) break;
         }
 
         if (allData.length === 0) {
             console.log(`Fetching chart data for ${selectedCrypto} from CoinGecko`);
             const cgId = coingeckoIdMap[selectedCrypto];
             const days = timeframe === '1m' || timeframe === '5m' || timeframe === '15m' ? 1 : timeframe === '1h' || timeframe === '4h' ? 7 : 30;
-            const cgResponse = await fetch(`https://api.coingecko.com/api/v3/coins/${cgId}/market_chart?vs_currency=usd&days=${days}`);
-            if (!cgResponse.ok) {
-                console.warn(`CoinGecko chart API error: ${cgResponse.status} ${cgResponse.statusText}`);
+            try {
+                const cgResponse = await fetch(`https://api.coingecko.com/api/v3/coins/${cgId}/market_chart?vs_currency=usd&days=${days}`);
+                if (!cgResponse.ok) {
+                    console.warn(`CoinGecko chart API error: ${cgResponse.status} ${cgResponse.statusText}`);
+                    return [];
+                }
+                const cgData = await cgResponse.json();
+                allData = cgData.prices.map(([time, price]) => ({
+                    time: Math.floor(time / 1000),
+                    open: price,
+                    high: price,
+                    low: price,
+                    close: price,
+                    volume: cgData.total_volumes.find(v => v[0] === time)?.[1] || 0
+                }));
+            } catch (error) {
+                console.warn(`Error fetching chart data from CoinGecko for ${cgId}:`, error);
                 return [];
             }
-            const cgData = await cgResponse.json();
-            allData = cgData.prices.map(([time, price]) => ({
-                time: Math.floor(time / 1000),
-                open: price,
-                high: price,
-                low: price,
-                close: price,
-                volume: cgData.total_volumes.find(v => v[0] === time)?.[1] || 0
-            }));
         }
 
         const uniqueData = Array.from(new Map(allData.map(item => [item.time, item])).values()).sort((a, b) => a.time - b.time);
         return uniqueData;
     } catch (error) {
-        console.error('Error fetching chart data:', error.message);
+        console.error('Unexpected error fetching chart data:', error);
         return [];
     }
 }
@@ -936,103 +982,111 @@ function sendMessage() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOMContentLoaded triggered'); // Диагностика
-    const { data: { user } } = await supabase.auth.getUser();
-    currentUser = user;
-    if (user) {
-        localStorage.setItem('currentUser', JSON.stringify({ id: user.id, email: user.email }));
-    }
-    await loadUserData();
-    fetchCryptoPrices();
-    initChart();
-    setInterval(fetchCryptoPrices, 60000);
-
-    const marketSelect = document.getElementById('market-select');
-    if (marketSelect) {
-        Object.keys(cryptoPrices).forEach(crypto => {
-            const option = document.createElement('option');
-            option.value = `${crypto}/USDT`;
-            option.textContent = `${crypto}/USDT`;
-            marketSelect.appendChild(option);
-        });
-        marketSelect.value = selectedMarket;
-        marketSelect.addEventListener('change', () => {
-            selectCrypto(marketSelect.value.split('/')[0]);
-        });
-    }
-
-    const pairSearch = document.getElementById('pair-search');
-    if (pairSearch) {
-        pairSearch.addEventListener('input', renderCryptoList);
-    }
-
-    const timeframeSelect = document.getElementById('timeframe-select');
-    if (timeframeSelect) {
-        timeframeSelect.addEventListener('change', () => {
-            currentTimeframe = timeframeSelect.value;
-            updateChart();
-        });
-    }
-
-    const buyTab = document.getElementById('buy-tab');
-    const sellTab = document.getElementById('sell-tab');
-    if (buyTab && sellTab) {
-        buyTab.addEventListener('click', () => {
-            tradeMode = 'buy';
-            buyTab.classList.add('active');
-            sellTab.classList.remove('active');
-        });
-        sellTab.addEventListener('click', () => {
-            tradeMode = 'sell';
-            sellTab.classList.add('active');
-            buyTab.classList.remove('active');
-        });
-    }
-
-    // Add event listeners for login and register buttons
-    const loginBtn = document.getElementById('login-btn');
-    const registerBtn = document.getElementById('register-btn');
-    if (loginBtn) {
-        console.log('Adding event listener to login-btn'); // Диагностика
-        loginBtn.addEventListener('click', () => {
-            console.log('Login button clicked'); // Диагностика
-            openModal('login-modal');
-        });
-    } else {
-        console.error('login-btn not found'); // Диагностика
-    }
-    if (registerBtn) {
-        console.log('Adding event listener to register-btn'); // Диагностика
-        registerBtn.addEventListener('click', (event) => {
-            console.log('Register button clicked'); // Диагностика
-            restrictRegion(event);
-        });
-    } else {
-        console.error('register-btn not found'); // Диагностика
-    }
-
-    // Add event listeners for modal submit buttons
-    const loginSubmit = document.getElementById('login-submit');
-    const registerSubmit = document.getElementById('register-submit');
-    if (loginSubmit) {
-        console.log('Adding event listener to login-submit'); // Диагностика
-        loginSubmit.addEventListener('click', login);
-    } else {
-        console.error('login-submit not found'); // Диагностика
-    }
-    if (registerSubmit) {
-        console.log('Adding event listener to register-submit'); // Диагностика
-        registerSubmit.addEventListener('click', restrictRegion);
-    } else {
-        console.error('register-submit not found'); // Диагностика
-    }
-
-    window.addEventListener('resize', () => {
-        if (chart && document.getElementById('trading-chart')) {
-            chart.resize(document.getElementById('trading-chart').offsetWidth, 400);
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        currentUser = user;
+        if (user) {
+            localStorage.setItem('currentUser', JSON.stringify({ id: user.id, email: user.email }));
+            console.log('User authenticated:', user.email);
         }
-        if (volumeSeries && document.getElementById('volume-chart')) {
-            const volumeChart = volumeSeries.chart();
-            volumeChart.resize(document.getElementById('volume-chart').offsetWidth, 100);
+        await loadUserData();
+        await fetchCryptoPrices();
+        initChart();
+        setInterval(fetchCryptoPrices, 60000);
+
+        const marketSelect = document.getElementById('market-select');
+        if (marketSelect) {
+            Object.keys(cryptoPrices).forEach(crypto => {
+                const option = document.createElement('option');
+                option.value = `${crypto}/USDT`;
+                option.textContent = `${crypto}/USDT`;
+                marketSelect.appendChild(option);
+            });
+            marketSelect.value = selectedMarket;
+            marketSelect.addEventListener('change', () => {
+                selectCrypto(marketSelect.value.split('/')[0]);
+            });
         }
-    });
+
+        const pairSearch = document.getElementById('pair-search');
+        if (pairSearch) {
+            pairSearch.addEventListener('input', renderCryptoList);
+        }
+
+        const timeframeSelect = document.getElementById('timeframe-select');
+        if (timeframeSelect) {
+            timeframeSelect.addEventListener('change', () => {
+                currentTimeframe = timeframeSelect.value;
+                updateChart();
+            });
+        }
+
+        const buyTab = document.getElementById('buy-tab');
+        const sellTab = document.getElementById('sell-tab');
+        if (buyTab && sellTab) {
+            buyTab.addEventListener('click', () => {
+                tradeMode = 'buy';
+                buyTab.classList.add('active');
+                sellTab.classList.remove('active');
+            });
+            sellTab.addEventListener('click', () => {
+                tradeMode = 'sell';
+                sellTab.classList.add('active');
+                buyTab.classList.remove('active');
+            });
+        }
+
+        // Add event listeners for login and register buttons
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        if (loginBtn) {
+            console.log('Adding event listener to login-btn'); // Диагностика
+            loginBtn.addEventListener('click', () => {
+                console.log('Login button clicked'); // Диагностика
+                openModal('login-modal');
+            });
+        } else {
+            console.error('login-btn not found'); // Диагностика
+        }
+        if (registerBtn) {
+            console.log('Adding event listener to register-btn'); // Диагностика
+            registerBtn.addEventListener('click', (event) => {
+                console.log('Register button clicked'); // Диагностика
+                restrictRegion(event);
+            });
+        } else {
+            console.error('register-btn not found'); // Диагностика
+        }
+
+        // Add event listeners for modal submit buttons
+        const loginSubmit = document.getElementById('login-submit');
+        const registerSubmit = document.getElementById('register-submit');
+        if (loginSubmit) {
+            console.log('Adding event listener to login-submit'); // Диагностика
+            loginSubmit.addEventListener('click', login);
+        } else {
+            console.error('login-submit not found'); // Диагностика
+        }
+        if (registerSubmit) {
+            console.log('Adding event listener to register-submit'); // Диагностика
+            registerSubmit.addEventListener('click', (event) => {
+                console.log('Register submit clicked'); // Диагностика
+                restrictRegion(event);
+            });
+        } else {
+            console.error('register-submit not found'); // Диагностика
+        }
+
+        window.addEventListener('resize', () => {
+            if (chart && document.getElementById('trading-chart')) {
+                chart.resize(document.getElementById('trading-chart').offsetWidth, 400);
+            }
+            if (volumeSeries && document.getElementById('volume-chart')) {
+                const volumeChart = volumeSeries.chart();
+                volumeChart.resize(document.getElementById('volume-chart').offsetWidth, 100);
+            }
+        });
+    } catch (error) {
+        console.error('Error in DOMContentLoaded:', error);
+    }
 });
