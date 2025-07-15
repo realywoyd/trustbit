@@ -359,7 +359,7 @@ function closeAllModals() {
 }
 
 async function login() {
-    const email = document.getElementById('login-username')?.value;
+    const email = document.getElementById('login-email')?.value;
     const password = document.getElementById('login-password')?.value;
     const error = document.getElementById('login-error');
 
@@ -392,7 +392,6 @@ async function login() {
 }
 
 async function register() {
-    // This function should not be called due to restrictRegion
     restrictRegion(new Event('click'));
 }
 
@@ -690,8 +689,8 @@ function initWebSocket() {
             cryptoPrices[selectedCrypto] = candlestick.close;
             priceChanges[selectedCrypto] = candlestick.close - previousPrices[selectedCrypto];
             cryptoPriceHistory[selectedCrypto].push({ time: Math.floor(Date.now() / 1000), value: candlestick.close });
-            if (cryptoPriceHistory[selectedCrypto].length > 100) {
-                cryptoPriceHistory[selectedCrypto].shift();
+            if (cryptoPriceHistory[crypto].length > 100) {
+                cryptoPriceHistory[crypto].shift();
             }
             updateUI();
         }
