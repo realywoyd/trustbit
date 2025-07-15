@@ -1,7 +1,14 @@
-const { createClient } = supabase;
-const supabaseUrl = 'https://vihxlcvqjobqeyhkeine.supabase.co'; // Replace with your Supabase Project URL
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4'; // Replace with your anon public key
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://vihxlcvqjobqeyhkeine.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4';
+const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+    }
+});
 
 let balance = 0;
 let portfolio = {};
@@ -38,7 +45,7 @@ const cryptoIdMap = {
     LINK: 'LINK', DOT: 'DOT', MATIC: 'MATIC', BCH: 'BCH',
     UNI: 'UNI', XLM: 'XLM', VET: 'VET', ATOM: 'ATOM', FIL: 'FIL',
     ALGO: 'ALGO', NEAR: 'NEAR', ICP: 'ICP', APT: 'APT',
-    ARB: 'ARB', OP: 'OP', INJ: 'INJ', SUI: 'SUI',
+    ARB: 'ARB', OP: 'OP', INJ: 'INJ', SUI: 'S FabricsUI',
     XTZ: 'XTZ', EOS: 'EOS', HBAR: 'HBAR', XMR: 'XMR',
     KSM: 'KSM', AAVE: 'AAVE', MKR: 'MKR', GRT: 'GRT', RUNE: 'RUNE',
     FTM: 'FTM', SAND: 'SAND', MANA: 'MANA', AXS: 'AXS',
@@ -46,7 +53,7 @@ const cryptoIdMap = {
     LDO: 'LDO', RNDR: 'RNDR', STX: 'STX', IMX: 'IMX', FLOW: 'FLOW',
     GALA: 'GALA', APE: 'APE', EGLD: 'EGLD', KAVA: 'KAVA', ZEC: 'ZEC',
     DASH: 'DASH', NEO: 'NEO', IOTA: 'IOTA', QTUM: 'QTUM', WAVES: 'WAVES',
-    ZIL: 'ZIL', ENJ: 'ENJ', BAT: 'BAT', LRC: 'LRC', ANKR: 'ANKR',
+		   ZIL: 'ZIL', ENJ: 'ENJ', BAT: 'BAT', LRC: 'LRC', ANKR: 'ANKR',
     RVN: 'RVN', HOT: 'HOT', OMG: 'OMG', LUNA: 'LUNA'
 };
 
@@ -187,18 +194,17 @@ function formatPrice(value) {
 
 async function saveUserData() {
     if (currentUser) {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('users')
             .upsert({
-                username: currentUser,
+                id: currentUser.id,
                 balance: 0,
                 portfolio: portfolio,
                 transactions: transactions,
-                favoritePairs: [...favoritePairs],
-                password: password
-            }, { onConflict: 'username' });
+                favoritePairs: [...favoritePairs]
+            }, { onConflict: 'id' });
         if (error) console.error('Error saving user data:', error);
-        else console.log('User data saved for:', currentUser);
+        else console.log('User data saved for:', currentUser.email);
     }
 }
 
@@ -206,15 +212,15 @@ async function loadUserData() {
     if (currentUser) {
         const { data, error } = await supabase
             .from('users')
-            .select('*')
-            .eq('username', currentUser)
+            .select('balance, portfolio, transactions, favoritePairs')
+            .eq('id', currentUser.id)
             .single();
         if (data) {
             balance = 0; // Enforce zero balance
             portfolio = data.portfolio || {};
             transactions = data.transactions || [...defaultTransactions];
             favoritePairs = new Set(data.favoritePairs || []);
-            console.log('User data loaded for:', currentUser);
+            console.log('User data loaded for:', currentUser.email);
         } else {
             balance = 0;
             portfolio = {};
@@ -236,12 +242,12 @@ function updateUI() {
         if (loginBtn) loginBtn.style.display = 'none';
         if (registerBtn) registerBtn.style.display = 'none';
         const profileBtn = document.getElementById('profile-btn');
-        if (profileBtn) profileBtn.textContent = currentUser;
+        if (profileBtn) profileBtn.textContent = currentUser.email;
         // Update user info on kyc page
         const userUsername = document.getElementById('user-username');
         const userInfo = document.getElementById('user-info');
-        if (userUsername) userUsername.textContent = currentUser;
-        if (userInfo) userInfo.textContent = `Имя аккаунта: @${currentUser} 👤 | Email: ${currentUser.toLowerCase()}@example.com`;
+        if (userUsername) userUsername.textContent = currentUser.email;
+        if (userInfo) userInfo.textContent = `Имя аккаунта: @${currentUser.email} 👤 | Email: ${currentUser.email}`;
     } else {
         if (profileDropdown) profileDropdown.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'block';
@@ -353,64 +359,69 @@ function closeAllModals() {
 }
 
 async function login() {
-    const username = document.getElementById('login-username')?.value;
+    const email = document.getElementById('login-username')?.value;
     const password = document.getElementById('login-password')?.value;
     const error = document.getElementById('login-error');
 
-    if (!username || !password) {
+    if (!email || !password) {
         if (error) {
-            error.textContent = 'Введите имя пользователя и пароль';
+            error.textContent = 'Введите email и пароль';
             error.style.display = 'block';
         }
         return;
     }
 
-    const { data, error: dbError } = await supabase
-        .from('users')
-        .select('password')
-        .eq('username', username)
-        .single();
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+    });
 
-    if (dbError || !data) {
+    if (authError || !data.user) {
         if (error) {
-            error.textContent = 'Пользователь не найден';
+            error.textContent = authError?.message || 'Пользователь не найден';
             error.style.display = 'block';
         }
         return;
     }
 
-    if (data.password === password) {
-        currentUser = username;
-        localStorage.setItem('currentUser', currentUser);
-        console.log('User logged in:', currentUser);
-        closeAllModals();
-        loadUserData();
-    } else {
-        if (error) {
-            error.textContent = 'Неверное имя пользователя или пароль';
-            error.style.display = 'block';
-        }
-    }
+    currentUser = data.user;
+    localStorage.setItem('currentUser', JSON.stringify({ id: data.user.id, email: data.user.email }));
+    console.log('User logged in:', currentUser.email);
+    closeAllModals();
+    await loadUserData();
 }
 
 async function register() {
-    const username = document.getElementById('register-username')?.value;
+    const email = document.getElementById('register-username')?.value;
     const password = document.getElementById('register-password')?.value;
     const error = document.getElementById('register-error');
 
-    if (!username || !password) {
+    if (!email || !password) {
         if (error) {
-            error.textContent = 'Введите имя пользователя и пароль';
+            error.textContent = 'Введите email и пароль';
             error.style.display = 'block';
         }
         return;
     }
 
-    const { data, error: dbError } = await supabase
+    const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password
+    });
+
+    if (authError) {
+        if (error) {
+            error.textContent = 'Ошибка при регистрации: ' + authError.message;
+            error.style.display = 'block';
+        }
+        return;
+    }
+
+    // Initialize user data
+    const { error: dbError } = await supabase
         .from('users')
         .insert({
-            username: username,
-            password: password,
+            id: data.user.id,
             balance: 0,
             portfolio: {},
             transactions: [],
@@ -419,7 +430,7 @@ async function register() {
 
     if (dbError) {
         if (error) {
-            error.textContent = 'Ошибка при регистрации: ' + dbError.message;
+            error.textContent = 'Ошибка при создании профиля: ' + dbError.message;
             error.style.display = 'block';
         }
         return;
@@ -429,12 +440,13 @@ async function register() {
     closeModal('register-modal');
 }
 
-function logout() {
+async function logout() {
     console.log('Logging out, currentUser:', currentUser);
     if (ws) {
         ws.close();
         ws = null;
     }
+    await supabase.auth.signOut();
     currentUser = null;
     localStorage.removeItem('currentUser');
     balance = 0;
@@ -965,9 +977,13 @@ function sendMessage() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    currentUser = localStorage.getItem('currentUser');
-    loadUserData();
+document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user;
+    if (user) {
+        localStorage.setItem('currentUser', JSON.stringify({ id: user.id, email: user.email }));
+    }
+    await loadUserData();
     fetchCryptoPrices();
     initChart();
     setInterval(fetchCryptoPrices, 60000);
