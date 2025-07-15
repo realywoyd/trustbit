@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-console.log('main.js loaded successfully');
+console.log('main.js loaded at', new Date().toISOString());
 
 const supabaseUrl = 'https://vihxlcvqjobqeyhkeine.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpaHhsY3Zxam9icWV5aGtlaW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDA2MTcsImV4cCI6MjA2NTgxNjYxN30.sHT7G91BKM4eAAp61fZLtGbl0qRNKlM9HtPm_uBxnB4';
@@ -188,51 +188,64 @@ function formatPrice(value) {
 }
 
 async function saveUserData() {
-    if (currentUser) {
-        try {
-            localStorage.setItem(`user_${currentUser}`, JSON.stringify({
-                balance: 0,
-                portfolio,
-                transactions,
-                favoritePairs: [...favoritePairs]
-            }));
-            console.log('User data saved to localStorage for:', currentUser);
-        } catch (error) {
-            console.error('Error saving user data to localStorage:', error);
-        }
+    if (!currentUser) {
+        console.warn('saveUserData: No currentUser, skipping save');
+        return;
+    }
+    try {
+        localStorage.setItem(`user_${currentUser}`, JSON.stringify({
+            balance: balance,
+            portfolio,
+            transactions,
+            favoritePairs: [...favoritePairs]
+        }));
+        console.log('User data saved to localStorage for:', currentUser);
+    } catch (error) {
+        console.error('Error saving user data to localStorage:', error);
     }
 }
 
 async function loadUserData() {
-    if (currentUser) {
-        try {
-            const data = localStorage.getItem(`user_${currentUser}`);
-            if (data) {
-                const parsed = JSON.parse(data);
-                balance = 0; // Enforce zero balance
-                portfolio = parsed.portfolio || {};
-                transactions = parsed.transactions || [...defaultTransactions];
-                favoritePairs = new Set(parsed.favoritePairs || []);
-                console.log('User data loaded from localStorage for:', currentUser);
-            } else {
-                balance = 0;
-                portfolio = {};
-                transactions = [...defaultTransactions];
-                favoritePairs = new Set();
-                console.log('No user data found in localStorage, initialized defaults for:', currentUser);
-            }
-            updateUI();
-        } catch (error) {
-            console.error('Error loading user data from localStorage:', error);
+    if (!currentUser) {
+        console.warn('loadUserData: No currentUser, skipping load');
+        return;
+    }
+    try {
+        const data = localStorage.getItem(`user_${currentUser}`);
+        if (data) {
+            const parsed = JSON.parse(data);
+            balance = parsed.balance || 0;
+            portfolio = parsed.portfolio || {};
+            transactions = parsed.transactions || [...defaultTransactions];
+            favoritePairs = new Set(parsed.favoritePairs || []);
+            console.log('User data loaded from localStorage for:', currentUser);
+        } else {
+            balance = 0;
+            portfolio = {};
+            transactions = [...defaultTransactions];
+            favoritePairs = new Set();
+            console.log('No user data found in localStorage, initialized defaults for:', currentUser);
         }
+        updateUI();
+    } catch (error) {
+        console.error('Error loading user data from localStorage:', error);
     }
 }
 
 function updateUI() {
-    console.log('Updating UI, currentUser:', currentUser);
+    console.log('updateUI called, currentUser:', currentUser);
     const profileDropdown = document.getElementById('profile-dropdown');
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
+    
+    if (!profileDropdown || !loginBtn || !registerBtn) {
+        console.error('UI elements missing:', {
+            profileDropdown: !!profileDropdown,
+            loginBtn: !!loginBtn,
+            registerBtn: !!registerBtn
+        });
+    }
+
     if (currentUser) {
         if (profileDropdown) profileDropdown.style.display = 'block';
         if (loginBtn) loginBtn.style.display = 'none';
@@ -248,6 +261,7 @@ function updateUI() {
         if (loginBtn) loginBtn.style.display = 'block';
         if (registerBtn) registerBtn.style.display = 'block';
         if (window.location.pathname.includes('kyc.html')) {
+            console.log('Redirecting to index.html from kyc.html due to no currentUser');
             openModal('login-modal');
             window.location.href = '../index.html';
         }
@@ -296,6 +310,9 @@ function updateUI() {
 
 function updateKycPage() {
     const sidebarItems = document.querySelectorAll('.sidebar-item');
+    if (sidebarItems.length === 0) {
+        console.warn('No sidebar items found for kyc page');
+    }
     sidebarItems.forEach(item => {
         item.addEventListener('click', () => {
             sidebarItems.forEach(i => i.classList.remove('active'));
@@ -316,41 +333,39 @@ function restrictRegion(event) {
 }
 
 function openModal(modalId) {
-    console.log('Attempting to open modal:', modalId, 'currentUser:', currentUser);
-    if (modalId === 'register-modal') {
-        restrictRegion(new Event('click'));
+    console.log('openModal called with:', modalId, 'currentUser:', currentUser);
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        console.error('Modal not found:', modalId);
         return;
     }
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'flex';
-        console.log('Modal opened:', modalId);
-    } else {
-        console.error('Modal not found:', modalId);
-    }
+    modal.style.display = 'flex';
+    console.log('Modal opened:', modalId);
+    const error = document.getElementById(`${modalId}-error`);
+    if (error) error.style.display = 'none';
 }
 
 function closeModal(modalId) {
-    console.log('Closing modal:', modalId, 'currentUser:', currentUser);
+    console.log('closeModal called with:', modalId, 'currentUser:', currentUser);
     const modal = document.getElementById(modalId);
-    const error = document.getElementById(`${modalId}-error`);
-    if (modal) {
-        modal.style.display = 'none';
-        console.log('Modal closed:', modalId);
-    } else {
+    if (!modal) {
         console.error('Modal not found:', modalId);
+        return;
     }
+    modal.style.display = 'none';
+    console.log('Modal closed:', modalId);
+    const error = document.getElementById(`${modalId}-error`);
     if (error) error.style.display = 'none';
 }
 
 function closeAllModals() {
-    console.log('Closing all modals, currentUser:', currentUser);
+    console.log('closeAllModals called, currentUser:', currentUser);
     closeModal('register-modal');
     closeModal('login-modal');
 }
 
 async function login() {
-    console.log('login function called');
+    console.log('login function called at', new Date().toISOString());
     const username = document.getElementById('login-username')?.value;
     const password = document.getElementById('login-password')?.value;
     const error = document.getElementById('login-error');
@@ -365,6 +380,7 @@ async function login() {
     }
 
     try {
+        console.log('Querying Supabase for user:', username);
         const { data, error: dbError } = await supabase
             .from('users')
             .select('username, password')
@@ -404,7 +420,7 @@ async function login() {
 }
 
 async function register() {
-    console.log('register function called');
+    console.log('register function called at', new Date().toISOString());
     const username = document.getElementById('register-username')?.value;
     const password = document.getElementById('register-password')?.value;
     const email = document.getElementById('register-email')?.value;
@@ -420,6 +436,7 @@ async function register() {
     }
 
     try {
+        console.log('Checking if username exists:', username);
         const { data: existingUser, error: checkError } = await supabase
             .from('users')
             .select('username')
@@ -435,9 +452,10 @@ async function register() {
             return;
         }
 
+        console.log('Inserting new user:', username);
         const { error: insertError } = await supabase
             .from('users')
-            .insert([{ username, password }]);
+            .insert([{ username, password, email }]);
 
         if (insertError) {
             if (error) {
@@ -463,7 +481,7 @@ async function register() {
 }
 
 async function logout() {
-    console.log('Logging out, currentUser:', currentUser);
+    console.log('logout called, currentUser:', currentUser);
     if (ws) {
         ws.close();
         ws = null;
@@ -665,6 +683,7 @@ async function fetchCryptoPrices() {
 
 function selectCrypto(crypto) {
     if (!currentUser) {
+        console.log('selectCrypto: No currentUser, opening login modal');
         openModal('login-modal');
         return;
     }
@@ -763,8 +782,8 @@ function initWebSocket() {
                 cryptoPrices[selectedCrypto] = candlestick.close;
                 priceChanges[selectedCrypto] = candlestick.close - previousPrices[selectedCrypto];
                 cryptoPriceHistory[selectedCrypto].push({ time: Math.floor(Date.now() / 1000), value: candlestick.close });
-                if (cryptoPriceHistory[crypto].length > 100) {
-                    cryptoPriceHistory[crypto].shift();
+                if (cryptoPriceHistory[selectedCrypto].length > 100) {
+                    cryptoPriceHistory[selectedCrypto].shift();
                 }
                 updateUI();
             }
@@ -993,13 +1012,19 @@ function toggleSupportChat() {
     const supportChat = document.getElementById('support-chat');
     if (supportChat) {
         supportChat.classList.toggle('active');
+        console.log('Support chat toggled, active:', supportChat.classList.contains('active'));
+    } else {
+        console.error('Support chat element not found');
     }
 }
 
 function sendMessage() {
     const chatInput = document.getElementById('chat-input');
     const chatBody = document.getElementById('chat-body');
-    if (!chatInput || !chatBody) return;
+    if (!chatInput || !chatBody) {
+        console.error('Chat elements not found:', { chatInput: !!chatInput, chatBody: !!chatBody });
+        return;
+    }
 
     const message = chatInput.value.trim();
     if (message) {
@@ -1008,6 +1033,7 @@ function sendMessage() {
         userMessage.textContent = message;
         chatBody.appendChild(userMessage);
         chatInput.value = '';
+        console.log('User message sent:', message);
 
         setTimeout(() => {
             const supportMessage = document.createElement('div');
@@ -1015,15 +1041,17 @@ function sendMessage() {
             supportMessage.textContent = 'Thank you for your message! Our support team will respond shortly.';
             chatBody.appendChild(supportMessage);
             chatBody.scrollTop = chatBody.scrollHeight;
+            console.log('Support response added');
         }, 1000);
     }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('DOMContentLoaded triggered');
+    console.log('DOMContentLoaded triggered at', new Date().toISOString());
     try {
         currentUser = localStorage.getItem('currentUser');
         if (currentUser) {
+            console.log('Verifying currentUser in Supabase:', currentUser);
             const { data, error } = await supabase
                 .from('users')
                 .select('username')
@@ -1042,6 +1070,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const marketSelect = document.getElementById('market-select');
         if (marketSelect) {
+            console.log('Populating market-select');
             Object.keys(cryptoPrices).forEach(crypto => {
                 const option = document.createElement('option');
                 option.value = `${crypto}/USDT`;
@@ -1050,21 +1079,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             marketSelect.value = selectedMarket;
             marketSelect.addEventListener('change', () => {
+                console.log('Market select changed to:', marketSelect.value);
                 selectCrypto(marketSelect.value.split('/')[0]);
             });
+        } else {
+            console.error('market-select not found');
         }
 
         const pairSearch = document.getElementById('pair-search');
         if (pairSearch) {
-            pairSearch.addEventListener('input', renderCryptoList);
+            pairSearch.addEventListener('input', () => {
+                console.log('Pair search input:', pairSearch.value);
+                renderCryptoList();
+            });
+        } else {
+            console.error('pair-search not found');
         }
 
         const timeframeSelect = document.getElementById('timeframe-select');
         if (timeframeSelect) {
             timeframeSelect.addEventListener('change', () => {
                 currentTimeframe = timeframeSelect.value;
+                console.log('Timeframe changed to:', currentTimeframe);
                 updateChart();
             });
+        } else {
+            console.error('timeframe-select not found');
         }
 
         const buyTab = document.getElementById('buy-tab');
@@ -1074,60 +1114,66 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tradeMode = 'buy';
                 buyTab.classList.add('active');
                 sellTab.classList.remove('active');
+                console.log('Trade mode set to buy');
             });
             sellTab.addEventListener('click', () => {
                 tradeMode = 'sell';
                 sellTab.classList.add('active');
                 buyTab.classList.remove('active');
+                console.log('Trade mode set to sell');
             });
+        } else {
+            console.error('Trade tabs not found:', { buyTab: !!buyTab, sellTab: !!sellTab });
         }
 
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
+        const loginSubmit = document.getElementById('login-submit');
+        const registerSubmit = document.getElementById('register-submit');
+
+        console.log('Checking UI elements:', {
+            loginBtn: !!loginBtn,
+            registerBtn: !!registerBtn,
+            loginSubmit: !!loginSubmit,
+            registerSubmit: !!registerSubmit
+        });
+
         if (loginBtn) {
-            console.log('Adding event listener to login-btn');
             loginBtn.addEventListener('click', () => {
                 console.log('Login button clicked');
                 openModal('login-modal');
             });
         } else {
-            console.error('login-btn not found');
+            console.error('login-btn not found in DOM');
         }
+
         if (registerBtn) {
-            console.log('Adding event listener to register-btn');
-            registerBtn.addEventListener('click', (event) => {
+            registerBtn.addEventListener('click', () => {
                 console.log('Register button clicked');
                 openModal('register-modal');
             });
         } else {
-            console.error('register-btn not found');
+            console.error('register-btn not found in DOM');
         }
 
-        const loginSubmit = document.getElementById('login-submit');
-        const registerSubmit = document.getElementById('register-submit');
         if (loginSubmit) {
-            console.log('Adding event listener to login-submit');
-            loginSubmit.addEventListener('click', login);
+            loginSubmit.addEventListener('click', () => {
+                console.log('Login submit button clicked');
+                login();
+            });
         } else {
-            console.error('login-submit not found');
-        }
-        if (registerSubmit) {
-            console.log('Adding event listener to register-submit');
-            registerSubmit.addEventListener('click', register);
-        } else {
-            console.error('register-submit not found');
+            console.error('login-submit not found in DOM');
         }
 
-        window.addEventListener('resize', () => {
-            if (chart && document.getElementById('trading-chart')) {
-                chart.resize(document.getElementById('trading-chart').offsetWidth, 400);
-            }
-            if (volumeSeries && document.getElementById('volume-chart')) {
-                const volumeChart = volumeSeries.chart();
-                volumeChart.resize(document.getElementById('volume-chart').offsetWidth, 100);
-            }
-        });
+        if (registerSubmit) {
+            registerSubmit.addEventListener('click', () => {
+                console.log('Register submit button clicked');
+                register();
+            });
+        } else {
+            console.error('register-submit not found in DOM');
+        }
     } catch (error) {
-        console.error('Error in DOMContentLoaded:', error);
+        console.error('Error during DOMContentLoaded:', error);
     }
 });
