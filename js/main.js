@@ -235,11 +235,6 @@ function updateUI() {
         if (loginBtn) loginBtn.style.display = 'block';
         if (registerBtn) registerBtn.style.display = 'none';
         if (dropdownMenu) dropdownMenu.style.display = 'none';
-        if (window.location.pathname.includes('kyc.html')) {
-            console.log('Redirecting to index.html from kyc.html due to no currentUser');
-            openModal('login-modal');
-            window.location.href = '../index.html';
-        }
     }
 
     const path = window.location.pathname;
@@ -251,6 +246,14 @@ function updateUI() {
     else if (path.includes('history.html')) page = 'history';
     else if (path.includes('kyc.html')) page = 'kyc';
     console.log('Active page:', page);
+
+    // Restrict access to KYC page for unauthorized users
+    if (page === 'kyc' && !currentUser) {
+        console.log('Unauthorized access to kyc.html, redirecting to index.html');
+        openModal('login-modal');
+        window.location.href = '../index.html';
+        return;
+    }
 
     const navLinks = document.querySelectorAll('.nav a');
     navLinks.forEach(link => {
@@ -401,7 +404,8 @@ async function logout() {
     window.location.href = '../index.html';
 }
 
-function toggleDropdown() {
+function toggleDropdown(event) {
+    event.preventDefault(); // Prevent any default navigation
     const dropdownMenu = document.getElementById('dropdown-menu');
     if (dropdownMenu) {
         const isVisible = dropdownMenu.style.display === 'block';
@@ -1076,11 +1080,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (profileBtn) {
-            profileBtn.addEventListener('click', (event) => {
-                event.preventDefault(); // Prevent default navigation to kyc.html
-                toggleDropdown();
-                console.log('Profile button clicked');
-            });
+            profileBtn.addEventListener('click', toggleDropdown);
         } else {
             console.error('profile-btn not found in DOM');
         }
