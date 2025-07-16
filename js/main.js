@@ -247,11 +247,11 @@ function updateUI() {
     else if (path.includes('kyc.html')) page = 'kyc';
     console.log('Active page:', page);
 
-    // Restrict access to KYC page for unauthorized users
-    if (page === 'kyc' && !currentUser) {
-        console.log('Unauthorized access to kyc.html, redirecting to index.html');
+    // Restrict access to KYC, Wallet, and History pages for unauthorized users
+    if (['kyc', 'wallet', 'history'].includes(page) && !currentUser) {
+        console.log(`Unauthorized access to ${page}.html, redirecting to index.html`);
         openModal('login-modal');
-        window.location.href = '../index.html';
+        window.location.href = 'index.html';
         return;
     }
 
@@ -401,11 +401,12 @@ async function logout() {
     transactions = [];
     favoritePairs = new Set();
     updateUI();
-    window.location.href = '../index.html';
+    window.location.href = 'index.html';
 }
 
 function toggleDropdown(event) {
     event.preventDefault(); // Prevent any default navigation
+    event.stopPropagation(); // Prevent event bubbling
     const dropdownMenu = document.getElementById('dropdown-menu');
     if (dropdownMenu) {
         const isVisible = dropdownMenu.style.display === 'block';
@@ -1080,7 +1081,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (profileBtn) {
-            profileBtn.addEventListener('click', toggleDropdown);
+            // Remove any existing listeners to prevent duplicates
+            profileBtn.replaceWith(profileBtn.cloneNode(true));
+            const newProfileBtn = document.getElementById('profile-btn');
+            newProfileBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleDropdown(event);
+                console.log('Profile button clicked, toggling dropdown');
+            });
         } else {
             console.error('profile-btn not found in DOM');
         }
@@ -1092,6 +1101,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Dropdown closed due to outside click');
             }
         });
+
+        // Ensure dropdown menu items work correctly
+        if (dropdownMenu) {
+            dropdownMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', (event) => {
+                    const href = link.getAttribute('href');
+                    if (href === '#') {
+                        event.preventDefault();
+                        if (link.textContent.toLowerCase() === 'logout') {
+                            logout();
+                        }
+                    }
+                    // Allow navigation for other links (e.g., Profile to kyc.html)
+                });
+            });
+        }
 
         window.addEventListener('resize', () => {
             if (chart && document.getElementById('trading-chart')) {
