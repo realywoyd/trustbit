@@ -249,9 +249,11 @@ function updateUI() {
 
     // Restrict access to KYC, Wallet, and History pages for unauthorized users
     if (['kyc', 'wallet', 'history'].includes(page) && !currentUser) {
-        console.log(`Unauthorized access to ${page}.html, redirecting to index.html`);
+        console.log(`Unauthorized access attempt to ${page}.html, redirecting to index.html`);
         openModal('login-modal');
-        window.location.href = 'index.html';
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 100); // Small delay to ensure modal opens before redirect
         return;
     }
 
@@ -289,16 +291,20 @@ function updateUI() {
 function updateKycPage() {
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     sidebarItems.forEach(item => {
-        item.addEventListener('click', () => {
-            sidebarItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            const section = item.getAttribute('data-section');
-            console.log('Selected sidebar section:', section);
-            if (section !== 'kyc') {
-                alert('Эта секция еще не реализована');
-            }
-        });
+        item.removeEventListener('click', handleSidebarClick); // Remove previous listeners
+        item.addEventListener('click', handleSidebarClick);
     });
+}
+
+function handleSidebarClick() {
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+    const section = this.getAttribute('data-section');
+    console.log('Selected sidebar section:', section);
+    if (section !== 'kyc') {
+        alert('Эта секция еще не реализована');
+    }
 }
 
 function restrictRegion(event) {
@@ -1054,28 +1060,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (loginBtn) {
-            loginBtn.addEventListener('click', () => {
-                console.log('Login button clicked');
-                openModal('login-modal');
-            });
+            loginBtn.removeEventListener('click', openLoginModal); // Prevent duplicate listeners
+            loginBtn.addEventListener('click', openLoginModal);
         } else {
             console.error('login-btn not found in DOM');
         }
 
         if (registerBtn) {
-            registerBtn.addEventListener('click', () => {
-                console.log('Register button clicked, but registration is disabled');
-                register();
-            });
+            registerBtn.removeEventListener('click', register); // Prevent duplicate listeners
+            registerBtn.addEventListener('click', register);
         } else {
             console.error('register-btn not found in DOM');
         }
 
         if (loginSubmit) {
-            loginSubmit.addEventListener('click', () => {
-                console.log('Login submit button clicked');
-                login();
-            });
+            loginSubmit.removeEventListener('click', login); // Prevent duplicate listeners
+            loginSubmit.addEventListener('click', login);
         } else {
             console.error('login-submit not found in DOM');
         }
@@ -1084,46 +1084,28 @@ document.addEventListener('DOMContentLoaded', () => {
             // Remove any existing listeners and attributes to prevent navigation
             profileBtn.replaceWith(profileBtn.cloneNode(true));
             const newProfileBtn = document.getElementById('profile-btn');
-            // Remove href attribute to ensure no navigation occurs
+            // Remove href attribute and ensure no navigation
             if (newProfileBtn.hasAttribute('href')) {
                 newProfileBtn.removeAttribute('href');
+                console.log('Removed href attribute from profile-btn');
             }
-            newProfileBtn.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                toggleDropdown(event);
-                console.log('Profile button clicked, toggling dropdown only');
-            });
+            // Set pointer cursor to indicate clickability
+            newProfileBtn.style.cursor = 'pointer';
+            newProfileBtn.removeEventListener('click', handleProfileClick); // Prevent duplicate listeners
+            newProfileBtn.addEventListener('click', handleProfileClick);
         } else {
             console.error('profile-btn not found in DOM');
         }
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', (event) => {
-            if (dropdownMenu && profileBtn && !dropdownMenu.contains(event.target) && !profileBtn.contains(event.target)) {
-                dropdownMenu.style.display = 'none';
-                console.log('Dropdown closed due to outside click');
-            }
-        });
+        document.removeEventListener('click', handleOutsideClick); // Prevent duplicate listeners
+        document.addEventListener('click', handleOutsideClick);
 
         // Handle dropdown menu item clicks
         if (dropdownMenu) {
             dropdownMenu.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', (event) => {
-                    const href = link.getAttribute('href');
-                    const text = link.textContent.toLowerCase();
-                    if (href === '#' && text === 'logout') {
-                        event.preventDefault();
-                        logout();
-                        console.log('Logout link clicked');
-                    } else if (href && text === 'profile') {
-                        // Allow navigation to kyc.html only when Profile is clicked
-                        console.log('Profile link clicked, navigating to:', href);
-                    } else {
-                        event.preventDefault();
-                        console.log('Unhandled dropdown link clicked:', text);
-                    }
-                });
+                link.removeEventListener('click', handleDropdownItemClick); // Prevent duplicate listeners
+                link.addEventListener('click', handleDropdownItemClick);
             });
         } else {
             console.error('dropdown-menu not found in DOM');
@@ -1142,3 +1124,42 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error during DOMContentLoaded:', error);
     }
 });
+
+// Helper functions to avoid duplicate event listeners
+function openLoginModal() {
+    console.log('Login button clicked');
+    openModal('login-modal');
+}
+
+function handleProfileClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log('Profile button clicked, toggling dropdown only');
+    toggleDropdown(event);
+}
+
+function handleOutsideClick(event) {
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const profileBtn = document.getElementById('profile-btn');
+    if (dropdownMenu && profileBtn && !dropdownMenu.contains(event.target) && !profileBtn.contains(event.target)) {
+        dropdownMenu.style.display = 'none';
+        console.log('Dropdown closed due to outside click');
+    }
+}
+
+function handleDropdownItemClick(event) {
+    const href = this.getAttribute('href');
+    const text = this.textContent.toLowerCase();
+    console.log('Dropdown item clicked:', { text, href });
+    if (href === '#' && text === 'logout') {
+        event.preventDefault();
+        logout();
+        console.log('Logout link clicked');
+    } else if (href && text === 'profile') {
+        console.log('Profile link clicked, navigating to:', href);
+        // Allow navigation to kyc.html
+    } else {
+        event.preventDefault();
+        console.log('Unhandled dropdown link clicked:', text);
+    }
+}
