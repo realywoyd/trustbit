@@ -239,7 +239,7 @@ function updateUI() {
 
     const path = window.location.pathname;
     let page;
-    if (path.includes('index.html') || path === '/') page = 'home';
+    if (path.includes('index.html') || path === '/' || path === '') page = 'home';
     else if (path.includes('trading.html')) page = 'trading';
     else if (path.includes('wallet.html')) page = 'wallet';
     else if (path.includes('portfolio.html')) page = 'portfolio';
@@ -405,8 +405,8 @@ async function logout() {
 }
 
 function toggleDropdown(event) {
-    event.preventDefault(); // Prevent any default navigation
-    event.stopPropagation(); // Prevent event bubbling
+    event.preventDefault();
+    event.stopPropagation();
     const dropdownMenu = document.getElementById('dropdown-menu');
     if (dropdownMenu) {
         const isVisible = dropdownMenu.style.display === 'block';
@@ -1081,14 +1081,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (profileBtn) {
-            // Remove any existing listeners to prevent duplicates
+            // Remove any existing listeners and attributes to prevent navigation
             profileBtn.replaceWith(profileBtn.cloneNode(true));
             const newProfileBtn = document.getElementById('profile-btn');
+            // Remove href attribute to ensure no navigation occurs
+            if (newProfileBtn.hasAttribute('href')) {
+                newProfileBtn.removeAttribute('href');
+            }
             newProfileBtn.addEventListener('click', (event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 toggleDropdown(event);
-                console.log('Profile button clicked, toggling dropdown');
+                console.log('Profile button clicked, toggling dropdown only');
             });
         } else {
             console.error('profile-btn not found in DOM');
@@ -1096,26 +1100,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (event) => {
-            if (dropdownMenu && !dropdownMenu.contains(event.target) && !profileBtn.contains(event.target)) {
+            if (dropdownMenu && profileBtn && !dropdownMenu.contains(event.target) && !profileBtn.contains(event.target)) {
                 dropdownMenu.style.display = 'none';
                 console.log('Dropdown closed due to outside click');
             }
         });
 
-        // Ensure dropdown menu items work correctly
+        // Handle dropdown menu item clicks
         if (dropdownMenu) {
             dropdownMenu.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', (event) => {
                     const href = link.getAttribute('href');
-                    if (href === '#') {
+                    const text = link.textContent.toLowerCase();
+                    if (href === '#' && text === 'logout') {
                         event.preventDefault();
-                        if (link.textContent.toLowerCase() === 'logout') {
-                            logout();
-                        }
+                        logout();
+                        console.log('Logout link clicked');
+                    } else if (href && text === 'profile') {
+                        // Allow navigation to kyc.html only when Profile is clicked
+                        console.log('Profile link clicked, navigating to:', href);
+                    } else {
+                        event.preventDefault();
+                        console.log('Unhandled dropdown link clicked:', text);
                     }
-                    // Allow navigation for other links (e.g., Profile to kyc.html)
                 });
             });
+        } else {
+            console.error('dropdown-menu not found in DOM');
         }
 
         window.addEventListener('resize', () => {
