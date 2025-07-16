@@ -217,21 +217,24 @@ function updateUI() {
     const profileDropdown = document.getElementById('profile-dropdown');
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
+    const profileBtn = document.getElementById('profile-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
 
     if (currentUser) {
         if (profileDropdown) profileDropdown.style.display = 'block';
         if (loginBtn) loginBtn.style.display = 'none';
         if (registerBtn) registerBtn.style.display = 'none';
-        const profileBtn = document.getElementById('profile-btn');
         if (profileBtn) profileBtn.textContent = currentUser;
         const userUsername = document.getElementById('user-username');
         const userInfo = document.getElementById('user-info');
         if (userUsername) userUsername.textContent = currentUser;
         if (userInfo) userInfo.textContent = `Имя аккаунта: @${currentUser} 👤 | Email: ${currentUser.toLowerCase()}@example.com`;
+        if (dropdownMenu) dropdownMenu.style.display = 'none'; // Ensure dropdown is hidden by default
     } else {
         if (profileDropdown) profileDropdown.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'block';
-        if (registerBtn) registerBtn.style.display = 'none'; // Hide register button
+        if (registerBtn) registerBtn.style.display = 'none';
+        if (dropdownMenu) dropdownMenu.style.display = 'none';
         if (window.location.pathname.includes('kyc.html')) {
             console.log('Redirecting to index.html from kyc.html due to no currentUser');
             openModal('login-modal');
@@ -357,7 +360,6 @@ async function login() {
     if (username === validUsername && password === validPassword) {
         currentUser = username;
         localStorage.setItem('currentUser', currentUser);
-        // Initialize user data if not exists
         if (!localStorage.getItem(`user_${currentUser}`)) {
             localStorage.setItem(`user_${currentUser}`, JSON.stringify({
                 balance: 0,
@@ -397,6 +399,17 @@ async function logout() {
     favoritePairs = new Set();
     updateUI();
     window.location.href = '../index.html';
+}
+
+function toggleDropdown() {
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    if (dropdownMenu) {
+        const isVisible = dropdownMenu.style.display === 'block';
+        dropdownMenu.style.display = isVisible ? 'none' : 'block';
+        console.log('Dropdown toggled, visible:', !isVisible);
+    } else {
+        console.error('Dropdown menu not found');
+    }
 }
 
 function renderCryptoList() {
@@ -686,7 +699,7 @@ function initWebSocket() {
                 priceChanges[selectedCrypto] = candlestick.close - previousPrices[selectedCrypto];
                 cryptoPriceHistory[selectedCrypto].push({ time: Math.floor(Date.now() / 1000), value: candlestick.close });
                 if (cryptoPriceHistory[selectedCrypto].length > 100) {
-                    cryptoPriceHistory[cryptoPriceHistory].shift();
+                    cryptoPriceHistory[crypto].shift();
                 }
                 updateUI();
             }
@@ -1024,13 +1037,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
         const loginSubmit = document.getElementById('login-submit');
-        const registerSubmit = document.getElementById('register-submit');
+        const profileBtn = document.getElementById('profile-btn');
+        const dropdownMenu = document.getElementById('dropdown-menu');
 
         console.log('Checking UI elements:', {
             loginBtn: !!loginBtn,
             registerBtn: !!registerBtn,
             loginSubmit: !!loginSubmit,
-            registerSubmit: !!registerSubmit
+            profileBtn: !!profileBtn,
+            dropdownMenu: !!dropdownMenu
         });
 
         if (loginBtn) {
@@ -1060,14 +1075,23 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('login-submit not found in DOM');
         }
 
-        if (registerSubmit) {
-            registerSubmit.addEventListener('click', () => {
-                console.log('Register submit button clicked, but registration is disabled');
-                register();
+        if (profileBtn) {
+            profileBtn.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default navigation to kyc.html
+                toggleDropdown();
+                console.log('Profile button clicked');
             });
         } else {
-            console.error('register-submit not found in DOM');
+            console.error('profile-btn not found in DOM');
         }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (event) => {
+            if (dropdownMenu && !dropdownMenu.contains(event.target) && !profileBtn.contains(event.target)) {
+                dropdownMenu.style.display = 'none';
+                console.log('Dropdown closed due to outside click');
+            }
+        });
 
         window.addEventListener('resize', () => {
             if (chart && document.getElementById('trading-chart')) {
